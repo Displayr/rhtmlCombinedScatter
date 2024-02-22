@@ -16,7 +16,8 @@
   "extends": "standard",
   "plugins": [
     "standard",
-    "promise"
+    "promise",
+    "only-warn"
   ],
   "rules": {
     "indent": 0,

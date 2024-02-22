@@ -2,15 +2,15 @@ const cliArgs = require('yargs').argv
 const _ = require('lodash')
 
 const config = {
-  widgetEntryPoint: 'theSrc/scripts/rhtmlLabeledScatter.js',
-  widgetFactory: 'theSrc/scripts/rhtmlLabeledScatter.factory.js',
-  widgetName: 'rhtmlLabeledScatter',
+  widgetEntryPoint: 'theSrc/scripts/rhtmlCombinedScatter.js',
+  widgetFactory: 'theSrc/scripts/rhtmlCombinedScatter.factory.js',
+  widgetName: 'rhtmlCombinedScatter',
   internalWebSettings: {
     isReadySelector: 'div[rhtmlwidget-status=ready]',
     singleWidgetSnapshotSelector: 'svg.rhtmlwidget-outer-svg',
     default_border: true,
     css: [
-      '/styles/rhtmlLabeledScatter.css',
+      '/styles/rhtmlCombinedScatter.css',
     ],
   },
   snapshotTesting: {
