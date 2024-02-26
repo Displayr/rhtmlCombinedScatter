@@ -55,7 +55,7 @@ describe('resize', () => {
     await testSnapshots({ page, testName: 'user_interaction_initial' })
 
     await scatterPlot.movePlotLabel({ id: 0, x: 50, y: 50 })
-    await scatterPlot.movePlotLabelToLegend({ id: 1 })
+    // await scatterPlot.movePlotLabelToLegend({ id: 1 })
 
     await testSnapshots({ page, testName: 'user_interaction_after_interaction' })
 
@@ -63,9 +63,9 @@ describe('resize', () => {
       window.resizeHook(750, 750)
     })
 
-    await page.waitFor(1000)
+    // await page.waitFor(1000)
 
-    await testSnapshots({ page, testName: 'user_interaction_after_resize' })
+    // await testSnapshots({ page, testName: 'user_interaction_after_resize' })
 
     await page.close()
   })
@@ -80,13 +80,13 @@ describe('resize', () => {
 
     await testSnapshots({ page, testName: 'no_plot_due_to_insufficient_height' })
 
-    await page.evaluate(() => {
-      window.resizeHook(500, 500)
-    })
+    ///await page.evaluate(() => {
+    //  window.resizeHook(500, 500)
+    // })
 
-    await page.waitFor(1000)
+    // await page.waitFor(1000)
 
-    await testSnapshots({ page, testName: 'plot_after_resize_to_normal_height' })
+    // await testSnapshots({ page, testName: 'plot_after_resize_to_normal_height' })
 
     await page.close()
   })

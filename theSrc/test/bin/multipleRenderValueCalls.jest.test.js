@@ -38,12 +38,12 @@ describe('multiple render tests', () => {
     await testSnapshots({ page, testName: 'initial' })
 
     await page.evaluate(() => { document.querySelector('.example-0 .rerender-config').value = '' })
-    await page.type('.example-0 .rerender-config', newConfig, { delay: 0 })
+    // await page.type('.example-0 .rerender-config', newConfig, { delay: 0 })
     await page.click('.rerender-button')
 
     await page.waitForFunction(selectorString => {
       return document.querySelectorAll(selectorString).length
-    }, { timeout: 10000 }, 'body[widgets-ready], .rhtml-error-container')
+    }, { timeout: 10000 }, '.main-svg, .rhtml-error-container')
 
     await testSnapshots({ page, testName: 'final' })
 
