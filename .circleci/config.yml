@@ -51,3 +51,5 @@ jobs:
             7z a test-results.zip -r .
       - store_artifacts:
           path: theSrc/test/snapshots/travis/master
+      - store_test_results:
+          path: test_reports
