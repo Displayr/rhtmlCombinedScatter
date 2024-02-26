@@ -61,7 +61,7 @@ class LabeledScatter {
 
     const config = buildConfig(this.data, this.width, this.height)
     try {
-      const plot_data = [];
+      const plot_data = []
       plot_data.push({
         x: this.data.X,
         y: this.data.Y,
@@ -69,19 +69,19 @@ class LabeledScatter {
         name: 'Real',
         type: 'scatter',
         mode: 'markers',
-        cliponaxis: 'false'
+        cliponaxis: 'false',
       })
-      const plot_layout = { title: 'Title', showLegend: true,
-        xaxis: { color: '#0000FF', ticklen: 20},
-        yaxis: { color: '#0000FF', ticklen: 20}}
-      const plot_config = { displayModeBar: false, editable: false}
+      const plot_layout = {
+        xaxis: { color: '#0000FF', ticklen: 20 },
+        yaxis: { color: '#0000FF', ticklen: 20 }
+      }
+      const plot_config = { displayModeBar: false, editable: false }
 
     const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
     this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
     plotlyChart.on('plotly_afterplot', () => {
       this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
     })
-
 } catch (err) {
 if (
   err.type === InsufficientHeightError.type ||
@@ -95,7 +95,7 @@ if (
     }
   }
 
-  drawScatterLabelLayer(plotly_chart_layout, config) {
+  drawScatterLabelLayer (plotly_chart_layout, config) {
     d3.select('.scatterlabellayer').remove()
     const plot_area = d3.select(this.rootElement).select('.draglayer')
     const plot_bbox = plot_area.node().getBBox()
@@ -133,7 +133,6 @@ if (
     config.height = plot_height
     this.plot = new RectPlot({ config, stateObj: this.stateObj, svg })
     this.plot.draw()
-
   }
 
   resize (el, width, height) {
