@@ -7,7 +7,7 @@ const config = {
   widgetName: 'rhtmlCombinedScatter',
   internalWebSettings: {
     isReadySelector: 'div[rhtmlwidget-status=ready]',
-    singleWidgetSnapshotSelector: 'div.rhtmlwidget-outer-svg',
+    singleWidgetSnapshotSelector: '.rhtmlwidget-outer-svg',
     default_border: true,
     css: [
       '/styles/rhtmlCombinedScatter.css',

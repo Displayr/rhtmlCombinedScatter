@@ -49,6 +49,8 @@ class LabeledScatter {
     $(this.rootElement).find('*').remove()
     d3.select(this.rootElement)
       .attr('class', 'plot-container rhtmlwidget-outer-svg')
+      .attr('width', this.width)
+      .attr('height', this.height)
 
     // Error checking
     DisplayError.isAxisValid(this.data.X, this.rootElement, 'Given X values is neither array of nums, dates, or strings!')
@@ -73,7 +75,7 @@ class LabeledScatter {
       })
       const plot_layout = {
         xaxis: { color: '#0000FF', ticklen: 20 },
-        yaxis: { color: '#0000FF', ticklen: 20 }
+        yaxis: { color: '#0000FF', ticklen: 20 },
       }
       const plot_config = { displayModeBar: false, editable: false }
 
@@ -100,7 +102,7 @@ if (
     const plot_area = d3.select(this.rootElement).select('.draglayer')
     const plot_bbox = plot_area.node().getBBox()
 
-    // Remove some space from the drag layer which is made up of the 
+    // Remove some space from the drag layer which is made up of the
     // axis drag handles. The width of the handle (DRAGGERSIZE = 20)
     // is hard coded in plotly
     const plot_width = plot_bbox.width - 5
@@ -124,6 +126,8 @@ if (
     config.yTitle = ''
     config.subtitle = ''
     config.footer = ''
+    config.legendBubblesShow = false
+    config.legendShow = false
     config.colors[0] = '#FF0000'
     config.yBoundsMinimum = plotly_chart_layout.yaxis.range[0]
     config.yBoundsMaximum = plotly_chart_layout.yaxis.range[1]
