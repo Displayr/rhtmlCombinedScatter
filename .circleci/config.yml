@@ -43,7 +43,7 @@ jobs:
           name: Run tests
           command: |
             npm run build
-            npm run circleCITest
+            npm run test
       - run:
           name: Zip test output
           command: | 
