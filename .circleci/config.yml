@@ -38,6 +38,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            npm run test:
+            npm run circleCITest
       - store_artifacts:
           path: theSrc/test/snapshots
