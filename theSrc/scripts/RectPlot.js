@@ -2,7 +2,6 @@
 import _ from 'lodash'
 import d3 from 'd3'
 import 'babel-polyfill'
-import Plotly from 'plotly.js-dist-min'
 import md5 from 'md5'
 import autoBind from 'es6-autobind'
 import Links from './Links'
@@ -17,13 +16,8 @@ import LegendSettings from './LegendSettings'
 import Legend from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
-import Title from './Title'
-import Subtitle from './Subtitle'
-import Footer from './Footer'
-import PlotAxisLabels from './PlotAxisLabels'
 import PlotAxis from './PlotAxis'
 import ResetButton from './ResetButton'
-import AxisTitle from './AxisTitle'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 const DEBUG_ADD_BBOX_TO_IMG = false
@@ -131,9 +125,6 @@ class RectPlot {
       logoScale: config.labelsLogoScale,
     }
 
-    this.xTitle = new AxisTitle(config.xTitle, config.xTitleFontColor, config.xTitleFontSize, config.xTitleFontFamily, 5, 1)
-    this.yTitle = new AxisTitle(config.yTitle, config.yTitleFontColor, config.yTitleFontSize, config.yTitleFontFamily, 0, 2)
-
     // TODO convert to object signature
     this.legendSettings = new LegendSettings(
       config.legendShow,
@@ -170,12 +161,6 @@ class RectPlot {
       ymin: config.yBoundsMinimum,
       ymax: config.yBoundsMaximum,
     }
-
-    const hasSubtitle = config.subtitle !== '' && _.isString(config.subtitle)
-    this.title = new Title(config.title, config.titleFontColor, config.titleFontSize, config.titleFontFamily, this.axisSettings.x.fontSize, this.padding.vertical, hasSubtitle)
-    this.subtitle = new Subtitle(config.subtitle, config.subtitleFontColor, config.subtitleFontSize, config.subtitleFontFamily)
-    this.subtitle.setY(this.title.getSubtitleY())
-    this.footer = new Footer(config.footer, config.footerFontColor, config.footerFontSize, config.footerFontFamily, this.height, this.padding.vertical)
 
     this.grid = config.grid
     this.origin = config.origin
@@ -228,19 +213,11 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    const initTitleX = this.width / 2
-    this.title.setX(initTitleX)
-    this.subtitle.setX(initTitleX)
-    this.footer.setX(initTitleX)
     this.legend = new Legend(this.legendSettings, this.axisSettings)
 
-    this.vb = new ViewBox(width, height, this.padding, this.legend, this.title, this.subtitle, this.footer,
-      this.labelsFont, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions, this.xTitle, this.yTitle)
+    this.vb = new ViewBox(width, height, this.padding, this.legend, this.labelsFont, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions)
 
     this.legend.setX(this.vb.getLegendX())
-    this.title.setX(this.vb.getTitleX())
-    this.subtitle.setX(this.vb.getTitleX())
-    this.footer.setX(this.vb.getTitleX())
 
     this.data = new PlotData(this.X,
                          this.Y,
@@ -312,22 +289,13 @@ class RectPlot {
     const eqGroup = _.isEqual(this.group, otherPlot.group)
     const eqLabel = _.isEqual(this.label, otherPlot.label)
     const eqLabelAlt = _.isEqual(this.labelAlt, otherPlot.labelAlt)
-    const eqTitle = _.isEqual(this.title.text, otherPlot.title)
-    const eqXTitle = _.isEqual(this.xTitle.getText(), otherPlot.xTitle)
-    const eqYTitle = _.isEqual(this.yTitle.getText(), otherPlot.yTitle)
-    const eqZTitle = _.isEqual(this.zTitle, otherPlot.zTitle)
-    const listOfComparisons = [eqX, eqY, eqZ, eqGroup, eqLabel, eqLabelAlt, eqTitle, eqXTitle, eqYTitle, eqZTitle]
+    const listOfComparisons = [eqX, eqY, eqZ, eqGroup, eqLabel, eqLabelAlt]
     return _.every(listOfComparisons, e => _.isEqual(e, true))
   }
 
   drawLabsAndPlot () {
     this.data.normalizeData()
     return this.data.getPtsAndLabs('RectPlot.drawLabsAndPlot').then(() => {
-      const titlesX = this.vb.x + (this.vb.width / 2)
-      this.title.setX(titlesX)
-      this.subtitle.setX(titlesX)
-      this.footer.setX(titlesX)
-
       if (!this.state.isLegendPtsSynced(this.data.outsidePlotPtsId)) {
         _.map(this.state.getLegendPts(), pt => {
           if (!_.includes(this.data.outsidePlotPtsId, pt)) {
@@ -347,9 +315,6 @@ class RectPlot {
       this.data.syncHiddenLabels(this.state.hiddenLabelPts)
     }).then(() => {
       try {
-        this.title.drawWith(this.pltUniqueId, this.svg)
-        this.subtitle.drawWith(this.pltUniqueId, this.svg)
-        this.footer.drawWith(this.pltUniqueId, this.svg)
         this.drawResetButton()
 
         this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb)
@@ -373,8 +338,6 @@ class RectPlot {
         })
 
         if (this.plotBorder.show) { this.vb.drawBorderWith(this.svg, this.plotBorder) }
-        this.axisLabels = new PlotAxisLabels(this.vb, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions, this.xTitle, this.yTitle, this.padding)
-        this.axisLabels.drawWith(this.pltUniqueId, this.svg)
       } catch (error) {
         console.log(error)
       }
@@ -384,7 +347,7 @@ class RectPlot {
   drawResetButton () {
     if (this.showResetButton) {
       this.resetButton = new ResetButton(this)
-      this.resetButton.drawWith(this.svg, this.width, this.height, this.title, this.state)
+      this.resetButton.drawWith(this.svg, this.width, this.height, this.state)
     }
   }
 
@@ -442,7 +405,7 @@ class RectPlot {
     return new Promise((resolve, reject) => {
       this.data.setLegend()
       if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
-        this.legend.drawBubblesWith(this.svg, this.axisSettings)
+        this.legend.drawBubblesWith(this.svg)
         this.legend.drawBubblesLabelsWith(this.svg)
         this.legend.drawBubblesTitleWith(this.svg)
       }

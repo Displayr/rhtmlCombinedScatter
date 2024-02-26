@@ -3,12 +3,11 @@ class ResetButton {
     this.plot = plot
   }
 
-  drawWith (svg, width, height, title, state) {
+  drawWith (svg, width, height, state) {
     svg.selectAll('.plot-reset-button').remove()
 
     const svgResetButton = svg.append('text')
       .attr('class', 'plot-reset-button')
-      .attr('font-family', title.fontFamily)
       .attr('fill', '#5B9BD5')
       .attr('font-size', 10)
       .attr('font-weight', 'normal')
