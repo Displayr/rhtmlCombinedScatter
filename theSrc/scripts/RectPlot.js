@@ -16,7 +16,6 @@ import LegendSettings from './LegendSettings'
 import Legend from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
-import PlotAxis from './PlotAxis'
 import ResetButton from './ResetButton'
 import DataTypeEnum from './utils/DataTypeEnum'
 
@@ -246,9 +245,9 @@ class RectPlot {
     // Tell visual tests widget as not ready
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
-    return this.drawDimensionMarkers()
+    return this.drawLabsAndPlot()
       //.then(() => this.drawLegend())
-      .then(() => this.drawLabsAndPlot())
+      //.then(() => this.drawLabsAndPlot())
       /*.then(() => {
         // if you remove this then the life expectancy bubble plot will not have the legendLabels in the legend. It will only have the groups
         if (this.data.legendRequiresRedraw) {
@@ -336,8 +335,6 @@ class RectPlot {
           }
           this.drawDraggedMarkers()
         })
-
-        if (this.plotBorder.show) { this.vb.drawBorderWith(this.svg, this.plotBorder) }
       } catch (error) {
         console.log(error)
       }
@@ -349,56 +346,6 @@ class RectPlot {
       this.resetButton = new ResetButton(this)
       this.resetButton.drawWith(this.svg, this.width, this.height, this.state)
     }
-  }
-
-  drawDimensionMarkers () {
-    return new Promise((function (resolve, reject) {
-      this.axis = new PlotAxis(this.axisSettings, this.data, this.vb)
-
-      if (this.grid) {
-        this.axis.drawGridOriginWith(this.svg, this.origin)
-        this.axis.drawGridLinesWith(this.svg)
-      } else if (!this.grid && this.origin) {
-        this.axis.drawGridOriginWith(this.svg, this.origin)
-      }
-
-      if (this.axisSettings.showX || this.axisSettings.showY) {
-        this.axis.drawAxisLeaderWith(this.svg, this.origin, this.grid)
-        const markerLabels = this.svg.selectAll('.dim-marker-label')
-
-        // Figure out the max width of the yaxis dimensional labels
-        const initAxisTextRowWidth = this.axisSettings.textDimensions.rowMaxWidth
-        const initAxisTextColWidth = this.axisSettings.textDimensions.colMaxWidth
-        const initAxisTextRowHeight = this.axisSettings.textDimensions.rowMaxHeight
-        const initAxisTextColHeight = this.axisSettings.textDimensions.colMaxHeight
-        for (let i = 0; i < markerLabels[0].length; i++) {
-          const markerLabel = markerLabels[0][i]
-          const labelType = d3.select(markerLabel).attr('type')
-          const bb = markerLabel.getBBox()
-          if ((this.axisSettings.textDimensions.rowMaxWidth < bb.width) && (labelType === 'y')) { this.axisSettings.textDimensions.rowMaxWidth = bb.width }
-          if ((this.axisSettings.textDimensions.colMaxWidth < bb.width) && (labelType === 'x')) { this.axisSettings.textDimensions.colMaxWidth = bb.width }
-          if ((this.axisSettings.textDimensions.rowMaxHeight < bb.height) && (labelType === 'y')) { this.axisSettings.textDimensions.rowMaxHeight = bb.height }
-          if ((this.axisSettings.textDimensions.colMaxHeight < bb.height) && (labelType === 'x')) { this.axisSettings.textDimensions.colMaxHeight = bb.height }
-
-          if (this.width < (bb.x + bb.width)) {
-            this.axisSettings.textDimensions.rightPadding = bb.width / 2
-          }
-        }
-
-        if ((initAxisTextRowWidth !== this.axisSettings.textDimensions.rowMaxWidth) ||
-          (initAxisTextColWidth !== this.axisSettings.textDimensions.colMaxWidth) ||
-          (initAxisTextRowHeight !== this.axisSettings.textDimensions.rowMaxHeight) ||
-          (initAxisTextColHeight !== this.axisSettings.textDimensions.colMaxHeight)) {
-          this.setDim(this.svg, this.width, this.height)
-          this.data.revertMinMax()
-          const error = new Error('axis marker out of bound')
-          error.retry = true
-          return reject(error)
-        }
-      }
-
-      return resolve()
-    }.bind(this)))
   }
 
   drawLegend () {
