@@ -10,7 +10,7 @@ const {
   testState,
 } = renderExamplePageTestHelper
 
-jest.setTimeout(jestTimeout)
+jest.setTimeout(60 * 1000)
 configureImageSnapshotMatcher({ collectionIdentifier: 'stateInteractions' })
 
 // NB these do not need to be persistent over time. The Ids are a convenience used to isolate tests via jest -t '11:'
@@ -20,8 +20,19 @@ describe('state interactions', () => {
   let browser
 
   beforeAll(async () => {
-    browser = await puppeteer.launch(puppeteerSettings)
-  })
+    browser = await puppeteer.launch({//puppeteerSettings)
+        headless: false,
+        devtools: true,
+        dumpio: true,
+        defaultViewport: {
+            width: 1600,
+            height: 1600
+        },
+        args: [
+            '--allow-file-access-from-files'
+        ]
+      })
+   })
 
   afterAll(async () => {
     await browser.close()
@@ -46,7 +57,6 @@ describe('state interactions', () => {
       browser,
       stateName: 'data.bdd.three_point_brand_state.porche_label_moved_50x50',
     })
-
     await testSnapshots({ page, testName: 'after_porche_drag_on_canvas' })
 
     await page.close()
