@@ -30,6 +30,10 @@ jobs:
             nvm install $node_version
             nvm use $node_version
             npm install
+      # install zip - for easier download of snapshots
+      - run:
+          name: Install 7zip
+          command: sudo apt install p7zip-full
       # save any changes to the cache
       - save_cache:
           key: v1-deps-{{ checksum "package-lock.json" }}
@@ -39,5 +43,10 @@ jobs:
           name: Run tests
           command: |
             npm run circleCITest
+      - run:
+          name: Zip test output
+          command: | 
+            cd theSrc/test/snapshots/travis/master
+            7z a test-results.zip -r .
       - store_artifacts:
-          path: theSrc/test/snapshots
+          path: theSrc/test/snapshots/travis/master
