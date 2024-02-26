@@ -20,19 +20,8 @@ describe('state interactions', () => {
   let browser
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({//puppeteerSettings)
-        headless: false,
-        devtools: true,
-        dumpio: true,
-        defaultViewport: {
-            width: 1600,
-            height: 1600
-        },
-        args: [
-            '--allow-file-access-from-files'
-        ]
-      })
-   })
+    browser = await puppeteer.launch(puppeteerSettings)
+  })
 
   afterAll(async () => {
     await browser.close()

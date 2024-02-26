@@ -47,11 +47,8 @@ class LabeledScatter {
 
   async draw () {
     $(this.rootElement).find('*').remove()
-    /*const container = d3.select(this.rootElement)
-      .append('div')
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .attr('class', 'plot-container rhtmlwidget-outer-svg')*/
+    d3.select(this.rootElement)
+      .attr('class', 'plot-container rhtmlwidget-outer-svg')
 
     // Error checking
     DisplayError.isAxisValid(this.data.X, this.rootElement, 'Given X values is neither array of nums, dates, or strings!')
@@ -74,15 +71,10 @@ class LabeledScatter {
         mode: 'markers',
         cliponaxis: 'false'
       })
-      plot_data.push({
-        x: [this.data.X[0]],
-        y: [this.data.Y[0]],
-        name: 'Fake'
-      })
       const plot_layout = { title: 'Title', showLegend: true,
         xaxis: { color: '#0000FF', ticklen: 20},
         yaxis: { color: '#0000FF', ticklen: 20}}
-      const plot_config = { displayModeBar: false, editable: true}
+      const plot_config = { displayModeBar: false, editable: false}
 
     const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
     this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
