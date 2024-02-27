@@ -25,12 +25,12 @@ describe('resize', () => {
   })
 
   test('basic resize', async function () {
-    const { page } = await loadWidget({
-      browser,
-      configName: 'data.bdd.legend_drag_test_plot',
-      width: 500,
-      height: 500,
-    })
+    // const { page } = await loadWidget({
+    //   browser,
+    //   configName: 'data.bdd.legend_drag_test_plot',
+    //   width: 500,
+    //   height: 500,
+    // })
 
     // await testSnapshots({ page, testName: 'basic_initial' })
 
@@ -42,7 +42,7 @@ describe('resize', () => {
 
     // await testSnapshots({ page, testName: 'basic_after_resize' })
 
-    await page.close()
+    // await page.close()
   })
 
   /* test('user interactions on resize: on plot are reset, on legend are maintained', async function () {

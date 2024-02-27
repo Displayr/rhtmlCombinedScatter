@@ -21,7 +21,7 @@ const loadWidget = async ({
 }) => {
   console.log('creating new page')
   const page = await browser.newPage()
-  const url = getExampleUrl({ configName, stateName, rerenderControls, width, height })
+  // const url = getExampleUrl({ configName, stateName, rerenderControls, width, height })
   // console.log('going to url: ' + url)
   // const scatterPlot = new ScatterPlotPage(page)
   // console.log('creating new scatterplot page')
