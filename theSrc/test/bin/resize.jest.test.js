@@ -9,7 +9,7 @@ const {
   jestTimeout,
 } = renderExamplePageTestHelper
 
-jest.setTimeout(jestTimeout)
+jest.setTimeout(6000)
 configureImageSnapshotMatcher({ collectionIdentifier: 'resize' })
 
 process.on('warning', e => console.warn(e.stack))
