@@ -12,6 +12,8 @@ const {
 jest.setTimeout(jestTimeout)
 configureImageSnapshotMatcher({ collectionIdentifier: 'resize' })
 
+process.on('warning', e => console.warn(e.stack))
+
 describe('resize', () => {
   let browser
 
