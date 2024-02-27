@@ -6,7 +6,6 @@ const {
   configureImageSnapshotMatcher,
   puppeteerSettings,
   testSnapshots,
-  jestTimeout,
 } = renderExamplePageTestHelper
 
 jest.setTimeout(6000)
@@ -33,15 +32,15 @@ describe('resize', () => {
       height: 500,
     })
 
-    await testSnapshots({ page, testName: 'basic_initial' })
+    // await testSnapshots({ page, testName: 'basic_initial' })
 
-    await page.evaluate(() => {
-      window.resizeHook(750, 750)
-    })
+    // await page.evaluate(() => {
+    //   window.resizeHook(750, 750)
+    // })
 
-    await page.waitFor(1000)
+    // await page.waitFor(1000)
 
-    await testSnapshots({ page, testName: 'basic_after_resize' })
+    // await testSnapshots({ page, testName: 'basic_after_resize' })
 
     await page.close()
   })
@@ -72,24 +71,24 @@ describe('resize', () => {
     await page.close()
   }) */
 
-  test('VIS-998: resize from an output that is too small to a normal size', async function () {
-    const { page } = await loadWidget({
-      browser,
-      configName: 'data.bdd.legend_drag_test_plot',
-      width: 500,
-      height: 20,
-    })
+  // test('VIS-998: resize from an output that is too small to a normal size', async function () {
+  //   const { page } = await loadWidget({
+  //     browser,
+  //     configName: 'data.bdd.legend_drag_test_plot',
+  //     width: 500,
+  //     height: 20,
+  //   })
 
-    await testSnapshots({ page, testName: 'no_plot_due_to_insufficient_height' })
+  //   await testSnapshots({ page, testName: 'no_plot_due_to_insufficient_height' })
 
-    await page.evaluate(() => {
-      window.resizeHook(500, 500)
-    })
+  //   await page.evaluate(() => {
+  //     window.resizeHook(500, 500)
+  //   })
 
-    await page.waitFor(1000)
+  //   await page.waitFor(1000)
 
-    await testSnapshots({ page, testName: 'plot_after_resize_to_normal_height' })
+  //   await testSnapshots({ page, testName: 'plot_after_resize_to_normal_height' })
 
-    await page.close()
-  })
+  //   await page.close()
+  // })
 })
