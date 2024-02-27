@@ -375,7 +375,8 @@ class RectPlot {
   }
 
   /**
-   * This draws the marker label (index starting from 1) and the line connecting the marker label to the marker
+   * This draws the marker label (index starting from 1) and the line connecting the marker label to the marker.
+   * This does not draw the label to the side of the plot area (that is part of the legend).
    */
   drawDraggedMarkers () {
     this.svg.selectAll('.marker').remove()
