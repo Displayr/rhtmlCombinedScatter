@@ -18,11 +18,11 @@ jobs:
     steps:
       - checkout
        # look for existing cache and restore if found
-      /*- restore_cache:
-          keys: 
-            - v1-deps-{{ checksum "package-lock.json" }}
+       # - restore_cache:
+       #   keys: 
+       #     - v1-deps-{{ checksum "package-lock.json" }}
             # CircleCI will use the static fallback key v1-deps- to load the most recent valid cache
-            - v1-deps- */
+       #     - v1-deps- */
       # install dependencies 
       - run:
           name: Install dependencies
