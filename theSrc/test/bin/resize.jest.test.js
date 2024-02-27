@@ -25,6 +25,7 @@ describe('resize', () => {
   })
 
   test('basic resize', async function () {
+    const page = await browser.newPage()
     // const { page } = await loadWidget({
     //   browser,
     //   configName: 'data.bdd.legend_drag_test_plot',
