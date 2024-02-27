@@ -10,7 +10,6 @@ import TrendLine from './TrendLine'
 import DragUtils from './utils/DragUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
-import TooltipUtils from './utils/TooltipUtils'
 import LabelPlacement from './LabelPlacement'
 import LegendSettings from './LegendSettings'
 import Legend from './Legend'
@@ -323,11 +322,9 @@ class RectPlot {
 
         // Draw in the following order so that label images (logos) are under
         // anchor markers, which in turn are under text labels
-        this.drawAnc().then(() => {
-          this.drawLabelImages()
-          this.drawLabs()
-          this.placeLabels()
-        }).then(() => {
+        this.drawLabelImages()
+        this.drawLabs()
+        this.placeLabels().then(() => {
           if (this.trendLines.show) {
             this.drawTrendLines()
           } else {
@@ -377,44 +374,9 @@ class RectPlot {
     })
   }
 
-  drawAnc () {
-    return new Promise(function (resolve, reject) {
-      let rect = this
-      this.svg.selectAll('.anc').remove()
-      const anc = this.svg.selectAll('.anc')
-               .data(this.data.pts)
-               .enter()
-               .append('circle')
-               .attr('class', 'anc')
-               .attr('id', d => `anc-${d.id}`)
-               .attr('cx', d => d.x)
-               .attr('cy', d => d.y)
-               .attr('fill', d => d.color)
-               .attr('fill-opacity', d => d.fillOpacity)
-               .attr('r', (d) => {
-                 if (this.trendLines.show) {
-                   return this.trendLines.pointSize
-                 } else {
-                   return d.r
-                 }
-               })
-               .style('cursor', 'pointer')
-               .on('click', function (d) {
-                    const hide = rect.data.toggleLabelShow(d.id)
-                    rect.state.updateHiddenLabelPt(d.id, hide)
-                    rect.drawLinks()
-                    rect.drawLabs()
-                })
-      TooltipUtils.appendTooltips(anc, this.Z, this.axisSettings, this.tooltipText)
-      // Clip paths used to crop bubbles if they expand beyond the plot's borders
-      if (Utils.isArrOfNums(this.Z) && this.plotBorder.show) {
-        this.svg.selectAll('clipPath').remove()
-        SvgUtils.clipBubbleIfOutsidePlotArea(this.svg, this.data.pts, this.vb, this.pltUniqueId)
-      }
-      resolve()
-    }.bind(this))
-  }
-
+  /**
+   * This draws the marker label (index starting from 1) and the line connecting the marker label to the marker
+   */
   drawDraggedMarkers () {
     this.svg.selectAll('.marker').remove()
     this.svg.selectAll('.marker')
