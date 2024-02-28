@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.4.8
 workflows:
   build:
     jobs:
@@ -11,11 +13,18 @@ jobs:
   build:
     machine:
       # https://circleci.com/developer/machine/image/ubuntu-2204
-      image: ubuntu-2004:202010-01 # # recommended linux image - includes Ubuntu 20.04
+      image: ubuntu-2204:current
     resource_class: large
     environment:
       node_version: 18.16.0
     steps:
+      - browser-tools/install-browser-tools:
+          chrome-version: 85.0.4183.121
+      - run:
+          name: Install chrome
+          command: |
+            google-chrome --version
+            chromedriver --version
       - checkout
       # look for existing cache and restore if found
       - restore_cache:
