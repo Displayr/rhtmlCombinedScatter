@@ -11,18 +11,17 @@ jobs:
   build:
     machine:
       # https://circleci.com/developer/machine/image/ubuntu-2204
-      image: ubuntu-2204:current
+      image: ubuntu-2004:202010-01 # # recommended linux image - includes Ubuntu 20.04
     resource_class: large
     environment:
       node_version: 18.16.0
     steps:
-      - checkout
-       # look for existing cache and restore if found
+      - checkout      # look for existing cache and restore if found
       - restore_cache:
           keys: 
             - v1-deps-{{ checksum "package-lock.json" }}
             # CircleCI will use the static fallback key v1-deps- to load the most recent valid cache
-            - v1-deps- 
+            - v1-deps- */
       # install dependencies 
       - run:
           name: Install dependencies
@@ -42,6 +41,7 @@ jobs:
       - run:
           name: Run tests
           command: |
+            npm run build
             npm run circleCITest
       - run:
           name: Zip test output
@@ -50,3 +50,5 @@ jobs:
             7z a test-results.zip -r .
       - store_artifacts:
           path: theSrc/test/snapshots/travis/master
+      - store_test_results:
+          path: theSrc/test

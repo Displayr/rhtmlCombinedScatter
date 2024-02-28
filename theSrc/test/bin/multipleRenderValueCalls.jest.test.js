@@ -15,11 +15,16 @@ configureImageSnapshotMatcher({ collectionIdentifier: 'multipleRerender' })
 describe('multiple render tests', () => {
   let browser
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch(puppeteerSettings)
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
+    const pages = await browser.pages();
+    for (let i = 0; i < pages.length; i++) {
+      await pages[i].close();
+    }
+
     await browser.close()
   })
 
@@ -43,7 +48,7 @@ describe('multiple render tests', () => {
 
     await page.waitForFunction(selectorString => {
       return document.querySelectorAll(selectorString).length
-    }, { timeout: 10000 }, '.main-svg, .rhtml-error-container')
+    }, { timeout: 10000 }, 'body[widgets-ready], .main-svg, .rhtml-error-container')
 
     await testSnapshots({ page, testName: 'final' })
 

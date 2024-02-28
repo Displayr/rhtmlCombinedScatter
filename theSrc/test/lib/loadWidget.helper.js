@@ -2,7 +2,6 @@ const { snapshotTesting: { renderExamplePageTestHelper } } = require('rhtmlBuild
 
 const {
   getExampleUrl,
-  waitForWidgetToLoad,
 } = renderExamplePageTestHelper
 
 const ScatterPlotPage = require('./scatterPlotPage')
@@ -11,8 +10,6 @@ const ScatterPlotPage = require('./scatterPlotPage')
 const waitForScatterplotToLoad = async ({ page }) => page.waitForFunction(selectorString => {
   return document.querySelectorAll(selectorString).length
 }, { timeout: 3000 }, 'body[widgets-ready], .main-svg, .rhtml-error-container')
-//}, { timeout: 3000 }, 'body[widgets-ready], .rhtml-error-container')
-
 
 const loadWidget = async ({
   browser,
@@ -30,5 +27,4 @@ const loadWidget = async ({
 
   return { page, scatterPlot }
 }
-
 module.exports = loadWidget
