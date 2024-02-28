@@ -9,19 +9,21 @@ const {
   jestTimeout,
 } = renderExamplePageTestHelper
 
-jest.setTimeout(6000)
+jest.setTimeout(jestTimeout)
 configureImageSnapshotMatcher({ collectionIdentifier: 'resize' })
-
-process.on('warning', e => console.warn(e.stack))
 
 describe('resize', () => {
   let browser
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch(puppeteerSettings)
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
+    const pages = await browser.pages();
+    for (let i = 0; i < pages.length; i++) {
+      await pages[i].close();
+    }
     await browser.close()
   })
 

@@ -15,11 +15,16 @@ configureImageSnapshotMatcher({ collectionIdentifier: 'multipleRerender' })
 describe('multiple render tests', () => {
   let browser
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch(puppeteerSettings)
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
+    const pages = await browser.pages();
+    for (let i = 0; i < pages.length; i++) {
+      await pages[i].close();
+    }
+
     await browser.close()
   })
 
