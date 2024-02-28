@@ -102,16 +102,13 @@ if (
     const plot_area = d3.select(this.rootElement).select('.draglayer')
     const plot_bbox = plot_area.node().getBBox()
 
-    // Remove some space from the drag layer which is made up of the
-    // axis drag handles. The width of the handle (DRAGGERSIZE = 20)
-    // is hard coded in plotly
-    const plot_width = plot_bbox.width - 5
-    const plot_height = plot_bbox.height - 20
+    const plot_width = plotly_chart_layout.xaxis._length
+    const plot_height = plotly_chart_layout.yaxis._length
     const svg = plot_area
         .append('svg')
         .attr('class', 'scatterlabellayer')
-        .attr('x', plot_bbox.x - 5)
-        .attr('y', plot_bbox.y + 10)
+        .attr('x', plotly_chart_layout.margin.l)
+        .attr('y', plotly_chart_layout.margin.t)
         .attr('width', plot_width)
         .attr('height', plot_height)
     config.yAxisFontColor = '#FF0000'
