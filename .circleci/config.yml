@@ -18,10 +18,11 @@ jobs:
     environment:
       node_version: 18.16.0
     steps:
-      - browser-tools/install-browser-tools:
+      - browser-tools/install-chrome
           chrome-version: 85.0.4183.121
+      - browser-tools/install-chromedriver
       - run:
-          name: Install chrome
+          name: Check chrome version
           command: |
             google-chrome --version
             chromedriver --version
