@@ -16,7 +16,8 @@ jobs:
     environment:
       node_version: 18.16.0
     steps:
-      - checkout      # look for existing cache and restore if found
+      - checkout
+      # look for existing cache and restore if found
       - restore_cache:
           keys: 
             - v1-deps-{{ checksum "package-lock.json" }}
