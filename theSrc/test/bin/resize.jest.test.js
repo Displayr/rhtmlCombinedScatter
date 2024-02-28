@@ -85,7 +85,7 @@ describe('resize', () => {
     await testSnapshots({ page, testName: 'no_plot_due_to_insufficient_height' })
 
     await page.evaluate(() => {
-     window.resizeHook(500, 500)
+      window.resizeHook(500, 500)
     })
 
     await page.waitFor(1000)
