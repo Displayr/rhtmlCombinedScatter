@@ -11,4 +11,5 @@ node_modules
 s3sync
 docs/oneoff
 docs/experiments
+theSrc/test/snapshots/local
 s3

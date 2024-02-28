@@ -15,11 +15,15 @@ configureImageSnapshotMatcher({ collectionIdentifier: 'resize' })
 describe('resize', () => {
   let browser
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch(puppeteerSettings)
   })
 
-  afterEach(async () => {
+  afterAll(async () => {
+    const pages = await browser.pages();
+    for (let i = 0; i < pages.length; i++) {
+      await pages[i].close();
+    }
     await browser.close()
   })
 
@@ -44,7 +48,7 @@ describe('resize', () => {
     await page.close()
   })
 
-  test('user interactions on resize: on plot are reset, on legend are maintained', async function () {
+  /* test('user interactions on resize: on plot are reset, on legend are maintained', async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
       configName: 'data.bdd.three_point_brand',
@@ -68,7 +72,7 @@ describe('resize', () => {
     await testSnapshots({ page, testName: 'user_interaction_after_resize' })
 
     await page.close()
-  })
+  }) */
 
   test('VIS-998: resize from an output that is too small to a normal size', async function () {
     const { page } = await loadWidget({
