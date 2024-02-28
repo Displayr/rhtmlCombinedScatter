@@ -100,7 +100,6 @@ if (
   drawScatterLabelLayer (plotly_chart_layout, config) {
     d3.select('.scatterlabellayer').remove()
     const plot_area = d3.select(this.rootElement).select('.draglayer')
-    const plot_bbox = plot_area.node().getBBox()
 
     const plot_width = plotly_chart_layout.xaxis._length
     const plot_height = plotly_chart_layout.yaxis._length
