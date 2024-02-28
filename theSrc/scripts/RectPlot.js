@@ -236,15 +236,15 @@ class RectPlot {
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
     return this.drawLabsAndPlot()
-      //.then(() => this.drawLegend())
-      //.then(() => this.drawLabsAndPlot())
-      /*.then(() => {
+      // .then(() => this.drawLegend())
+      // .then(() => this.drawLabsAndPlot())
+      /* .then(() => {
 
         // if you remove this then the life expectancy bubble plot will not have the legendLabels in the legend. It will only have the groups
         if (this.data.legendRequiresRedraw) {
           return this.drawLegend()
         }
-      })*/
+      }) */
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
         debugMsg.draw(this.data.lab)
