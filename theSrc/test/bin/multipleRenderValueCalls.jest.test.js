@@ -43,7 +43,7 @@ describe('multiple render tests', () => {
     await testSnapshots({ page, testName: 'initial' })
 
     await page.evaluate(() => { document.querySelector('.example-0 .rerender-config').value = '' })
-    // await page.type('.example-0 .rerender-config', newConfig, { delay: 0 })
+    await page.type('.example-0 .rerender-config', newConfig, { delay: 0 })
     await page.click('.rerender-button')
 
     await page.waitForFunction(selectorString => {
