@@ -10,19 +10,12 @@ import TrendLine from './TrendLine'
 import DragUtils from './utils/DragUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
-import TooltipUtils from './utils/TooltipUtils'
 import LabelPlacement from './LabelPlacement'
 import LegendSettings from './LegendSettings'
 import Legend from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
-import Title from './Title'
-import Subtitle from './Subtitle'
-import Footer from './Footer'
-import PlotAxisLabels from './PlotAxisLabels'
-import PlotAxis from './PlotAxis'
 import ResetButton from './ResetButton'
-import AxisTitle from './AxisTitle'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 const DEBUG_ADD_BBOX_TO_IMG = false
@@ -130,9 +123,6 @@ class RectPlot {
       logoScale: config.labelsLogoScale,
     }
 
-    this.xTitle = new AxisTitle(config.xTitle, config.xTitleFontColor, config.xTitleFontSize, config.xTitleFontFamily, 5, 1)
-    this.yTitle = new AxisTitle(config.yTitle, config.yTitleFontColor, config.yTitleFontSize, config.yTitleFontFamily, 0, 2)
-
     // TODO convert to object signature
     this.legendSettings = new LegendSettings(
       config.legendShow,
@@ -169,12 +159,6 @@ class RectPlot {
       ymin: config.yBoundsMinimum,
       ymax: config.yBoundsMaximum,
     }
-
-    const hasSubtitle = config.subtitle !== '' && _.isString(config.subtitle)
-    this.title = new Title(config.title, config.titleFontColor, config.titleFontSize, config.titleFontFamily, this.axisSettings.x.fontSize, this.padding.vertical, hasSubtitle)
-    this.subtitle = new Subtitle(config.subtitle, config.subtitleFontColor, config.subtitleFontSize, config.subtitleFontFamily)
-    this.subtitle.setY(this.title.getSubtitleY())
-    this.footer = new Footer(config.footer, config.footerFontColor, config.footerFontSize, config.footerFontFamily, this.height, this.padding.vertical)
 
     this.grid = config.grid
     this.origin = config.origin
@@ -227,19 +211,11 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    const initTitleX = this.width / 2
-    this.title.setX(initTitleX)
-    this.subtitle.setX(initTitleX)
-    this.footer.setX(initTitleX)
     this.legend = new Legend(this.legendSettings, this.axisSettings)
 
-    this.vb = new ViewBox(width, height, this.padding, this.legend, this.title, this.subtitle, this.footer,
-      this.labelsFont, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions, this.xTitle, this.yTitle)
+    this.vb = new ViewBox(width, height, this.padding, this.legend, this.labelsFont, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions)
 
     this.legend.setX(this.vb.getLegendX())
-    this.title.setX(this.vb.getTitleX())
-    this.subtitle.setX(this.vb.getTitleX())
-    this.footer.setX(this.vb.getTitleX())
 
     this.data = new PlotData(this.X,
                          this.Y,
@@ -268,15 +244,16 @@ class RectPlot {
     // Tell visual tests widget as not ready
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
-    return this.drawDimensionMarkers()
-      .then(() => this.drawLegend())
-      .then(() => this.drawLabsAndPlot())
-      .then(() => {
+    return this.drawLabsAndPlot()
+      //.then(() => this.drawLegend())
+      //.then(() => this.drawLabsAndPlot())
+      /*.then(() => {
+
         // if you remove this then the life expectancy bubble plot will not have the legendLabels in the legend. It will only have the groups
         if (this.data.legendRequiresRedraw) {
           return this.drawLegend()
         }
-      })
+      })*/
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
         debugMsg.draw(this.data.lab)
@@ -311,22 +288,13 @@ class RectPlot {
     const eqGroup = _.isEqual(this.group, otherPlot.group)
     const eqLabel = _.isEqual(this.label, otherPlot.label)
     const eqLabelAlt = _.isEqual(this.labelAlt, otherPlot.labelAlt)
-    const eqTitle = _.isEqual(this.title.text, otherPlot.title)
-    const eqXTitle = _.isEqual(this.xTitle.getText(), otherPlot.xTitle)
-    const eqYTitle = _.isEqual(this.yTitle.getText(), otherPlot.yTitle)
-    const eqZTitle = _.isEqual(this.zTitle, otherPlot.zTitle)
-    const listOfComparisons = [eqX, eqY, eqZ, eqGroup, eqLabel, eqLabelAlt, eqTitle, eqXTitle, eqYTitle, eqZTitle]
+    const listOfComparisons = [eqX, eqY, eqZ, eqGroup, eqLabel, eqLabelAlt]
     return _.every(listOfComparisons, e => _.isEqual(e, true))
   }
 
   drawLabsAndPlot () {
     this.data.normalizeData()
     return this.data.getPtsAndLabs('RectPlot.drawLabsAndPlot').then(() => {
-      const titlesX = this.vb.x + (this.vb.width / 2)
-      this.title.setX(titlesX)
-      this.subtitle.setX(titlesX)
-      this.footer.setX(titlesX)
-
       if (!this.state.isLegendPtsSynced(this.data.outsidePlotPtsId)) {
         _.map(this.state.getLegendPts(), pt => {
           if (!_.includes(this.data.outsidePlotPtsId, pt)) {
@@ -346,9 +314,6 @@ class RectPlot {
       this.data.syncHiddenLabels(this.state.hiddenLabelPts)
     }).then(() => {
       try {
-        this.title.drawWith(this.pltUniqueId, this.svg)
-        this.subtitle.drawWith(this.pltUniqueId, this.svg)
-        this.footer.drawWith(this.pltUniqueId, this.svg)
         this.drawResetButton()
 
         this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb)
@@ -358,11 +323,9 @@ class RectPlot {
 
         // Draw in the following order so that label images (logos) are under
         // anchor markers, which in turn are under text labels
-        this.drawAnc().then(() => {
-          this.drawLabelImages()
-          this.drawLabs()
-          this.placeLabels()
-        }).then(() => {
+        this.drawLabelImages()
+        this.drawLabs()
+        this.placeLabels().then(() => {
           if (this.trendLines.show) {
             this.drawTrendLines()
           } else {
@@ -370,10 +333,6 @@ class RectPlot {
           }
           this.drawDraggedMarkers()
         })
-
-        if (this.plotBorder.show) { this.vb.drawBorderWith(this.svg, this.plotBorder) }
-        this.axisLabels = new PlotAxisLabels(this.vb, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions, this.xTitle, this.yTitle, this.padding)
-        this.axisLabels.drawWith(this.pltUniqueId, this.svg)
       } catch (error) {
         console.log(error)
       }
@@ -383,65 +342,15 @@ class RectPlot {
   drawResetButton () {
     if (this.showResetButton) {
       this.resetButton = new ResetButton(this)
-      this.resetButton.drawWith(this.svg, this.width, this.height, this.title, this.state)
+      this.resetButton.drawWith(this.svg, this.width, this.height, this.state)
     }
-  }
-
-  drawDimensionMarkers () {
-    return new Promise((function (resolve, reject) {
-      this.axis = new PlotAxis(this.axisSettings, this.data, this.vb)
-
-      if (this.grid) {
-        this.axis.drawGridOriginWith(this.svg, this.origin)
-        this.axis.drawGridLinesWith(this.svg)
-      } else if (!this.grid && this.origin) {
-        this.axis.drawGridOriginWith(this.svg, this.origin)
-      }
-
-      if (this.axisSettings.showX || this.axisSettings.showY) {
-        this.axis.drawAxisLeaderWith(this.svg, this.origin, this.grid)
-        const markerLabels = this.svg.selectAll('.dim-marker-label')
-
-        // Figure out the max width of the yaxis dimensional labels
-        const initAxisTextRowWidth = this.axisSettings.textDimensions.rowMaxWidth
-        const initAxisTextColWidth = this.axisSettings.textDimensions.colMaxWidth
-        const initAxisTextRowHeight = this.axisSettings.textDimensions.rowMaxHeight
-        const initAxisTextColHeight = this.axisSettings.textDimensions.colMaxHeight
-        for (let i = 0; i < markerLabels[0].length; i++) {
-          const markerLabel = markerLabels[0][i]
-          const labelType = d3.select(markerLabel).attr('type')
-          const bb = markerLabel.getBBox()
-          if ((this.axisSettings.textDimensions.rowMaxWidth < bb.width) && (labelType === 'y')) { this.axisSettings.textDimensions.rowMaxWidth = bb.width }
-          if ((this.axisSettings.textDimensions.colMaxWidth < bb.width) && (labelType === 'x')) { this.axisSettings.textDimensions.colMaxWidth = bb.width }
-          if ((this.axisSettings.textDimensions.rowMaxHeight < bb.height) && (labelType === 'y')) { this.axisSettings.textDimensions.rowMaxHeight = bb.height }
-          if ((this.axisSettings.textDimensions.colMaxHeight < bb.height) && (labelType === 'x')) { this.axisSettings.textDimensions.colMaxHeight = bb.height }
-
-          if (this.width < (bb.x + bb.width)) {
-            this.axisSettings.textDimensions.rightPadding = bb.width / 2
-          }
-        }
-
-        if ((initAxisTextRowWidth !== this.axisSettings.textDimensions.rowMaxWidth) ||
-          (initAxisTextColWidth !== this.axisSettings.textDimensions.colMaxWidth) ||
-          (initAxisTextRowHeight !== this.axisSettings.textDimensions.rowMaxHeight) ||
-          (initAxisTextColHeight !== this.axisSettings.textDimensions.colMaxHeight)) {
-          this.setDim(this.svg, this.width, this.height)
-          this.data.revertMinMax()
-          const error = new Error('axis marker out of bound')
-          error.retry = true
-          return reject(error)
-        }
-      }
-
-      return resolve()
-    }.bind(this)))
   }
 
   drawLegend () {
     return new Promise((resolve, reject) => {
       this.data.setLegend()
       if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
-        this.legend.drawBubblesWith(this.svg, this.axisSettings)
+        this.legend.drawBubblesWith(this.svg)
         this.legend.drawBubblesLabelsWith(this.svg)
         this.legend.drawBubblesTitleWith(this.svg)
       }
@@ -466,44 +375,10 @@ class RectPlot {
     })
   }
 
-  drawAnc () {
-    return new Promise(function (resolve, reject) {
-      let rect = this
-      this.svg.selectAll('.anc').remove()
-      const anc = this.svg.selectAll('.anc')
-               .data(this.data.pts)
-               .enter()
-               .append('circle')
-               .attr('class', 'anc')
-               .attr('id', d => `anc-${d.id}`)
-               .attr('cx', d => d.x)
-               .attr('cy', d => d.y)
-               .attr('fill', d => d.color)
-               .attr('fill-opacity', d => d.fillOpacity)
-               .attr('r', (d) => {
-                 if (this.trendLines.show) {
-                   return this.trendLines.pointSize
-                 } else {
-                   return d.r
-                 }
-               })
-               .style('cursor', 'pointer')
-               .on('click', function (d) {
-                    const hide = rect.data.toggleLabelShow(d.id)
-                    rect.state.updateHiddenLabelPt(d.id, hide)
-                    rect.drawLinks()
-                    rect.drawLabs()
-                })
-      TooltipUtils.appendTooltips(anc, this.Z, this.axisSettings, this.tooltipText)
-      // Clip paths used to crop bubbles if they expand beyond the plot's borders
-      if (Utils.isArrOfNums(this.Z) && this.plotBorder.show) {
-        this.svg.selectAll('clipPath').remove()
-        SvgUtils.clipBubbleIfOutsidePlotArea(this.svg, this.data.pts, this.vb, this.pltUniqueId)
-      }
-      resolve()
-    }.bind(this))
-  }
-
+  /**
+   * This draws the marker label (index starting from 1) and the line connecting the marker label to the marker.
+   * This does not draw the label to the side of the plot area (that is part of the legend).
+   */
   drawDraggedMarkers () {
     this.svg.selectAll('.marker').remove()
     this.svg.selectAll('.marker')

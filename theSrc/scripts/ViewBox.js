@@ -6,25 +6,17 @@ class ViewBox {
                height,
                padding,
                legend,
-               title,
-               subtitle,
-               footer,
                labelsFont,
                axisLeaderLineLength,
-               axisDimensionText,
-               xTitle,
-               yTitle) {
+               axisDimensionText) {
     this.svgWidth = width
     this.svgHeight = height
 
-    const titleAndSubtitleHeight = title.getHeight() + subtitle.getHeight()
-    const titleAndSubtitleAndFooterHeight = title.getHeight() + subtitle.getHeight() + footer.getHeight()
+    this.setWidth(width - legend.getWidth() - (padding.horizontal * 3) - axisLeaderLineLength - axisDimensionText.rowMaxWidth - axisDimensionText.rightPadding)
+    this.setHeight(height - (padding.vertical * 2) - axisDimensionText.colMaxHeight - axisLeaderLineLength )
 
-    this.setWidth(width - legend.getWidth() - (padding.horizontal * 3) - axisLeaderLineLength - axisDimensionText.rowMaxWidth - yTitle.getHeight() - axisDimensionText.rightPadding)
-    this.setHeight(height - (padding.vertical * 2) - titleAndSubtitleAndFooterHeight - axisDimensionText.colMaxHeight - xTitle.getHeight() - axisLeaderLineLength - xTitle.getTopPadding())
-
-    this.x = (padding.horizontal * 2) + axisDimensionText.rowMaxWidth + axisLeaderLineLength + yTitle.getHeight()
-    this.y = padding.vertical + titleAndSubtitleHeight
+    this.x = (padding.horizontal * 2) + axisDimensionText.rowMaxWidth + axisLeaderLineLength
+    this.y = padding.vertical
 
     this.labelFontSize = labelsFont.size
     this.labelSmallFontSize = labelsFont.size * 0.75
@@ -54,23 +46,6 @@ class ViewBox {
 
   getLegendX () {
     return this.x + this.width
-  }
-
-  getTitleX () {
-    return this.x + (this.width / 2)
-  }
-
-  drawBorderWith (svg, plotBorderSettings) {
-    svg.selectAll('.plot-viewbox').remove()
-    svg.append('rect')
-       .attr('class', 'plot-viewbox')
-       .attr('x', this.x)
-       .attr('y', this.y)
-       .attr('width', this.width)
-       .attr('height', this.height)
-       .attr('fill', 'none')
-       .attr('stroke', plotBorderSettings.color)
-       .attr('stroke-width', plotBorderSettings.width)
   }
 }
 

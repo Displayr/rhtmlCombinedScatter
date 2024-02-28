@@ -275,7 +275,7 @@ class Legend {
     }
   }
 
-  drawBubblesWith (svg, axisSettings) {
+  drawBubblesWith (svg) {
     svg.selectAll('.legend-bubbles').remove()
     svg.selectAll('.legend-bubbles')
        .data(this.getBubbles())
