@@ -19,17 +19,12 @@ const loadWidget = async ({
   rerenderControls,
   height = 600,
 }) => {
-  console.log('creating new page')
   const page = await browser.newPage()
   const url = getExampleUrl({ configName, stateName, rerenderControls, width, height })
-  console.log('going to url: ' + url)
   const scatterPlot = new ScatterPlotPage(page)
-  console.log('creating new scatterplot page')
   await page.goto(url)
-  console.log('waiting for scatterplot to load') 
   await waitForScatterplotToLoad({ page })
 
   return { page, scatterPlot }
 }
-
 module.exports = loadWidget
