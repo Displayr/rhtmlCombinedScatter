@@ -45,7 +45,6 @@ class ViewBox {
     return this.x + this.width
   }
 
-
   // drawBorderWith (svg, plotBorderSettings) {
   //   svg.selectAll('.plot-viewbox').remove()
   //   svg.append('rect')
