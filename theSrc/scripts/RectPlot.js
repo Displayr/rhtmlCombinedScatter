@@ -231,7 +231,7 @@ class RectPlot {
     this.drawFailureCount = 0
   }
 
-  draw () {
+  async draw () {
     // Tell visual tests widget as not ready
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
