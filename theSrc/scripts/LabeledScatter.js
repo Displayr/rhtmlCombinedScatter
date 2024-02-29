@@ -193,14 +193,19 @@ if (
   }
 
   addMarkerClickHandler () {
+    // nsewdrag is an SVG rect element created by plotly covering the entire plotting area.
+    // It is used by plotly to trigger hover events for marker tooltips.
+    // We add the onclick handler to nsewdrag instead of the markers because if we added it to the markers,
+    // we would have to set pointerevents to "all" for the markers and tooltips would no longer appear
+    // when hovering directly above markers as they are drawn on top of nsewdrag.
     const el = d3.select(this.rootElement).select('.nsewdrag');
     el[0][0].onclick = ((e) => {
       const markers = d3.select(this.rootElement).selectAll('.point')[0]
       for (let i = 0; i < markers.length; i++) {
         const ctm = markers[i].getCTM()
-        const radius = 0.5 * markers[i].getBBox().width
-
-        if (Utils.euclideanDistance({x: ctm.e, y: ctm.f}, {x: e.offsetX, y: e.offsetY}) < radius) {
+        const marker_radius = 0.5 * markers[i].getBBox().width
+        const is_marker_clicked_on = Utils.euclideanDistance({x: ctm.e, y: ctm.f}, {x: e.offsetX, y: e.offsetY}) < marker_radius
+        if (is_marker_clicked_on) {
           const hide = this.plot.data.toggleLabelShow(i)
           this.plot.state.updateHiddenLabelPt(i, hide)
           this.plot.drawLinks()
