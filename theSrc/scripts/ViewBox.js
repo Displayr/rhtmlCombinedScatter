@@ -4,19 +4,16 @@ import InsufficientWidthError from './exceptions/InsufficientWidthError'
 class ViewBox {
   constructor (width,
                height,
-               padding,
                legend,
-               labelsFont,
-               axisLeaderLineLength,
-               axisDimensionText) {
+               labelsFont) {
     this.svgWidth = width
     this.svgHeight = height
 
-    this.setWidth(width - legend.getWidth() - (padding.horizontal * 3) - axisLeaderLineLength - axisDimensionText.rowMaxWidth - axisDimensionText.rightPadding)
-    this.setHeight(height - (padding.vertical * 2) - axisDimensionText.colMaxHeight - axisLeaderLineLength )
+    this.setWidth(width)
+    this.setHeight(height)
 
-    this.x = (padding.horizontal * 2) + axisDimensionText.rowMaxWidth + axisLeaderLineLength
-    this.y = padding.vertical
+    this.x = 0
+    this.y = 0
 
     this.labelFontSize = labelsFont.size
     this.labelSmallFontSize = labelsFont.size * 0.75
@@ -47,6 +44,19 @@ class ViewBox {
   getLegendX () {
     return this.x + this.width
   }
+
+  // drawBorderWith (svg, plotBorderSettings) {
+  //   svg.selectAll('.plot-viewbox').remove()
+  //   svg.append('rect')
+  //      .attr('class', 'plot-viewbox')
+  //      .attr('x', this.x)
+  //      .attr('y', this.y)
+  //      .attr('width', this.width)
+  //      .attr('height', this.height)
+  //      .attr('fill', 'none')
+  //      .attr('stroke', plotBorderSettings.color)
+  //      .attr('stroke-width', plotBorderSettings.width)
+  // }
 }
 
 module.exports = ViewBox

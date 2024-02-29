@@ -1,6 +1,5 @@
 
 import _ from 'lodash'
-import d3 from 'd3'
 import 'babel-polyfill'
 import md5 from 'md5'
 import autoBind from 'es6-autobind'
@@ -8,7 +7,6 @@ import Links from './Links'
 import PlotData from './PlotData'
 import TrendLine from './TrendLine'
 import DragUtils from './utils/DragUtils'
-import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
 import LabelPlacement from './LabelPlacement'
 import LegendSettings from './LegendSettings'
@@ -87,7 +85,6 @@ class RectPlot {
         colMaxHeight: 0,
         rightPadding: 0, // Set later, for when axis markers labels protrude (VIS-146)
       },
-      leaderLineLength: 5,
       x: {
         fontFamily: config.xAxisFontFamily,
         fontSize: config.xAxisFontSize,
@@ -145,12 +142,6 @@ class RectPlot {
       show: config.trendLines,
       lineThickness: config.trendLinesLineThickness,
       pointSize: config.trendLinesPointSize,
-    }
-
-    // TODO configure
-    this.padding = {
-      vertical: 5,
-      horizontal: 10,
     }
 
     this.bounds = {
@@ -213,7 +204,7 @@ class RectPlot {
     this.height = height
     this.legend = new Legend(this.legendSettings, this.axisSettings)
 
-    this.vb = new ViewBox(width, height, this.padding, this.legend, this.labelsFont, this.axisSettings.leaderLineLength, this.axisSettings.textDimensions)
+    this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
 
     this.legend.setX(this.vb.getLegendX())
 
@@ -245,15 +236,15 @@ class RectPlot {
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
     return this.drawLabsAndPlot()
-      //.then(() => this.drawLegend())
-      //.then(() => this.drawLabsAndPlot())
-      /*.then(() => {
+      // .then(() => this.drawLegend())
+      // .then(() => this.drawLabsAndPlot())
+      /* .then(() => {
 
         // if you remove this then the life expectancy bubble plot will not have the legendLabels in the legend. It will only have the groups
         if (this.data.legendRequiresRedraw) {
           return this.drawLegend()
         }
-      })*/
+      }) */
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
         debugMsg.draw(this.data.lab)
@@ -333,6 +324,8 @@ class RectPlot {
           }
           this.drawDraggedMarkers()
         })
+
+        // this.vb.drawBorderWith(this.svg, this.plotBorder)
       } catch (error) {
         console.log(error)
       }

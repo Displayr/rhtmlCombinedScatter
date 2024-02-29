@@ -20,9 +20,9 @@ describe('resize', () => {
   })
 
   afterAll(async () => {
-    const pages = await browser.pages();
+    const pages = await browser.pages()
     for (let i = 0; i < pages.length; i++) {
-      await pages[i].close();
+      await pages[i].close()
     }
     await browser.close()
   })
