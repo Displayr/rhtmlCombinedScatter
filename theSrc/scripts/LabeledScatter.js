@@ -6,6 +6,7 @@ import DisplayError from './DisplayError'
 import Plotly from 'plotly.js-dist-min'
 import RectPlot from './RectPlot'
 import State from './State'
+import Utils from './utils/Utils'
 import 'babel-polyfill'
 
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
@@ -80,10 +81,12 @@ class LabeledScatter {
       const plot_config = { displayModeBar: false, editable: false }
 
     const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-    this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
+    await this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
     plotlyChart.on('plotly_afterplot', () => {
       this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
     })
+
+    this.addMarkerClickHandler()
 } catch (err) {
 if (
   err.type === InsufficientHeightError.type ||
@@ -97,7 +100,7 @@ if (
     }
   }
 
-  drawScatterLabelLayer (plotly_chart_layout, config) {
+  async drawScatterLabelLayer (plotly_chart_layout, config) {
     d3.select('.scatterlabellayer').remove()
     const plot_area = d3.select(this.rootElement).select('.draglayer')
 
@@ -132,7 +135,7 @@ if (
     config.width = plot_width
     config.height = plot_height
     this.plot = new RectPlot({ config, stateObj: this.stateObj, svg })
-    this.plot.draw()
+    await this.plot.draw()
   }
 
   resize (el, width, height) {
@@ -187,6 +190,30 @@ if (
     }
 
     return this.resizeDelayPromise
+  }
+
+  addMarkerClickHandler () {
+    // nsewdrag is an SVG rect element created by plotly covering the entire plotting area.
+    // It is used by plotly to trigger hover events for marker tooltips.
+    // We add the onclick handler to nsewdrag instead of the markers because if we added it to the markers,
+    // we would have to set pointerevents to "all" for the markers and tooltips would no longer appear
+    // when hovering directly above markers as they are drawn on top of nsewdrag.
+    const el = d3.select(this.rootElement).select('.nsewdrag');
+    el[0][0].onclick = ((e) => {
+      const markers = d3.select(this.rootElement).selectAll('.point')[0]
+      for (let i = 0; i < markers.length; i++) {
+        const ctm = markers[i].getCTM()
+        const marker_radius = 0.5 * markers[i].getBBox().width
+        const is_marker_clicked_on = Utils.euclideanDistance({x: ctm.e, y: ctm.f}, {x: e.offsetX, y: e.offsetY}) < marker_radius
+        if (is_marker_clicked_on) {
+          const hide = this.plot.data.toggleLabelShow(i)
+          this.plot.state.updateHiddenLabelPt(i, hide)
+          this.plot.drawLinks()
+          this.plot.drawLabs()
+          break
+        }
+      }
+    })
   }
 }
 
