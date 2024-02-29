@@ -410,6 +410,9 @@ class PlotData {
   toggleLabelShow (id) {
     const hidden = _.includes(this.hiddenLabelsId, id)
     const index = this.lab.findIndex(p => p.id === Number(id))
+    if (index === -1) {
+      return
+    }
     if (hidden) {
         _.pull(this.hiddenLabelsId, id)
         this.pts[index].hideLabel = false
