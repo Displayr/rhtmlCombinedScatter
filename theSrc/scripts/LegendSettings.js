@@ -32,10 +32,6 @@ class LegendSettings {
     this.zSuffix = zSuffix
   }
 
-  isDisplayed (Z, legendPts) {
-    return this.showLegend() || (this.showBubblesInLegend() && Utils.isArrOfNums(Z)) || !(_.isNull(legendPts))
-  }
-
   showLegend () { return this.show }
   hasTitleText () { return this.title !== '' }
   getTitle () { return this.title }

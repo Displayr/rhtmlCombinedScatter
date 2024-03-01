@@ -186,39 +186,6 @@ class Legend {
     })
   }
 
-  resizedAfterLegendGroupsDrawn (vb, axisDimensionText) {
-    this.vb = vb
-    const initWidth = vb.width
-
-    const totalLegendItems = this.legendSettings.showLegend() ? this.getNumGroups() + this.getNumPts() : this.getNumPts()
-    const legendGrpsTextMax = (this.getNumGroups() > 0) && this.legendSettings.showLegend() ? (_.maxBy(this.groups, e => e.width)).width : 0
-    const legendPtsTextMax = this.getNumPts() > 0 ? (_.maxBy(this.pts, e => e.width)).width : 0
-
-    const maxTextWidth = _.max([legendGrpsTextMax, legendPtsTextMax])
-
-    const spacingAroundMaxTextWidth = this.getSpacingAroundMaxTextWidth()
-    const bubbleLeftRightPadding = this.getBubbleLeftRightPadding()
-
-    this.setCols(Math.ceil(((totalLegendItems) * this.getHeightOfRow()) / this.height))
-    this.setWidth((maxTextWidth * this.getCols()) + spacingAroundMaxTextWidth + (this.getPaddingMid() * (this.getCols() - 1)))
-
-    if (this.legendSettings.showBubblesInLegend()) {
-      const bubbleTitleWidth = this.getBubbleTitleWidth()
-      this.setWidth(_.max([this.width, bubbleTitleWidth + bubbleLeftRightPadding,
-        this.getBubblesMaxWidth() + bubbleLeftRightPadding]))
-    } else {
-      this.setWidth(this.width)
-    }
-
-    this.setColSpace(_.min([maxTextWidth, this.getMaxTextWidth()]))
-
-    vb.setWidth(vb.svgWidth - this.width - vb.x - axisDimensionText.rowMaxWidth)
-    this.setX(vb.x + vb.width)
-
-    const isNewWidthSignficantlyDifferent = Math.abs(initWidth - vb.width) > 0.1
-    return isNewWidthSignficantlyDifferent
-  }
-
   getMaxTextWidth () {
     return (this.maxWidth - (this.getPaddingLeft() + this.getPaddingRight() + this.getPaddingMid() * (this.getCols() - 1))) / this.getCols()
   }

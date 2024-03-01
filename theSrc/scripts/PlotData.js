@@ -345,7 +345,7 @@ class PlotData {
           // If pt has been already condensed
           if (_.includes((_.map(this.outsidePlotCondensedPts, e => e.dataId)), i)) {
             const pt = _.find(this.outsidePlotCondensedPts, e => e.dataId === i)
-            label = pt.markerId + 1
+            label = (pt.markerId + 1).toString()
             fontSize = this.vb.labelSmallFontSize
             url = ''
             width = null

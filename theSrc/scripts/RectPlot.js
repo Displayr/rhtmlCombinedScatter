@@ -19,7 +19,7 @@ import DataTypeEnum from './utils/DataTypeEnum'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg } = {}) {
+  constructor ({ config, stateObj, svg, reset } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -61,6 +61,7 @@ class RectPlot {
     this.label = config.label
     this.labelAlt = config.labelAlt
     this.svg = svg
+    this.reset = reset
     this.zTitle = config.zTitle
     this.colors = config.colors
     this.transparency = config.transparency
@@ -235,16 +236,7 @@ class RectPlot {
     // Tell visual tests widget as not ready
     this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
 
-    return this.drawLabsAndPlot()
-      // .then(() => this.drawLegend())
-      // .then(() => this.drawLabsAndPlot())
-      /* .then(() => {
-
-        // if you remove this then the life expectancy bubble plot will not have the legendLabels in the legend. It will only have the groups
-        if (this.data.legendRequiresRedraw) {
-          return this.drawLegend()
-        }
-      }) */
+    return this.drawLabsAndPlot().then(() => this.drawLegend())
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
         debugMsg.draw(this.data.lab)
@@ -340,30 +332,9 @@ class RectPlot {
   }
 
   drawLegend () {
-    return new Promise((resolve, reject) => {
-      this.data.setLegend()
-      if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
-        this.legend.drawBubblesWith(this.svg)
-        this.legend.drawBubblesLabelsWith(this.svg)
-        this.legend.drawBubblesTitleWith(this.svg)
-      }
-
+    return new Promise((resolve) => {
       const drag = DragUtils.getLegendLabelDragAndDrop(this, this.data)
       this.legend.drawDraggedPtsTextWith(this.svg, drag)
-
-      if (this.legendSettings.showLegend()) {
-        this.legend.drawGroupsTextWith(this.svg)
-        this.legend.drawGroupsPts(this.svg)
-      }
-
-      if (this.legendSettings.isDisplayed(this.Z, this.data.legendPts)) {
-        if (this.legend.resizedAfterLegendGroupsDrawn(this.data.vb, this.axisSettings.textDimensions)) {
-          this.data.revertMinMax()
-          const error = new Error('drawLegend Failed')
-          error.retry = true
-          return reject(error)
-        }
-      }
       return resolve()
     })
   }
@@ -402,22 +373,7 @@ class RectPlot {
   }
 
   resetPlotAfterDragEvent () {
-    const plotElems = [
-      '.plot-viewbox',
-      '.origin',
-      '.dim-marker',
-      '.dim-marker-leader',
-      '.dim-marker-label',
-      '.axis-label',
-      '.legend-pts',
-      '.legend-text',
-      '.anc',
-      '.link',
-    ]
-    _.forEach(plotElems, (elem, i) => {
-      this.svg.selectAll(elem).remove()
-    })
-    return this.draw()
+    return this.reset()
   }
 
   drawLabs () {

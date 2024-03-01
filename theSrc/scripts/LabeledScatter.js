@@ -80,19 +80,23 @@ class LabeledScatter {
       }
       const plot_config = { displayModeBar: false, editable: false }
 
-    const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-    await this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
-    plotlyChart.on('plotly_afterplot', () => {
-      this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
-    })
+      if (this.stateObj.legendPts.length > 0) {
+        plot_layout.margin = { r: 0.2 * this.width }
+      }
 
-    this.addMarkerClickHandler()
-} catch (err) {
-if (
-  err.type === InsufficientHeightError.type ||
-  err.type === InsufficientWidthError.type
-    ) {
-      console.log(`caught expected error '${err.type}' and aborted rendering`)
+      const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
+        await this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
+      plotlyChart.on('plotly_afterplot', () => {
+        this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
+      })
+
+      this.addMarkerClickHandler()
+    } catch (err) {
+      if (
+        err.type === InsufficientHeightError.type ||
+        err.type === InsufficientWidthError.type
+          ) {
+        console.log(`caught expected error '${err.type}' and aborted rendering`)
         DisplayError.displayEmptyErrorContainer(this.rootElement)
       } else {
         throw err
@@ -111,7 +115,7 @@ if (
         .attr('class', 'scatterlabellayer')
         .attr('x', plotly_chart_layout.margin.l)
         .attr('y', plotly_chart_layout.margin.t)
-        .attr('width', plot_width)
+        .attr('width', this.width - plotly_chart_layout.margin.l)
         .attr('height', plot_height)
     config.yAxisFontColor = '#FF0000'
     config.xAxisFontColor = '#FF0000'
@@ -134,7 +138,8 @@ if (
     config.xBoundsMaximum = plotly_chart_layout.xaxis.range[1]
     config.width = plot_width
     config.height = plot_height
-    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg })
+
+    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw() })
     await this.plot.draw()
   }
 

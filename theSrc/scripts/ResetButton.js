@@ -16,8 +16,7 @@ class ResetButton {
       .text('Reset')
       .on('click', () => {
         state.resetStateLegendPtsAndPositionedLabs()
-        this.plot.data.resetPtsAndLabs(state.initialHiddenLabelPts())
-        this.plot.draw()
+        this.plot.reset()
       })
 
     svg.on('mouseover', () => { if (state.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
