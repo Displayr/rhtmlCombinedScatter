@@ -1,6 +1,5 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
-import Utils from './utils/Utils'
 
 class LegendSettings {
   constructor (show, showBubbles,

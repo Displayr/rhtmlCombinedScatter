@@ -294,40 +294,6 @@ class Legend {
     SvgUtils.setSvgBBoxWidthAndHeight(this.pts, svg.selectAll('.legend-dragged-pts-text'))
     _.map(legendPtsSvg[0], p => SvgUtils.svgTextEllipses(p, p.textContent, this.getMaxTextWidth()))
   }
-
-  drawGroupsTextWith (svg) {
-    svg.selectAll('.legend-groups-text').remove()
-    const legendGroupsSvg = svg.selectAll('.legend-groups-text')
-       .data(this.groups)
-       .enter()
-       .append('text')
-       .attr('class', 'legend-groups-text')
-       .attr('x', d => d.x)
-       .attr('y', d => d.y)
-       .attr('font-family', this.legendSettings.getFontFamily())
-       .attr('fill', this.legendSettings.getFontColor())
-       .attr('font-size', this.legendSettings.getFontSize())
-       .text(d => d.text)
-       .attr('text-anchor', d => d.anchor)
-    SvgUtils.setSvgBBoxWidthAndHeight(this.groups, svg.selectAll('.legend-groups-text'))
-    _.map(legendGroupsSvg[0], g => SvgUtils.svgTextEllipses(g, g.textContent, this.getMaxGroupTextWidth()))
-  }
-
-  drawGroupsPts (svg) {
-    svg.selectAll('.legend-groups-pts').remove()
-    svg.selectAll('.legend-groups-pts')
-       .data(this.groups)
-       .enter()
-       .append('circle')
-       .attr('class', 'legend-groups-pts')
-       .attr('cx', d => d.cx)
-       .attr('cy', d => d.cy)
-       .attr('r', d => d.r)
-       .attr('fill', d => d.color)
-       .attr('stroke', d => d.stroke)
-       .attr('stroke-opacity', d => d['stroke-opacity'])
-       .attr('fill-opacity', d => d.fillOpacity)
-  }
 }
 
 module.exports = Legend
