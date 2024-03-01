@@ -30,6 +30,7 @@ jobs:
             nvm install $node_version
             nvm use $node_version
             npm install
+            npm install github:Displayr/rhtmlBuildUtils#revert-dependabot
       # install zip - for easier download of snapshots
       - run:
           name: Install 7zip
@@ -41,6 +42,7 @@ jobs:
             - node_modules   
       - run:
           name: Run tests
+          no_output_timeout: 30m
           command: |
             npm run build
             npm run circleCITest
