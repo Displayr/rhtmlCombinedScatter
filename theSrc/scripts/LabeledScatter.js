@@ -2,6 +2,7 @@ import $ from 'jquery'
 import d3 from 'd3'
 import _ from 'lodash'
 import { buildConfig } from './buildConfig'
+import { createPlotlyData, createPlotlyLayout } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import Plotly from 'plotly.js-dist-min'
 import RectPlot from './RectPlot'
@@ -50,8 +51,8 @@ class LabeledScatter {
     $(this.rootElement).find('*').remove()
     d3.select(this.rootElement)
       .attr('class', 'plot-container rhtmlwidget-outer-svg')
-      .attr('width', this.width)
-      .attr('height', this.height)
+      .style('width', this.width + 'px')
+      .style('height', this.height + 'px')
 
     // Error checking
     DisplayError.isAxisValid(this.data.X, this.rootElement, 'Given X values is neither array of nums, dates, or strings!')
@@ -64,20 +65,8 @@ class LabeledScatter {
 
     const config = buildConfig(this.data, this.width, this.height)
     try {
-      const plot_data = []
-      plot_data.push({
-        x: this.data.X,
-        y: this.data.Y,
-        text: this.data.label,
-        name: 'Real',
-        type: 'scatter',
-        mode: 'markers',
-        cliponaxis: 'false',
-      })
-      const plot_layout = {
-        xaxis: { color: '#0000FF', ticklen: 20 },
-        yaxis: { color: '#0000FF', ticklen: 20 },
-      }
+      const plot_data = createPlotlyData(this.data, config)
+      const plot_layout = createPlotlyLayout(config)
       const plot_config = { displayModeBar: false, editable: false }
 
     const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
@@ -113,21 +102,8 @@ if (
         .attr('y', plotly_chart_layout.margin.t)
         .attr('width', plot_width)
         .attr('height', plot_height)
-    config.yAxisFontColor = '#FF0000'
-    config.xAxisFontColor = '#FF0000'
-    config.axisFontColor = '#FF0000'
-    config.labelsFontColor = '#FF0000'
-    config.plotBorderColor = '#FF0000'
-    config.showXAxis = false
-    config.showYAxis = false
-    config.title = ''
-    config.xTitle = ''
-    config.yTitle = ''
-    config.subtitle = ''
-    config.footer = ''
     config.legendBubblesShow = false
     config.legendShow = false
-    config.colors[0] = '#FF0000'
     config.yBoundsMinimum = plotly_chart_layout.yaxis.range[0]
     config.yBoundsMaximum = plotly_chart_layout.yaxis.range[1]
     config.xBoundsMinimum = plotly_chart_layout.xaxis.range[0]
