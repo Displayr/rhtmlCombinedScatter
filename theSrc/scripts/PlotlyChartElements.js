@@ -2,12 +2,17 @@ import _ from 'lodash'
 import LegendUtils from './utils/LegendUtils'
 
 function createPlotlyData (data, config) {
+    const indices = _.range(data.X.length)
+    const tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
+    let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
     let normZ
     let marker_opacity = config.transparency
     if (Array.isArray(data.Z)) {
         const maxZ = _.max(data.Z)
         normZ = LegendUtils.normalizeZValues(data.Z, maxZ).map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
         if (marker_opacity === null) marker_opacity = 0.4
+        const z_title = config.zTitle.length === 0 ? '' : config.zTitle + ': '
+        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${data.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
     const plot_data = []
@@ -16,7 +21,9 @@ function createPlotlyData (data, config) {
         plot_data.push({
             x: data.X,
             y: data.Y,
-            text: data.label,
+            text: tooltips,
+            hoverinfo: 'name+text',
+            hoverlabel: { font: { color: autoFontColor(config.color[0]) } },
             type: 'scatter',
             mode: 'markers',
             marker: {
@@ -29,7 +36,7 @@ function createPlotlyData (data, config) {
             cliponaxis: 'false',
         })
     } else {
-        const indices_by_group = _.groupBy(_.range(data.group.length), i => data.group[i])
+        const indices_by_group = _.groupBy(indices, i => data.group[i])
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
             const gname = group_names[g]
@@ -39,7 +46,9 @@ function createPlotlyData (data, config) {
             plot_data.push({
                 x: _.at(data.X, indices_by_group[gname]),
                 y: _.at(data.Y, indices_by_group[gname]),
-                text: _.at(data.label, indices_by_group[gname]),
+                text: _.at(tooltips, indices_by_group[gname]),
+                hoverinfo: 'name+text',
+                hoverlabel: { font: { color: autoFontColor(config.colors[g % config.colors.length]) } },
                 name: gname,
                 type: 'scatter',
                 mode: 'markers',
@@ -204,11 +213,11 @@ function createPlotlyLayout (config) {
         },
         hoverlabel: {
             namelength: -1, // prevents trace name truncating
-            // bordercolor: "transparent",
-            /* font: {
+            bordercolor: 'transparent',
+            font: {
                 family: config.tooltipFontFamily,
-                //size: config.tooltipFontSize
-            } */
+                size: config.tooltipFontSize
+            }
         },
         shapes: margin_lines
     }
@@ -218,6 +227,17 @@ function createPlotlyLayout (config) {
 function parseTickDistance (x) {
     if (x === undefined) return null
     return x
+}
+
+function autoFontColor (bg_color) {
+    let parts = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/i.exec(bg_color)
+    if (parts) {
+        parts.shift()
+        const [r, g, b] = parts.map((part) => parseInt(part, 16))
+        const luminosity = 0.299 * r + 0.587 * g + 0.114 * b
+        return luminosity > 126 ? '#2C2C2C' : '#FFFFFF'
+    }
+    return '#2C2C2C'
 }
 
 module.exports = {
