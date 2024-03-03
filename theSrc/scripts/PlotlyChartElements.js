@@ -3,7 +3,8 @@ import LegendUtils from './utils/LegendUtils'
 
 function createPlotlyData (data, config) {
     const indices = _.range(data.X.length)
-    const tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
+    let tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
+    if (tooltip_labels === undefined) tooltip_labels = indices.map(i => '')
     let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
     let normZ
     let marker_opacity = config.transparency
@@ -21,9 +22,10 @@ function createPlotlyData (data, config) {
         plot_data.push({
             x: data.X,
             y: data.Y,
+            name: '',
             text: tooltips,
             hoverinfo: 'name+text',
-            hoverlabel: { font: { color: autoFontColor(config.color[0]) } },
+            hoverlabel: { font: { color: autoFontColor(config.colors[0]) } },
             type: 'scatter',
             mode: 'markers',
             marker: {
