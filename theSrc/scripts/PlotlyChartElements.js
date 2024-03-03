@@ -67,55 +67,6 @@ function createPlotlyData (data, config) {
 }
 
 function createPlotlyLayout (config) {
-    const margin_lines = []
-    if (config.origin) {
-        margin_lines.push({
-            type: 'line',
-            layer: 'above',
-            line: { color: '#000', width: 1, dash: 'dot' },
-            x0: 0,
-            x1: 0,
-            xref: 'x',
-            y0: 0,
-            y1: 1,
-            yref: 'paper'
-        })
-        margin_lines.push({
-            type: 'line',
-            layer: 'above',
-            line: { color: '#000', width: 1, dash: 'dot' },
-            y0: 0,
-            y1: 0,
-            yref: 'y',
-            x0: 0,
-            x1: 1,
-            xref: 'paper'
-        })
-    }
-    if (config.plotBorderShow) {
-        margin_lines.push({
-            type: 'line',
-            layer: 'below',
-            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
-            y0: 1,
-            y1: 1,
-            yref: 'paper',
-            x0: 0,
-            x1: 1,
-            xref: 'paper'
-        })
-        margin_lines.push({
-            type: 'line',
-            layer: 'below',
-            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
-            y0: 0,
-            y1: 1,
-            yref: 'paper',
-            x0: 1,
-            x1: 1,
-            xref: 'paper'
-        })
-    }
     const plot_layout = {
         xaxis: {
             title: {
@@ -129,18 +80,18 @@ function createPlotlyLayout (config) {
             color: '#444',
             showgrid: config.grid,
             gridcolor: '#eee',
+            showticklabels: config.showXAxis,
             tickcolor: '#eee',
-            ticklen: config.showXAxis ? 5 : 0,
+            ticklen: 5,
             tickfont: {
                 family: config.xAxisFontFamily,
                 color: config.xAxisFontColor,
-                size: config.showXAxis ? config.xAxisFontSize : 0
+                size: config.xAxisFontSize
             },
             linecolor: config.plotBorderShow ? config.plotBorderColor : 'transparent',
             linewidth: 1,
             scaleratio: 1,
             scaleanchor: config.fixedAspectRatio ? 'y' : null,
-            rangemode: config.originAlign ? 'tozero' : 'normal',
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             automargin: true,
@@ -162,18 +113,18 @@ function createPlotlyLayout (config) {
             color: '#444',
             showgrid: config.grid,
             gridcolor: '#eee',
+            showticklabels: config.showYAxis,
             tickcolor: '#eee',
-            ticklen: config.showYAxis ? 5 : 0,
+            ticklen: 5,
             tickfont: {
                 family: config.yAxisFontFamily,
                 color: config.yAxisFontColor,
-                size: config.showYAxis ? config.yAxisFontSize : 0
+                size: config.yAxisFontSize
             },
             linecolor: config.plotBorderShow ? config.plotBorderColor : 'transparent',
             linewidth: 1,
             scaleratio: 1,
             scaleanchor: config.fixedAspectRatio ? 'x' : null,
-            rangemode: config.originAlign ? 'tozero' : 'normal',
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             range: [config.yBoundsMinimum, config.yBoundsMaximum],
@@ -181,17 +132,17 @@ function createPlotlyLayout (config) {
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
             automargin: true,
-            mirror: 'true',
             layer: 'below traces'
         },
         title: {
             text: config.title,
             font: {
                 family: config.titleFontFamily,
-                size: config.titleFontSize,
-                color: config.titleFontColor
+                color: config.titleFontColor,
+                size: config.titleFontSize
             },
-            automargin: true
+            xref: 'paper',
+            automargin: false // setting this to true stuffs up alignment
         },
         showlegend: config.legendShow,
         legend: {
@@ -205,11 +156,12 @@ function createPlotlyLayout (config) {
             y: 0.5,
             yanchor: 'middle',
         },
-        margin: { // may be overriden because automargin is true, but this makes defaults smaller
-            t: 20,
+        margin: {
+            t: 20 + (config.title.length ? config.titleFontSize * 1.25 : 0),
             b: 20,
             r: 60,
-            l: 80
+            l: 80,
+            automargin: true
         },
         hoverlabel: {
             namelength: -1, // prevents trace name truncating
@@ -219,9 +171,62 @@ function createPlotlyLayout (config) {
                 size: config.tooltipFontSize
             }
         },
-        shapes: margin_lines
+        shapes: addLines(config),
     }
     return plot_layout
+}
+
+function addLines (config) {
+    const lines = []
+    if (config.origin) {
+        lines.push({
+            type: 'line',
+            layer: 'above',
+            line: { color: '#000', width: 1, dash: 'dot' },
+            x0: 0,
+            x1: 0,
+            xref: 'x',
+            y0: 0,
+            y1: 1,
+            yref: 'paper'
+        })
+        lines.push({
+            type: 'line',
+            layer: 'above',
+            line: { color: '#000', width: 1, dash: 'dot' },
+            y0: 0,
+            y1: 0,
+            yref: 'y',
+            x0: 0,
+            x1: 1,
+            xref: 'paper'
+        })
+    }
+    if (config.plotBorderShow) {
+        lines.push({
+            type: 'line',
+            layer: 'below',
+            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
+            y0: 1,
+            y1: 1,
+            yref: 'paper',
+            x0: 0,
+            x1: 1,
+            xref: 'paper'
+        })
+        lines.push({
+            type: 'line',
+            layer: 'below',
+            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
+            y0: 0,
+            y1: 1,
+            yref: 'paper',
+            x0: 1,
+            x1: 1,
+            xref: 'paper'
+        })
+    }
+    return lines
 }
 
 function parseTickDistance (x) {
