@@ -72,7 +72,6 @@ class PlotData {
     this.hiddenLabelsId = []
     // this.legendPts = []
     this.outsidePlotCondensedPts = []
-    this.legendRequiresRedraw = false
     this.legendSettings = legendSettings
 
     if (this.X.length === this.Y.length) {
@@ -287,7 +286,9 @@ class PlotData {
       return (() => {
         _.forEach(this.outsideBoundsPtsId, (p, i) => {
           if (!_.includes(this.outsidePlotPtsId, p)) {
-            this.addElemToLegend(p)
+            const checkId = e => e.id === p
+            _.remove(this.pts, checkId)
+            _.remove(this.lab, checkId)
           }
         })
         this.setLegend()
@@ -355,7 +356,6 @@ class PlotData {
     this.outsidePlotPtsId.push(id)
     this.normalizeData()
     this.getPtsAndLabs('PlotData.addElemToLegend')
-    this.legendRequiresRedraw = true
   }
 
   removeLegendPtFromData (id) {
