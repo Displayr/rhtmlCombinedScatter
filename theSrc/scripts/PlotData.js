@@ -178,6 +178,21 @@ class PlotData {
       this.outsidePlotMarkersIter++
     })
 
+    // Remove pts that are outside plot if user bounds were set
+    this.outsideBoundsPtsId = []
+    if (_.some(this.bounds, b => Utils.isNum(b))) {
+      i = 0
+      while (i < this.origLen) {
+        if (!_.includes(this.outsideBoundsPtsId, i)) {
+          if ((this.X[i] < this.minX) || (this.X[i] > this.maxX) ||
+             (this.Y[i] < this.minY) || (this.Y[i] > this.maxY)) {
+            this.outsideBoundsPtsId.push(i)
+          }
+        }
+        i++
+      }
+    }
+
     i = 0
     return (() => {
       const result = []
@@ -270,6 +285,11 @@ class PlotData {
 
       // Remove pts outside plot because user bounds set
       return (() => {
+        _.forEach(this.outsideBoundsPtsId, (p, i) => {
+          if (!_.includes(this.outsidePlotPtsId, p)) {
+            this.addElemToLegend(p)
+          }
+        })
         this.setLegend()
       })()
     }).catch(err => console.log(err))
@@ -391,15 +411,17 @@ class PlotData {
         let bubbleRadiusMaxX = 0
 
         for (let i = 0; i < this.origLen; i++) {
-          const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
-          const idx = this.xLevels.indexOf(this.origX[i])
-          const bubbleRadiusMinXCandidate = bubbleRadius - idx * this.vb.width / nLevels
-          if (bubbleRadiusMinXCandidate > bubbleRadiusMinX) {
-            bubbleRadiusMinX = bubbleRadiusMinXCandidate
-          }
-          const bubbleRadiusMaxXCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.width / nLevels
-          if (bubbleRadiusMaxXCandidate > bubbleRadiusMaxX) {
-            bubbleRadiusMaxX = bubbleRadiusMaxXCandidate
+          if (!_.includes(this.outsideBoundsPtsId, i)) {
+            const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
+            const idx = this.xLevels.indexOf(this.origX[i])
+            const bubbleRadiusMinXCandidate = bubbleRadius - idx * this.vb.width / nLevels
+            if (bubbleRadiusMinXCandidate > bubbleRadiusMinX) {
+              bubbleRadiusMinX = bubbleRadiusMinXCandidate
+            }
+            const bubbleRadiusMaxXCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.width / nLevels
+            if (bubbleRadiusMaxXCandidate > bubbleRadiusMaxX) {
+              bubbleRadiusMaxX = bubbleRadiusMaxXCandidate
+            }
           }
         }
         this.ordinalMinXPaddingProportion = bubbleRadiusMinX / this.vb.width + extraBubblePaddingProportion
@@ -419,15 +441,17 @@ class PlotData {
         let bubbleRadiusMaxY = 0
 
         for (let i = 0; i < this.origLen; i++) {
-          const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
-          const idx = this.yLevels.indexOf(this.origY[i])
-          const bubbleRadiusMinYCandidate = bubbleRadius - idx * this.vb.height / nLevels
-          if (bubbleRadiusMinYCandidate > bubbleRadiusMinY) {
-            bubbleRadiusMinY = bubbleRadiusMinYCandidate
-          }
-          const bubbleRadiusMaxYCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.height / nLevels
-          if (bubbleRadiusMaxYCandidate > bubbleRadiusMaxY) {
-            bubbleRadiusMaxY = bubbleRadiusMaxYCandidate
+          if (!_.includes(this.outsideBoundsPtsId, i)) {
+            const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
+            const idx = this.yLevels.indexOf(this.origY[i])
+            const bubbleRadiusMinYCandidate = bubbleRadius - idx * this.vb.height / nLevels
+            if (bubbleRadiusMinYCandidate > bubbleRadiusMinY) {
+              bubbleRadiusMinY = bubbleRadiusMinYCandidate
+            }
+            const bubbleRadiusMaxYCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.height / nLevels
+            if (bubbleRadiusMaxYCandidate > bubbleRadiusMaxY) {
+              bubbleRadiusMaxY = bubbleRadiusMaxYCandidate
+            }
           }
         }
         this.ordinalMinYPaddingProportion = bubbleRadiusMinY / this.vb.height + extraBubblePaddingProportion
