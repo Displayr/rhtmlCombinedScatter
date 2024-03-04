@@ -83,6 +83,7 @@ class PlotData {
     } else {
       throw new Error('Inputs X and Y lengths do not match!')
     }
+    this.markerIndexToDataIndex = this.mapMarkerIndexToDataIndex()
   }
 
   calculateMinMax () {
@@ -329,6 +330,10 @@ class PlotData {
         (bot > (this.vb.y + this.vb.height)))
   }
 
+  toggleLabelShowFromMarkerIndex (index) {
+    this.toggleLabelShow(this.markerIndexToDataIndex[index])
+  }
+
   toggleLabelShow (id) {
     const hidden = _.includes(this.hiddenLabelsId, id)
     const index = this.lab.findIndex(p => p.id === Number(id))
@@ -345,6 +350,22 @@ class PlotData {
         this.lab[index].opacity = 0.0
     }
     return (this.pts[index].hideLabel)
+  }
+
+  mapMarkerIndexToDataIndex() {
+    if (!Array.isArray(this.group)) {
+      return Array(this.len).fill().map((element, index) => index)
+    }
+    const uniq_groups = _.uniq(this.group)
+    const result = []
+    for (const g of uniq_groups) {
+      for (let i = 0; i < this.group.length; i++) {
+        if (this.group[i] === g) {
+          result.push(i);
+        }
+      }
+    }
+    return result
   }
 
   addElemToLegend (id) {
