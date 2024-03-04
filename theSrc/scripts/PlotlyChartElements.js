@@ -79,19 +79,20 @@ function createPlotlyLayout (config) {
                     size: config.xTitleFontSize
                 }
             },
-            color: '#444',
             showgrid: config.grid,
-            gridcolor: '#eee',
+            gridcolor: config.xAxisGridColor,
+            griddash: config.xAxisGridDash,
+            gridwidth: config.xAxisGridWidth,
             showticklabels: config.showXAxis,
-            tickcolor: '#eee',
-            ticklen: 5,
+            tickcolor: config.xAxisTickColor,
+            ticklen: config.xAxisTickLength,
             tickfont: {
                 family: config.xAxisFontFamily,
                 color: config.xAxisFontColor,
                 size: config.xAxisFontSize
             },
-            linecolor: config.plotBorderShow ? config.plotBorderColor : 'transparent',
-            linewidth: 1,
+            linecolor: config.plotBorderShow ? config.xAxisLineColor : 'transparent',
+            linewidth: config.xAxisLineWidth,
             scaleratio: 1,
             scaleanchor: config.fixedAspectRatio ? 'y' : null,
             // draw zero line separately to ensure it sit on top layer
@@ -112,19 +113,20 @@ function createPlotlyLayout (config) {
                     size: config.yTitleFontSize
                 }
             },
-            color: '#444',
             showgrid: config.grid,
-            gridcolor: '#eee',
+            gridcolor: config.yAxisGridColor,
+            griddash: config.yAxisGridDash,
+            gridwidth: config.yAxisGridWidth,
             showticklabels: config.showYAxis,
-            tickcolor: '#eee',
-            ticklen: 5,
+            tickcolor: config.yAxisTickColor,
+            ticklen: config.yAxisTickLength,
             tickfont: {
                 family: config.yAxisFontFamily,
                 color: config.yAxisFontColor,
                 size: config.yAxisFontSize
             },
-            linecolor: config.plotBorderShow ? config.plotBorderColor : 'transparent',
-            linewidth: 1,
+            linecolor: config.plotBorderShow ? config.yAxisLineColor : 'transparent',
+            linewidth: config.yAxisLineWidth,
             scaleratio: 1,
             scaleanchor: config.fixedAspectRatio ? 'x' : null,
             // draw zero line separately to ensure it sit on top layer
@@ -144,7 +146,7 @@ function createPlotlyLayout (config) {
                 size: config.titleFontSize
             },
             xref: 'paper',
-            automargin: false // setting this to true stuffs up alignment
+            automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
         showlegend: config.legendShow,
         legend: {
@@ -159,10 +161,10 @@ function createPlotlyLayout (config) {
             yanchor: 'middle',
         },
         margin: {
-            t: 20 + (config.title.length ? config.titleFontSize * 1.25 : 0),
-            b: 20,
-            r: 60,
-            l: 80,
+            t: config.marginTop,
+            b: config.marginBottom,
+            r: config.marginRight,
+            l: config.marginLeft,
             automargin: true
         },
         hoverlabel: {
@@ -174,6 +176,8 @@ function createPlotlyLayout (config) {
             }
         },
         shapes: addLines(config),
+        paper_bgcolor: config.backgroundColor,
+        plot_bgcolor: config.plotAreaBackgroundColor,
     }
     return plot_layout
 }
@@ -184,7 +188,11 @@ function addLines (config) {
         lines.push({
             type: 'line',
             layer: 'above',
-            line: { color: '#000', width: 1, dash: 'dot' },
+            line: {
+                color: config.xAxisZeroLineColor,
+                dash: config.xAxisZeroLineType,
+                width: config.xAxisZeroLineWidth
+            },
             x0: 0,
             x1: 0,
             xref: 'x',
@@ -195,7 +203,11 @@ function addLines (config) {
         lines.push({
             type: 'line',
             layer: 'above',
-            line: { color: '#000', width: 1, dash: 'dot' },
+            line: {
+                color: config.yAxisZeroLineColor,
+                dash: config.yAxisZeroLineDash,
+                width: config.yAxisZeroLineWidth
+            },
             y0: 0,
             y1: 0,
             yref: 'y',
@@ -208,7 +220,7 @@ function addLines (config) {
         lines.push({
             type: 'line',
             layer: 'below',
-            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
+            line: { color: config.xAxisLineColor, width: config.xAxisLineWidth },
             y0: 1,
             y1: 1,
             yref: 'paper',
@@ -219,7 +231,7 @@ function addLines (config) {
         lines.push({
             type: 'line',
             layer: 'below',
-            line: { color: config.plotBorderColor, width: config.plotBorderWidth },
+            line: { color: config.yAxisLineColor, width: config.yAxisLineWidth },
             y0: 0,
             y1: 1,
             yref: 'paper',
