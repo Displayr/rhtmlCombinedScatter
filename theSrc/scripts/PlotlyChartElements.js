@@ -2,70 +2,65 @@ import _ from 'lodash'
 import LegendUtils from './utils/LegendUtils'
 
 function createPlotlyData (data, config) {
+    // Check for empty labels
     const indices = _.range(data.X.length)
     let tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
     if (tooltip_labels === undefined) tooltip_labels = indices.map(i => '')
     let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
+
+    // Check if this is a bubbleplot
     let normZ
     let marker_opacity = config.transparency
     if (Array.isArray(data.Z)) {
         const maxZ = _.max(data.Z)
-        normZ = LegendUtils.normalizeZValues(data.Z, maxZ).map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+        normZ = LegendUtils.normalizeZValues(data.Z, maxZ)
+            .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle.length === 0 ? '' : config.zTitle + ': '
         tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${data.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
+
     const plot_data = []
     if (!Array.isArray(data.group)) {
         const marker_size = data.Z === undefined ? config.pointRadius * 2 : normZ
-        plot_data.push({
-            x: data.X,
-            y: data.Y,
-            name: '',
-            text: tooltips,
-            hoverinfo: 'name+text',
-            hoverlabel: { font: { color: autoFontColor(config.colors[0]) } },
-            type: 'scatter',
-            mode: 'markers',
-            marker: {
-                color: config.colors[0],
-                size: marker_size,
-                sizemode: 'diameter',
-                opacity: marker_opacity,
-                outlinewidth: 0
-            },
-            cliponaxis: 'false',
-        })
+        plot_data.push(createScatterTrace(data.X, data.Y, ' ', marker_size, tooltips,
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else {
         const indices_by_group = _.groupBy(indices, i => data.group[i])
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
-            const gname = group_names[g]
-            const marker_size = normZ === undefined
-                ? config.pointRadius * 2
-                : _.at(normZ, indices_by_group[gname])
-            plot_data.push({
-                x: _.at(data.X, indices_by_group[gname]),
-                y: _.at(data.Y, indices_by_group[gname]),
-                text: _.at(tooltips, indices_by_group[gname]),
-                hoverinfo: 'name+text',
-                hoverlabel: { font: { color: autoFontColor(config.colors[g % config.colors.length]) } },
-                name: gname,
-                type: 'scatter',
-                mode: 'markers',
-                marker: {
-                    color: config.colors[g % config.colors.length],
-                    size: marker_size,
-                    sizemode: 'diameter',
-                    opacity: marker_opacity,
-                    line: { width: 0 },
-                },
-                cliponaxis: 'false',
-            })
+            const g_name = group_names[g]
+            const g_index = indices_by_group[g_name]
+            const marker_size = normZ === undefined ? config.pointRadius * 2 : _.at(normZ, g_index)
+            plot_data.push(createScatterTrace(_.at(data.X, g_index), _.at(data.Y, g_index),
+                _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
+                marker_opacity, config.pointBorderColor, config.pointBorderWidth))
         }
     }
     return plot_data
+}
+
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth) {
+    return {
+        x: X,
+        y: Y,
+        name: name,
+        text: tooltips,
+        hoverinfo: 'name+text',
+        hoverlabel: { font: { color: blackOrWhite(color) } },
+        type: 'scatter',
+        mode: 'markers',
+        marker: {
+            color: color,
+            size: size,
+            sizemode: 'diameter',
+            opacity: opacity,
+            outlinecolor: outlinecolor,
+            outlinewidth: outlinewidth
+        },
+        cliponaxis: false
+    }
 }
 
 function createPlotlyLayout (config) {
@@ -248,7 +243,7 @@ function parseTickDistance (x) {
     return x
 }
 
-function autoFontColor (bg_color) {
+function blackOrWhite (bg_color) {
     let parts = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/i.exec(bg_color)
     if (parts) {
         parts.shift()
