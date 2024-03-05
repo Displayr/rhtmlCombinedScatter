@@ -63,7 +63,7 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
     }
 }
 
-function createPlotlyLayout (config) {
+function createPlotlyLayout (config, margin_right) {
     const plot_layout = {
         xaxis: {
             title: {
@@ -158,7 +158,7 @@ function createPlotlyLayout (config) {
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
-            r: config.marginRight,
+            r: !isNaN(margin_right) ? margin_right : config.marginRight,
             l: config.marginLeft,
             automargin: true
         },

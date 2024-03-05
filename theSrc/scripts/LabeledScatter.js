@@ -66,11 +66,13 @@ class LabeledScatter {
     const config = buildConfig(this.data, this.width, this.height)
     try {
       const plot_data = createPlotlyData(this.data, config)
-      const plot_layout = createPlotlyLayout(config)
+      const plot_layout = createPlotlyLayout(config, this.marginRight())
       const plot_config = { displayModeBar: false, editable: false }
 
       const plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-        await this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
+
+      await this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
+
       plotlyChart.on('plotly_afterplot', () => {
         this.drawScatterLabelLayer(plotlyChart._fullLayout, config)
       })
@@ -111,7 +113,9 @@ class LabeledScatter {
     config.width = plot_width
     config.height = plot_height
 
-    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw() })
+    const outside_points_rect = this.getOutsidePointsRect(plotly_chart_layout)
+
+    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw(), outsidePointsRect: outside_points_rect })
     await this.plot.draw()
   }
 
@@ -175,13 +179,13 @@ class LabeledScatter {
     // We add the onclick handler to nsewdrag instead of the markers because if we added it to the markers,
     // we would have to set pointerevents to "all" for the markers and tooltips would no longer appear
     // when hovering directly above markers as they are drawn on top of nsewdrag.
-    const el = d3.select(this.rootElement).select('.nsewdrag');
+    const el = d3.select(this.rootElement).select('.nsewdrag')
     el[0][0].onclick = ((e) => {
       const markers = d3.select(this.rootElement).selectAll('.point')[0]
       for (let i = 0; i < markers.length; i++) {
         const ctm = markers[i].getCTM()
         const marker_radius = 0.5 * markers[i].getBBox().width
-        const is_marker_clicked_on = Utils.euclideanDistance({x: ctm.e, y: ctm.f}, {x: e.offsetX, y: e.offsetY}) < marker_radius
+        const is_marker_clicked_on = Utils.euclideanDistance({ x: ctm.e, y: ctm.f }, { x: e.offsetX, y: e.offsetY }) < marker_radius
         if (is_marker_clicked_on) {
           const hide = this.plot.data.toggleLabelShowFromMarkerIndex(i)
           this.plot.state.updateHiddenLabelPt(i, hide)
@@ -191,6 +195,28 @@ class LabeledScatter {
         }
       }
     })
+  }
+
+  getOutsidePointsRect (plotly_chart_layout) {
+    const padding_after_legend = 10
+    return {
+      x: plotly_chart_layout.xaxis._length,
+      y: plotly_chart_layout.legend._height + padding_after_legend,
+      width: this.width - plotly_chart_layout.margin.l - plotly_chart_layout.xaxis._length,
+      height: plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - padding_after_legend
+    }
+  }
+
+  isLegendTall (plotly_chart_layout) {
+    return plotly_chart_layout.legend._height > plotly_chart_layout.yaxis._length * 0.75
+  }
+
+  marginRight () {
+    if (this.stateObj.legendPts.length > 0) {
+      return 100
+    } else {
+      return NaN
+    }
   }
 }
 

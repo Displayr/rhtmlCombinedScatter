@@ -1,13 +1,15 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
+import d3 from 'd3'
 import LegendUtils from './utils/LegendUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
 
 class Legend {
-  constructor (legendSettings, axisSettings) {
+  constructor (legendSettings, axisSettings, outsidePointsRect) {
     autoBind(this)
     this.legendSettings = legendSettings
+    this.outsidePointsRect = outsidePointsRect
     this.decimals = {
       x: axisSettings.x.decimals,
       y: axisSettings.y.decimals,
@@ -118,11 +120,12 @@ class Legend {
       legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius)
     }
 
-    const startOfCenteredLegendItems = (((vb.y + (this.height / 2)) -
-      ((this.getHeightOfRow() * (numItems / this.getCols())) / 2)) +
-      this.getPtRadius())
-    const startOfViewBox = vb.y + this.getPtRadius()
-    const legendStartY = Math.max(startOfCenteredLegendItems, startOfViewBox)
+    // const startOfCenteredLegendItems = (((vb.y + (this.height / 2)) -
+    //   ((this.getHeightOfRow() * (numItems / this.getCols())) / 2)) +
+    //   this.getPtRadius())
+    // const startOfViewBox = vb.y + this.getPtRadius()
+    // const legendStartY = Math.max(startOfCenteredLegendItems, startOfViewBox)
+    const legendStartY = this.outsidePointsRect.y
 
     let colSpacing = 0
     let numItemsInPrevCols = 0

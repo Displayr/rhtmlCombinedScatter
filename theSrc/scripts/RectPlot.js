@@ -19,7 +19,7 @@ import DataTypeEnum from './utils/DataTypeEnum'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg, reset } = {}) {
+  constructor ({ config, stateObj, svg, reset, outsidePointsRect } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -62,6 +62,7 @@ class RectPlot {
     this.labelAlt = config.labelAlt
     this.svg = svg
     this.reset = reset
+    this.outsidePointsRect = outsidePointsRect
     this.zTitle = config.zTitle
     this.colors = config.colors
     this.transparency = config.transparency
@@ -203,7 +204,7 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    this.legend = new Legend(this.legendSettings, this.axisSettings)
+    this.legend = new Legend(this.legendSettings, this.axisSettings, this.outsidePointsRect)
 
     this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
 
