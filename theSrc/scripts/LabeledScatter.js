@@ -180,7 +180,7 @@ class LabeledScatter {
     // we would have to set pointerevents to "all" for the markers and tooltips would no longer appear
     // when hovering directly above markers as they are drawn on top of nsewdrag.
     const el = d3.select(this.rootElement).select('.nsewdrag')
-    el[0][0].onclick = ((e) => {
+    el[0][0].onclick = e => {
       const markers = d3.select(this.rootElement).selectAll('.point')[0]
       for (let i = 0; i < markers.length; i++) {
         const ctm = markers[i].getCTM()
@@ -194,7 +194,7 @@ class LabeledScatter {
           break
         }
       }
-    })
+    }
   }
 
   getOutsidePointsRect (plotly_chart_layout) {
