@@ -16,7 +16,7 @@ function createPlotlyData (data, config) {
         normZ = LegendUtils.normalizeZValues(data.Z, maxZ)
             .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
         if (marker_opacity === null) marker_opacity = 0.4
-        const z_title = config.zTitle.length === 0 ? '' : config.zTitle + ': '
+        const z_title = config.zTitle ? config.zTitle + ': ' : ''
         tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${data.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
