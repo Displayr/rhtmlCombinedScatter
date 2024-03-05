@@ -48,6 +48,7 @@ jobs:
             npm run circleCITest
       - run:
           name: Zip test output
+          when: always
           command: | 
             cd theSrc/test/snapshots/travis/master
             7z a test-results.zip -r .
