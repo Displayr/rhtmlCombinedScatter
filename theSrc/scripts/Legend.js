@@ -1,6 +1,5 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
-import d3 from 'd3'
 import LegendUtils from './utils/LegendUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
