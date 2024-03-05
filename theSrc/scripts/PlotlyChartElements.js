@@ -24,7 +24,7 @@ function createPlotlyData (data, config) {
     const plot_data = []
     if (!Array.isArray(data.group)) {
         const marker_size = data.Z === undefined ? config.pointRadius * 2 : normZ
-        plot_data.push(createScatterTrace(data.X, data.Y, ' ', marker_size, tooltips,
+        plot_data.push(createScatterTrace(data.X, data.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else {
         const indices_by_group = _.groupBy(indices, i => data.group[i])
