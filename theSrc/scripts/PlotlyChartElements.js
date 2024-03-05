@@ -157,8 +157,8 @@ function createPlotlyLayout (config) {
             },
             itemsizing: 'constant',
             yref: 'paper',
-            y: 0.5,
-            yanchor: 'middle',
+            y: 1,
+            yanchor: 'top',
         },
         margin: {
             t: config.marginTop,

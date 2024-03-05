@@ -352,7 +352,7 @@ class PlotData {
     return (this.pts[index].hideLabel)
   }
 
-  mapMarkerIndexToDataIndex() {
+  mapMarkerIndexToDataIndex () {
     if (!Array.isArray(this.group)) {
       return Array(this.len).fill().map((element, index) => index)
     }
@@ -361,7 +361,7 @@ class PlotData {
     for (const g of uniq_groups) {
       for (let i = 0; i < this.group.length; i++) {
         if (this.group[i] === g) {
-          result.push(i);
+          result.push(i)
         }
       }
     }

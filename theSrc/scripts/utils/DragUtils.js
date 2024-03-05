@@ -37,6 +37,11 @@ class DragUtils {
       const labOnTopOfPoint = (lab.x - (lab.width / 2) < anc.x && anc.x < lab.x + (lab.width / 2)) && (lab.y > anc.y && anc.y > lab.y - lab.height)
 
       if (plot.data.isOutsideViewBox(lab) && !showTrendLine) {
+        if (plot.data.outsidePlotPtsId.indexOf(id) > -1) {
+          _.remove(plot.state.userPositionedLabs, e => e.id === id)
+          plot.resetPlotAfterDragEvent()
+          return
+        }
         // Element dragged off plot
         plot.data.addElemToLegend(id)
         plot.state.pushLegendPt(id)
