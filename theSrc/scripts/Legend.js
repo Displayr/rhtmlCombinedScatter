@@ -4,6 +4,8 @@ import LegendUtils from './utils/LegendUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
 
+const ROW_PADDING = 9
+
 class Legend {
   constructor (legendSettings, axisSettings, outsidePointsRect) {
     autoBind(this)
@@ -25,8 +27,9 @@ class Legend {
       z: axisSettings.z.suffix,
     }
     this.width = 0
-    this.maxWidth = 0
-    this.heightOfRow = legendSettings.getFontSize() + 9
+    this.maxWidth = outsidePointsRect.width
+    this.setHeight(outsidePointsRect.height)
+    this.heightOfRow = legendSettings.getFontSize() + ROW_PADDING
     this.padding = {
       right: legendSettings.getFontSize() / 1.6,
       left: legendSettings.getFontSize() / 0.8,
@@ -43,9 +46,10 @@ class Legend {
       charWidth: 4,
     }
 
-    this.x = 0
+    this.x = outsidePointsRect.x
     this.pts = []
     this.groups = []
+    this.setColSpace(20)
   }
 
   setMaxWidth (w) {
@@ -81,34 +85,13 @@ class Legend {
   }
 
   setLegendGroupsAndPts (vb, legendBubbles, pointRadius) {
-    const showGroups = this.legendSettings.showLegend()
     const pts = this.pts
-    const groups = this.groups
-    if ((this.pts.length > 0) && showGroups) {
-      const legendItemArray = []
-
-      this.pts = []
-      this.groups = []
-
-      _.map(groups, g => legendItemArray.push(g))
-      _.map(pts, p => legendItemArray.push(p))
-
-      const itemPositions = this.getLegendItemsPositions(vb, legendBubbles, legendItemArray, pointRadius)
-
-      _.forEach(itemPositions, (item) => {
-        (item.cx === undefined) ? this.pts.push(item) : this.groups.push(item)
-      })
-    } else if ((pts.length > 0) && !showGroups) {
-      this.pts = this.getLegendItemsPositions(vb, legendBubbles, pts, pointRadius)
-    } else {
-      this.groups = this.getLegendItemsPositions(vb, legendBubbles, groups, pointRadius)
-    }
+    this.pts = this.getLegendItemsPositions(vb, legendBubbles, pts, pointRadius)
   }
 
   getLegendItemsPositions (vb, legendBubbles, itemsArray, pointRadius) {
     const bubbleLegendTextHeight = 20
     const numItems = itemsArray.length
-    this.setHeight(vb.height)
 
     if ((this.getBubblesTitle() !== null) && this.legendSettings.showBubblesInLegend()) {
       this.height = this.getBubblesTitle()[0].y - bubbleLegendTextHeight - vb.y
@@ -119,12 +102,9 @@ class Legend {
       legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius)
     }
 
-    // const startOfCenteredLegendItems = (((vb.y + (this.height / 2)) -
-    //   ((this.getHeightOfRow() * (numItems / this.getCols())) / 2)) +
-    //   this.getPtRadius())
-    // const startOfViewBox = vb.y + this.getPtRadius()
-    // const legendStartY = Math.max(startOfCenteredLegendItems, startOfViewBox)
     const legendStartY = this.outsidePointsRect.y
+
+    this.setCols(Math.ceil(numItems / (Math.ceil(this.height / this.heightOfRow))))
 
     let colSpacing = 0
     let numItemsInPrevCols = 0
@@ -287,7 +267,8 @@ class Legend {
        .attr('y', d => d.y)
        .attr('font-family', this.legendSettings.getFontFamily())
        .attr('font-size', this.legendSettings.getFontSize())
-       .attr('text-anchor', d => d.anchor)
+       .attr('text-anchor', 'start')
+       .attr('dominant-baseline', 'middle')
        .attr('fill', d => d.color)
        .style('cursor', 'move')
        .text(d => { if (!(_.isNull(d.markerId))) { return Utils.getSuperscript(d.markerId + 1) + d.text } else { return d.text } })
@@ -298,4 +279,4 @@ class Legend {
   }
 }
 
-module.exports = Legend
+module.exports = { Legend, ROW_PADDING }

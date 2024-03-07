@@ -10,7 +10,7 @@ import DragUtils from './utils/DragUtils'
 import Utils from './utils/Utils'
 import LabelPlacement from './LabelPlacement'
 import LegendSettings from './LegendSettings'
-import Legend from './Legend'
+import { Legend } from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
 import ResetButton from './ResetButton'
@@ -19,7 +19,7 @@ import DataTypeEnum from './utils/DataTypeEnum'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg, reset, outsidePointsRect } = {}) {
+  constructor ({ config, stateObj, svg, reset, legendPointsRect } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -62,7 +62,7 @@ class RectPlot {
     this.labelAlt = config.labelAlt
     this.svg = svg
     this.reset = reset
-    this.outsidePointsRect = outsidePointsRect
+    this.legendPointsRect = legendPointsRect
     this.zTitle = config.zTitle
     this.colors = config.colors
     this.transparency = config.transparency
@@ -204,11 +204,9 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    this.legend = new Legend(this.legendSettings, this.axisSettings, this.outsidePointsRect)
+    this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendPointsRect)
 
     this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
-
-    this.legend.setX(this.vb.getLegendX())
 
     this.data = new PlotData(this.X,
                          this.Y,
@@ -497,6 +495,7 @@ class RectPlot {
         return placementPromise
       }
     }
+    return Promise.resolve()
   }
 
   drawLinks () {

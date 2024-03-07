@@ -70,7 +70,6 @@ class PlotData {
     if (Utils.isArrOfNums(this.Z) && (this.Z.length === this.X.length)) { this.normZ = this.Z.slice() }
     this.outsidePlotPtsId = []
     this.hiddenLabelsId = []
-    // this.legendPts = []
     this.outsidePlotCondensedPts = []
     this.legendSettings = legendSettings
 
@@ -372,8 +371,9 @@ class PlotData {
     const checkId = e => e.id === id
     const movedPt = _.remove(this.pts, checkId)
     const movedLab = _.remove(this.lab, checkId)
-    this.legend.addPt(id, movedPt, movedLab)
-
+    if (movedPt.length > 0 && movedLab.length > 0) {
+      this.legend.addPt(id, movedPt, movedLab)
+    }
     this.outsidePlotPtsId.push(id)
     this.normalizeData()
     this.getPtsAndLabs('PlotData.addElemToLegend')
