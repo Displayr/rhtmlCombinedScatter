@@ -70,9 +70,7 @@ class PlotData {
     if (Utils.isArrOfNums(this.Z) && (this.Z.length === this.X.length)) { this.normZ = this.Z.slice() }
     this.outsidePlotPtsId = []
     this.hiddenLabelsId = []
-    // this.legendPts = []
     this.outsidePlotCondensedPts = []
-    this.legendRequiresRedraw = false
     this.legendSettings = legendSettings
 
     if (this.X.length === this.Y.length) {
@@ -84,93 +82,15 @@ class PlotData {
     } else {
       throw new Error('Inputs X and Y lengths do not match!')
     }
-  }
-
-  revertMinMax () {
-    this.minX = this.minXold
-    this.maxX = this.maxXold
-    this.minY = this.minYold
-    this.maxY = this.maxYold
+    this.markerIndexToDataIndex = this.mapMarkerIndexToDataIndex()
   }
 
   calculateMinMax () {
-    this.minXold = this.minX
-    this.maxXold = this.maxX
-    this.minYold = this.minY
-    this.maxYold = this.maxY
-
-    const ptsOut = this.outsidePlotPtsId
-    const notMovedX = _.filter(this.origX, (val, key) => !(_.includes(ptsOut, key)))
-    const notMovedY = _.filter(this.origY, (val, key) => !(_.includes(ptsOut, key)))
-
-    this.minX = _.min(notMovedX)
-    this.maxX = _.max(notMovedX)
-    this.minY = _.min(notMovedY)
-    this.maxY = _.max(notMovedY)
-
-    // originAlign: compensates to make sure origin lines are on axis
-    if (this.originAlign) {
-      if (this.minX > 0) {
-        this.minX = 0
-        this.minXAlignedToOrigin = true
-      }
-      if (this.maxX < 0) {
-        this.maxX = 0
-        this.maxXAlignedToOrigin = true
-      }
-      if (this.minY > 0) {
-        this.minY = 0
-        this.minYAlignedToOrigin = true
-      }
-      if (this.maxY < 0) {
-        this.maxY = 0
-        this.maxYAlignedToOrigin = true
-      }
-    }
-
-    this.addPaddingToBounds()
-
-    // Fixed aspect ratio computations: not easily simplified as the boundaries cannot be reduced
-    if (this.fixedAspectRatio) {
-      const rangeX = this.maxX - this.minX
-      const rangeY = this.maxY - this.minY
-      const rangeAR = Math.abs(rangeX / rangeY)
-      const widgetAR = (this.vb.width / this.vb.height)
-      const rangeToWidgetARRatio = widgetAR / rangeAR
-
-      if (widgetAR >= 1) {
-        if (rangeX > rangeY) {
-          if (rangeToWidgetARRatio > 1) {
-            this.maxX += (((widgetAR * rangeY) - rangeX) / 2)
-            this.minX -= (((widgetAR * rangeY) - rangeX) / 2)
-          } else {
-            this.maxY += (((1 / widgetAR) * rangeX) - rangeY) / 2
-            this.minY -= (((1 / widgetAR) * rangeX) - rangeY) / 2
-          }
-        } else if (rangeX < rangeY) {
-          this.maxX += ((widgetAR * rangeY) - rangeX) / 2
-          this.minX -= ((widgetAR * rangeY) - rangeX) / 2
-        }
-      } else if (rangeX < rangeY) {
-        if (rangeToWidgetARRatio < 1) {
-          this.maxY += (((1 / widgetAR) * rangeX) - rangeY) / 2
-          this.minY -= (((1 / widgetAR) * rangeX) - rangeY) / 2
-        } else {
-          this.maxX += ((widgetAR * rangeY) - rangeX) / 2
-          this.minX -= ((widgetAR * rangeY) - rangeX) / 2
-        }
-      } else if (rangeX > rangeY) {
-        this.maxY += (((1 / widgetAR) * rangeX) - rangeY) / 2
-        this.minY -= (((1 / widgetAR) * rangeX) - rangeY) / 2
-      }
-    }
-
-    // TODO KZ this should be done first to skip the wasted computation (unless there are side effect in the above) ??
-    // If user has sent x and y boundaries, these hold higher priority
-    if (Utils.isNum(this.bounds.xmax)) { this.maxX = this.bounds.xmax }
-    if (Utils.isNum(this.bounds.xmin)) { this.minX = this.bounds.xmin }
-    if (Utils.isNum(this.bounds.ymax)) { this.maxY = this.bounds.ymax }
-    if (Utils.isNum(this.bounds.ymin)) { this.minY = this.bounds.ymin }
+    // We assume that bounds are always supplied
+    this.maxX = this.bounds.xmax
+    this.minX = this.bounds.xmin
+    this.maxY = this.bounds.ymax
+    this.minY = this.bounds.ymin
   }
 
   normalizeData () {
@@ -345,7 +265,7 @@ class PlotData {
           // If pt has been already condensed
           if (_.includes((_.map(this.outsidePlotCondensedPts, e => e.dataId)), i)) {
             const pt = _.find(this.outsidePlotCondensedPts, e => e.dataId === i)
-            label = pt.markerId + 1
+            label = (pt.markerId + 1).toString()
             fontSize = this.vb.labelSmallFontSize
             url = ''
             width = null
@@ -366,7 +286,9 @@ class PlotData {
       return (() => {
         _.forEach(this.outsideBoundsPtsId, (p, i) => {
           if (!_.includes(this.outsidePlotPtsId, p)) {
-            this.addElemToLegend(p)
+            const checkId = e => e.id === p
+            _.remove(this.pts, checkId)
+            _.remove(this.lab, checkId)
           }
         })
         this.setLegend()
@@ -407,6 +329,10 @@ class PlotData {
         (bot > (this.vb.y + this.vb.height)))
   }
 
+  toggleLabelShowFromMarkerIndex (index) {
+    this.toggleLabelShow(this.markerIndexToDataIndex[index])
+  }
+
   toggleLabelShow (id) {
     const hidden = _.includes(this.hiddenLabelsId, id)
     const index = this.lab.findIndex(p => p.id === Number(id))
@@ -425,16 +351,32 @@ class PlotData {
     return (this.pts[index].hideLabel)
   }
 
+  mapMarkerIndexToDataIndex () {
+    if (!Array.isArray(this.group)) {
+      return Array(this.len).fill().map((element, index) => index)
+    }
+    const uniq_groups = _.uniq(this.group)
+    const result = []
+    for (const g of uniq_groups) {
+      for (let i = 0; i < this.group.length; i++) {
+        if (this.group[i] === g) {
+          result.push(i)
+        }
+      }
+    }
+    return result
+  }
+
   addElemToLegend (id) {
     const checkId = e => e.id === id
     const movedPt = _.remove(this.pts, checkId)
     const movedLab = _.remove(this.lab, checkId)
-    this.legend.addPt(id, movedPt, movedLab)
-
+    if (movedPt.length > 0 && movedLab.length > 0) {
+      this.legend.addPt(id, movedPt, movedLab)
+    }
     this.outsidePlotPtsId.push(id)
     this.normalizeData()
     this.getPtsAndLabs('PlotData.addElemToLegend')
-    this.legendRequiresRedraw = true
   }
 
   removeLegendPtFromData (id) {
@@ -475,99 +417,6 @@ class PlotData {
 
   getImgLabels () {
     return _.filter(this.lab, l => l.url !== '')
-  }
-
-  // For non-ordinal coordinates, augment the min and max bounds with some padding.
-  // The padding includes marker and bubble radii as well as some extra space.
-  addPaddingToBounds () {
-    const rangeX = this.maxX - this.minX
-    const rangeY = this.maxY - this.minY
-
-    const r = this.pointRadius
-    if (Utils.isArrOfNums(this.Z)) {
-      let bubblePaddingMinX = 0
-      let bubblePaddingMaxX = 0
-      let bubblePaddingMinY = 0
-      let bubblePaddingMaxY = 0
-
-      for (let i = 0; i < this.origLen; i++) {
-        if (!_.includes(this.outsideBoundsPtsId, i)) {
-          const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
-          const bubblePaddingMinXCandidate = bubbleRadius * rangeX / this.vb.width - (this.origX[i] - this.minX)
-          if (bubblePaddingMinXCandidate > bubblePaddingMinX) {
-            bubblePaddingMinX = bubblePaddingMinXCandidate
-          }
-          const bubblePaddingMaxXCandidate = bubbleRadius * rangeX / this.vb.width - (this.maxX - this.origX[i])
-          if (bubblePaddingMaxXCandidate > bubblePaddingMaxX) {
-            bubblePaddingMaxX = bubblePaddingMaxXCandidate
-          }
-          const bubblePaddingMinYCandidate = bubbleRadius * rangeY / this.vb.height - (this.origY[i] - this.minY)
-          if (bubblePaddingMinYCandidate > bubblePaddingMinY) {
-            bubblePaddingMinY = bubblePaddingMinYCandidate
-          }
-          const bubblePaddingMaxYCandidate = bubbleRadius * rangeY / this.vb.height - (this.maxY - this.origY[i])
-          if (bubblePaddingMaxYCandidate > bubblePaddingMaxY) {
-            bubblePaddingMaxY = bubblePaddingMaxYCandidate
-          }
-        }
-      }
-      let paddingMinX = extraBubblePaddingProportion * (rangeX + bubblePaddingMinX + bubblePaddingMaxX) + bubblePaddingMinX
-      let paddingMaxX = extraBubblePaddingProportion * (rangeX + bubblePaddingMinX + bubblePaddingMaxX) + bubblePaddingMaxX
-      let paddingMinY = extraBubblePaddingProportion * (rangeY + bubblePaddingMinY + bubblePaddingMaxY) + bubblePaddingMinY
-      let paddingMaxY = extraBubblePaddingProportion * (rangeY + bubblePaddingMinY + bubblePaddingMaxY) + bubblePaddingMaxY
-
-      if (rangeX === 0 && rangeY === 0) {
-        paddingMinX = 1
-        paddingMaxX = 1
-        paddingMinY = 1
-        paddingMaxY = 1
-      } else if (rangeX === 0) {
-        paddingMinX = paddingMinY
-        paddingMaxX = paddingMaxY
-      } else if (rangeY === 0) {
-        paddingMinY = paddingMinX
-        paddingMaxY = paddingMaxX
-      }
-
-      if (!this.minXAlignedToOrigin) {
-        this.minX -= paddingMinX
-      }
-      if (!this.maxXAlignedToOrigin) {
-        this.maxX += paddingMaxX
-      }
-      if (!this.minYAlignedToOrigin) {
-        this.minY -= paddingMinY
-      }
-      if (!this.maxYAlignedToOrigin) {
-        this.maxY += paddingMaxY
-      }
-    } else {
-      const pointpaddingX = r * (this.maxX - this.minX) / this.vb.width
-      const pointpaddingY = r * (this.maxY - this.minY) / this.vb.height
-      let paddingX = extraPaddingProportion * (rangeX + 2 * pointpaddingX) + pointpaddingX
-      let paddingY = extraPaddingProportion * (rangeY + 2 * pointpaddingY) + pointpaddingY
-      if (rangeX === 0 && rangeY === 0) {
-        paddingX = 1
-        paddingY = 1
-      } else if (rangeX === 0) {
-        paddingX = paddingY
-      } if (rangeY === 0) {
-        paddingY = paddingX
-      }
-
-      if (!this.minXAlignedToOrigin) {
-        this.minX -= paddingX
-      }
-      if (!this.maxXAlignedToOrigin) {
-        this.maxX += paddingX
-      }
-      if (!this.minYAlignedToOrigin) {
-        this.minY -= paddingY
-      }
-      if (!this.maxYAlignedToOrigin) {
-        this.maxY += paddingY
-      }
-    }
   }
 
   // For ordinal coordinates, determine extra padding for min and max bounds

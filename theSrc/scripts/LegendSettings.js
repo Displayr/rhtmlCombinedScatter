@@ -1,6 +1,5 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
-import Utils from './utils/Utils'
 
 class LegendSettings {
   constructor (show, showBubbles,
@@ -30,10 +29,6 @@ class LegendSettings {
     this.title = zTitle
     this.zPrefix = zPrefix
     this.zSuffix = zSuffix
-  }
-
-  isDisplayed (Z, legendPts) {
-    return this.showLegend() || (this.showBubblesInLegend() && Utils.isArrOfNums(Z)) || !(_.isNull(legendPts))
   }
 
   showLegend () { return this.show }
