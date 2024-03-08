@@ -173,7 +173,7 @@ function createPlotlyLayout (config) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
-        showlegend: config.legendShow && config.group !== null && config.group.length > 0,
+        showlegend: config.legendShow, // && config.group !== null && config.group.length > 0,
         legend: {
             font: {
                 family: config.legendFontFamily,
