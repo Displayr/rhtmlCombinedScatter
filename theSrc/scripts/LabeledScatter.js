@@ -82,11 +82,9 @@ class LabeledScatter {
       }
 
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
-      this.moveDragLayerToBeLast()
 
       plotlyChart.on('plotly_afterplot', () => {
         this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
-        this.moveDragLayerToBeLast()
       })
 
       this.addMarkerClickHandler()
@@ -110,6 +108,7 @@ class LabeledScatter {
     // such as dragging labels work (the drag layer covers the whole plot area
     // and consumes mouse events over that area)
     const drag_layer = d3.select(this.rootElement).select('.draglayer')
+    this.moveDragLayerToBeLast()
 
     const plot_width = plotly_chart_layout.xaxis._length
     const plot_height = plotly_chart_layout.yaxis._length
