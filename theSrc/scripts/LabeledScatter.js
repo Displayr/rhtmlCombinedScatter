@@ -136,10 +136,10 @@ class LabeledScatter {
         .attr('height', plot_height)
     config.legendBubblesShow = false
     config.legendShow = false
-    config.yBoundsMinimum = convertValueType(plotly_chart_layout.yaxis.range[0], data.yDataType)
-    config.yBoundsMaximum = convertValueType(plotly_chart_layout.yaxis.range[1], data.yDataType)
-    config.xBoundsMinimum = convertValueType(plotly_chart_layout.xaxis.range[0], data.xDataType)
-    config.xBoundsMaximum = convertValueType(plotly_chart_layout.xaxis.range[1], data.xDataType)
+    config.yBoundsMinimum = this.convertValueType(plotly_chart_layout.yaxis.range[0], this.data.yDataType)
+    config.yBoundsMaximum = this.convertValueType(plotly_chart_layout.yaxis.range[1], this.data.yDataType)
+    config.xBoundsMinimum = this.convertValueType(plotly_chart_layout.xaxis.range[0], this.data.xDataType)
+    config.xBoundsMaximum = this.convertValueType(plotly_chart_layout.xaxis.range[1], this.data.xDataType)
     config.width = plot_width
     config.height = plot_height
 

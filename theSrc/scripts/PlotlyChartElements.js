@@ -1,11 +1,12 @@
 import _ from 'lodash'
 import LegendUtils from './utils/LegendUtils'
+import DataTypeEnum from './utils/DataTypeEnum'
 
 function createPlotlyData (data, config) {
     // Check for empty labels
     const indices = _.range(data.X.length)
-    let tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
-    if (tooltip_labels === undefined) tooltip_labels = indices.map(i => '')
+    let tooltip_labels = !Array.isArray(data.labelAlt) ? data.label : data.labelAlt
+    if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
     let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
 
     // Check if this is a bubbleplot
@@ -70,11 +71,13 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
 // Creates the first trace to ensure categorical data is ordered properly
 function createBaseTrace (config) {
     let x_levels = config.xLevels ? config.xLevels : []
-    let y_levels = config.yLevels ? config.yLevels : []
-    if (x_levels.length < y_levels.length)
+    let y_levels = config.yLevels ? config.yLevels.toReversed() : []
+    if (x_levels.length < y_levels.length) {
         x_levels = x_levels.concat(new Array(y_levels.length - x_levels.length).fill(config.X[0]))
-    if (y_levels.length < x_levels.length)
+    }
+    if (y_levels.length < x_levels.length) {
         y_levels = y_levels.concat(new Array(x_levels.length - y_levels.length).fill(config.Y[0]))
+    }
 
     return {
         x: x_levels,
@@ -87,7 +90,7 @@ function createBaseTrace (config) {
     }
 }
 
-function createPlotlyLayout (config, margin_right) {
+function createPlotlyLayout (config) {
     const plot_layout = {
         xaxis: {
             title: {
@@ -96,7 +99,7 @@ function createPlotlyLayout (config, margin_right) {
                     family: config.xTitleFontFamily,
                     color: config.xTitleFontColor,
                     size: config.xTitleFontSize
-                }
+                },
             },
             showgrid: config.grid,
             gridcolor: config.xAxisGridColor,
@@ -117,6 +120,8 @@ function createPlotlyLayout (config, margin_right) {
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             automargin: true,
+            autotypenumbers: 'strict',
+            type: plotlyNumberType(config.xDataType),
             range: [config.xBoundsMinimum, config.xBoundsMaximum],
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
@@ -130,7 +135,7 @@ function createPlotlyLayout (config, margin_right) {
                     family: config.yTitleFontFamily,
                     color: config.yTitleFontColor,
                     size: config.yTitleFontSize
-                }
+                },
             },
             showgrid: config.grid,
             gridcolor: config.yAxisGridColor,
@@ -150,6 +155,7 @@ function createPlotlyLayout (config, margin_right) {
             scaleanchor: config.fixedAspectRatio ? 'x' : null,
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
+            type: plotlyNumberType(config.yDataType),
             range: [config.yBoundsMinimum, config.yBoundsMaximum],
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
@@ -167,7 +173,7 @@ function createPlotlyLayout (config, margin_right) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
-        showlegend: config.legendShow,
+        showlegend: config.legendShow && config.group !== null && config.group.length > 0,
         legend: {
             font: {
                 family: config.legendFontFamily,
@@ -176,13 +182,13 @@ function createPlotlyLayout (config, margin_right) {
             },
             itemsizing: 'constant',
             yref: 'paper',
-            y: 1,
-            yanchor: 'top',
+            y: 0.5,
+            yanchor: 'middle',
         },
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
-            r: !isNaN(margin_right) ? margin_right : config.marginRight,
+            r: config.marginRight,
             l: config.marginLeft,
             automargin: true
         },
@@ -203,13 +209,13 @@ function createPlotlyLayout (config, margin_right) {
 
 function addLines (config) {
     const lines = []
-    if (config.origin) {
+    if (config.origin && (!config.xLevels || !config.xLevels.length)) {
         lines.push({
             type: 'line',
             layer: 'above',
             line: {
                 color: config.xAxisZeroLineColor,
-                dash: config.xAxisZeroLineType,
+                dash: config.xAxisZeroLineDash,
                 width: config.xAxisZeroLineWidth
             },
             x0: 0,
@@ -219,6 +225,8 @@ function addLines (config) {
             y1: 1,
             yref: 'paper'
         })
+    }
+    if (config.origin && (!config.yLevels || !config.yLevels.length)) {
         lines.push({
             type: 'line',
             layer: 'above',
@@ -276,6 +284,15 @@ function blackOrWhite (bg_color) {
         return luminosity > 126 ? '#2C2C2C' : '#FFFFFF'
     }
     return '#2C2C2C'
+}
+
+function plotlyNumberType (type) {
+    if (type == DataTypeEnum.date)
+        return 'date'
+    else if (type === DataTypeEnum.numeric)
+        return 'linear'
+    else
+        return 'category'
 }
 
 module.exports = {
