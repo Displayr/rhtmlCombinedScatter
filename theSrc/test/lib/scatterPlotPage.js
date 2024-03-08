@@ -88,7 +88,7 @@ class ScatterPlotPage {
   }
 
   async legendGroup () {
-    return this.page.$('.legend-groups-text')
+    return this.page.$('.legend')
   }
 
   async legendLabel ({ id }) {
