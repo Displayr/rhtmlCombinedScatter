@@ -13,6 +13,7 @@ import 'babel-polyfill'
 
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
 import InsufficientWidthError from './exceptions/InsufficientWidthError'
+import DataTypeEnum from './utils/DataTypeEnum'
 
 const MARGIN_RIGHT_FOR_LEGEND_POINTS = 100
 const LEGEND_POINTS_PADDING_TOP = 10
@@ -36,6 +37,20 @@ class LabeledScatter {
     if (!(_.isNull(data.X)) && !(_.isNull(data.Y))) {
       this.data = data
     }
+
+    if (data.xIsDateTime)
+      this.data.xDataType = DataTypeEnum.date
+    else if (Utils.isArrOfNumTypes(data.X))
+      this.data.xDataType = DataTypeEnum.numeric
+    else
+      this.data.xDataType = DataTypeEnum.ordinal
+
+    if (data.yIsDateTime)
+      this.data.yDataType = DataTypeEnum.date
+    else if (Utils.isArrOfNumTypes(data.Y))
+      this.data.yDataType = DataTypeEnum.numeric
+    else
+      this.data.yDataType = DataTypeEnum.ordinal
   }
 
   setUserState (userStateInput) {
@@ -121,10 +136,10 @@ class LabeledScatter {
         .attr('height', plot_height)
     config.legendBubblesShow = false
     config.legendShow = false
-    config.yBoundsMinimum = plotly_chart_layout.yaxis.range[0]
-    config.yBoundsMaximum = plotly_chart_layout.yaxis.range[1]
-    config.xBoundsMinimum = plotly_chart_layout.xaxis.range[0]
-    config.xBoundsMaximum = plotly_chart_layout.xaxis.range[1]
+    config.yBoundsMinimum = convertValueType(plotly_chart_layout.yaxis.range[0], data.yDataType)
+    config.yBoundsMaximum = convertValueType(plotly_chart_layout.yaxis.range[1], data.yDataType)
+    config.xBoundsMinimum = convertValueType(plotly_chart_layout.xaxis.range[0], data.xDataType)
+    config.xBoundsMaximum = convertValueType(plotly_chart_layout.xaxis.range[1], data.xDataType)
     config.width = plot_width
     config.height = plot_height
 
@@ -132,6 +147,12 @@ class LabeledScatter {
 
     this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw(), legendPointsRect: legend_points_rect })
     await this.plot.draw()
+  }
+
+  convertValueType(x, type) {
+    if (x === null) return x
+    if (type !== DataTypeEnum.date) return x
+    else return new Date(x).getTime()
   }
 
   resize (el, width, height) {

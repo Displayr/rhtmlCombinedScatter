@@ -22,6 +22,10 @@ function createPlotlyData (data, config) {
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
+    if (config.xLevels || config.yLevels) {
+        plot_data.push(createBaseTrace(config))
+    }
+
     if (!Array.isArray(data.group)) {
         const marker_size = data.Z === undefined ? config.pointRadius * 2 : normZ
         plot_data.push(createScatterTrace(data.X, data.Y, tooltips, ' ', marker_size,
@@ -60,6 +64,26 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
             outlinewidth: outlinewidth
         },
         cliponaxis: false
+    }
+}
+
+// Creates the first trace to ensure categorical data is ordered properly
+function createBaseTrace (config) {
+    let x_levels = config.xLevels ? config.xLevels : []
+    let y_levels = config.yLevels ? config.yLevels : []
+    if (x_levels.length < y_levels.length)
+        x_levels = x_levels.concat(new Array(y_levels.length - x_levels.length).fill(config.X[0]))
+    if (y_levels.length < x_levels.length)
+        y_levels = y_levels.concat(new Array(x_levels.length - y_levels.length).fill(config.Y[0]))
+
+    return {
+        x: x_levels,
+        y: y_levels,
+        type: 'scatter',
+        mode: 'lines',
+        hoverinfo: 'skip',
+        showlegend: false,
+        opacity: 0
     }
 }
 
