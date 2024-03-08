@@ -77,7 +77,7 @@ class LabeledScatter {
 
       const is_legend_points_to_right_of_plotly_legend = plotlyChart._fullLayout.legend && this.stateObj.legendPts.length > 0 && !this.isEnoughHeightUnderLegendForLegendPoints(plotlyChart._fullLayout, config)
       if (is_legend_points_to_right_of_plotly_legend) {
-        const plot_layout_2 = createPlotlyLayout(config, this.plotlyLegendWidth() + 100)
+        const plot_layout_2 = createPlotlyLayout(config, this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS)
         plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout_2, plot_config)
       }
 
@@ -103,11 +103,16 @@ class LabeledScatter {
 
   async drawScatterLabelLayer (plotly_chart_layout, config, is_legend_points_to_right_of_plotly_legend) {
     d3.select('.scatterlabellayer').remove()
-    const plot_area = d3.select(this.rootElement).select('.draglayer')
+
+    // The scatter labels need to be in the drag layer so that mouse events
+    // such as dragging labels work (the drag layer covers the whole plot area
+    // and consumes mouse events over that area)
+    const drag_layer = d3.select(this.rootElement).select('.draglayer')
+    this.moveDragLayerToBeLast()
 
     const plot_width = plotly_chart_layout.xaxis._length
     const plot_height = plotly_chart_layout.yaxis._length
-    const svg = plot_area
+    const svg = drag_layer
         .append('svg')
         .attr('class', 'scatterlabellayer')
         .attr('x', plotly_chart_layout.margin.l)
@@ -253,6 +258,17 @@ class LabeledScatter {
   plotlyLegendWidth () {
     const el = d3.select(this.rootElement).select('.legend')
     return el[0][0].getBBox().width
+  }
+
+  /**
+   * Move drag layer so that the labels drawn inside it appear after other elements
+   * such as markers and gridlines
+   */
+  moveDragLayerToBeLast () {
+    const drag_layer = d3.select(this.rootElement).select('.draglayer')
+    // The first "main-svg" containing the cartesian layer
+    const main_svg = d3.select(this.rootElement).select('.main-svg')
+    main_svg[0][0].appendChild(drag_layer[0][0])
   }
 }
 
