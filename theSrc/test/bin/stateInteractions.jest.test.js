@@ -31,7 +31,7 @@ describe('state interactions', () => {
   test(`${++testId}: Drag a label`, async function () {
     const { page, scatterPlot } = await loadWidget({ browser })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_1' })
 
     await scatterPlot.movePlotLabel({ id: 0, x: 50, y: 50 })
 
@@ -55,7 +55,7 @@ describe('state interactions', () => {
   test(`${++testId}: Drag a label to the legend`, async function () {
     const { page, scatterPlot } = await loadWidget({ browser })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_2' })
 
     await scatterPlot.movePlotLabelToLegend({ id: 0 })
 
@@ -84,7 +84,7 @@ describe('state interactions', () => {
 
     await scatterPlot.moveLegendLabelToPlot({ id: 0 })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_3' })
     await testState({ page, stateName: 'data.bdd.three_point_brand_state.back_to_original', tolerance: 1 })
 
     await page.close()
@@ -93,7 +93,7 @@ describe('state interactions', () => {
   test(`${++testId}: Drag a label to the legend, then reposition marker`, async function () {
     const { page, scatterPlot } = await loadWidget({ browser })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_4' })
 
     await scatterPlot.movePlotLabelToLegend({ id: 0 })
     await scatterPlot.movePlotLabel({ id: 0, x: 50, y: 50 })
@@ -108,11 +108,11 @@ describe('state interactions', () => {
   test(`${++testId}: Drag a image label`, async function () {
     const { page, scatterPlot } = await loadWidget({ browser })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_5' })
 
     await scatterPlot.movePlotLabel({ id: 2, x: 200, y: 100 })
 
-    await testSnapshots({ page, testName: `after_apple_drag_on_canvas_${testId}` })
+    await testSnapshots({ page, testName: 'after_apple_drag_on_canvas_1' })
     await testState({ page, stateName: 'data.bdd.three_point_brand_state.apple_label_moved_200x100', tolerance: 1 })
 
     await page.close()
@@ -124,7 +124,7 @@ describe('state interactions', () => {
       stateName: 'data.bdd.three_point_brand_state.apple_label_moved_200x100',
     })
 
-    await testSnapshots({ page, testName: `after_apple_drag_on_canvas_${testId}` })
+    await testSnapshots({ page, testName: 'after_apple_drag_on_canvas_2' })
 
     await page.close()
   })
@@ -132,11 +132,11 @@ describe('state interactions', () => {
   test(`${++testId}: Drag a image label to the legend`, async function () {
     const { page, scatterPlot } = await loadWidget({ browser })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_6' })
 
     await scatterPlot.movePlotLabelToLegend({ id: 2 })
 
-    await testSnapshots({ page, testName: `after_apple_drag_to_legend_${testId}` })
+    await testSnapshots({ page, testName: 'after_apple_drag_to_legend_1' })
     await testState({ page, stateName: 'data.bdd.three_point_brand_state.apple_label_moved_to_legend', tolerance: 1 })
 
     await page.close()
@@ -148,7 +148,7 @@ describe('state interactions', () => {
       stateName: 'data.bdd.three_point_brand_state.apple_label_moved_to_legend',
     })
 
-    await testSnapshots({ page, testName: `after_apple_drag_to_legend_${testId}` })
+    await testSnapshots({ page, testName: 'after_apple_drag_to_legend_2' })
 
     await page.close()
   })
@@ -161,7 +161,7 @@ describe('state interactions', () => {
 
     await scatterPlot.moveLegendLabelToPlot({ id: 2 })
 
-    await testSnapshots({ page, testName: `initial_three_point_${testId}` })
+    await testSnapshots({ page, testName: 'initial_three_point_7' })
     await testState({ page, stateName: 'data.bdd.three_point_brand_state.back_to_original', tolerance: 1 })
 
     await page.close()
@@ -176,7 +176,7 @@ describe('state interactions', () => {
       height: 600,
     })
 
-    await testSnapshots({ page, testName: `initial_bubble_${testId}` })
+    await testSnapshots({ page, testName: 'initial_bubble_1' })
 
     await scatterPlot.movePlotLabel({ id: 2, x: 100, y: 100 })
 
@@ -210,11 +210,11 @@ describe('state interactions', () => {
       height: 600,
     })
 
-    await testSnapshots({ page, testName: `initial_bubble_${testId}` })
+    await testSnapshots({ page, testName: 'initial_bubble_2' })
 
     await scatterPlot.movePlotLabelToLegend({ id: 2 })
 
-    await testSnapshots({ page, testName: `after_bubble_drag_to_legend_${testId}` })
+    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend_1' })
     await testState({ page, stateName: 'data.bdd.bubbleplot_simple_state.label_moved_to_legend', tolerance: 1 })
 
     await page.close()
@@ -229,7 +229,7 @@ describe('state interactions', () => {
       height: 600,
     })
 
-    await testSnapshots({ page, testName: `after_bubble_drag_to_legend_${testId}` })
+    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend_2' })
 
     await page.close()
   })
@@ -245,7 +245,7 @@ describe('state interactions', () => {
 
     await scatterPlot.moveLegendLabelToPlot({ id: 2 })
 
-    await testSnapshots({ page, testName: `initial_bubble_${testId}` })
+    await testSnapshots({ page, testName: 'initial_bubble_3' })
     await testState({ page, stateName: 'data.bdd.bubbleplot_simple_state.back_to_original', tolerance: 1 })
 
     await page.close()
