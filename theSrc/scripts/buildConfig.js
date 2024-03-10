@@ -1,4 +1,6 @@
 const _ = require('lodash')
+import Utils from './utils/Utils'
+import DataTypeEnum from './utils/DataTypeEnum'
 
 // TODO all of the margin config params below can probably be removed
 const defaultConfig = {
@@ -144,12 +146,26 @@ function buildConfig (userConfig, width, height) {
       ? 4 : 2
   }
 
-   if (config.xAxisFontColor === null) { config.xAxisFontColor = config.axisFontColor }
-   if (config.xAxisFontFamily === null) { config.xAxisFontFamily = config.axisFontFamily }
-   if (config.xAxisFontSize === null) { config.xAxisFontSize = config.axisFontSize }
-   if (config.yAxisFontColor === null) { config.yAxisFontColor = config.axisFontColor }
-   if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
-   if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
+  if (config.xAxisFontColor === null) { config.xAxisFontColor = config.axisFontColor }
+  if (config.xAxisFontFamily === null) { config.xAxisFontFamily = config.axisFontFamily }
+  if (config.xAxisFontSize === null) { config.xAxisFontSize = config.axisFontSize }
+  if (config.yAxisFontColor === null) { config.yAxisFontColor = config.axisFontColor }
+  if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
+  if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
+
+  if (config.xIsDateTime)
+    config.xDataType = DataTypeEnum.date
+  else if (Utils.isArrOfNumTypes(config.X))
+    config.xDataType = DataTypeEnum.numeric
+  else
+    config.xDataType = DataTypeEnum.ordinal
+
+  if (config.yIsDateTime)
+    config.yDataType = DataTypeEnum.date
+  else if (Utils.isArrOfNumTypes(config.Y))
+    config.yDataType = DataTypeEnum.numeric
+  else
+    config.yDataType = DataTypeEnum.ordinal
 
   return config
 }

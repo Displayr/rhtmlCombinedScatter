@@ -2,23 +2,23 @@ import _ from 'lodash'
 import LegendUtils from './utils/LegendUtils'
 import DataTypeEnum from './utils/DataTypeEnum'
 
-function createPlotlyData (data, config) {
+function createPlotlyData (config) {
     // Check for empty labels
-    const indices = _.range(data.X.length)
-    let tooltip_labels = !Array.isArray(data.labelAlt) ? data.label : data.labelAlt
+    const indices = _.range(config.X.length)
+    let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
-    let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
+    let tooltips = indices.map(i => `${tooltip_labels[i]} (${config.X[i]}, ${config.Y[i]})`)
 
     // Check if this is a bubbleplot
     let normZ
     let marker_opacity = config.transparency
-    if (Array.isArray(data.Z)) {
-        const maxZ = _.max(data.Z)
-        normZ = LegendUtils.normalizeZValues(data.Z, maxZ)
-            .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+    if (Array.isArray(config.Z)) {
+        const maxZ = _.max(config.Z)
+        normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
+           .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle ? config.zTitle + ': ' : ''
-        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${data.Z[i]}`)
+        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
 
@@ -27,18 +27,18 @@ function createPlotlyData (data, config) {
         plot_data.push(createBaseTrace(config))
     }
 
-    if (!Array.isArray(data.group)) {
-        const marker_size = data.Z === undefined ? config.pointRadius * 2 : normZ
-        plot_data.push(createScatterTrace(data.X, data.Y, tooltips, ' ', marker_size,
+    if (!Array.isArray(config.group)) {
+        const marker_size = config.Z === undefined ? config.pointRadius * 2 : normZ
+        plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else {
-        const indices_by_group = _.groupBy(indices, i => data.group[i])
+        const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
             const g_name = group_names[g]
             const g_index = indices_by_group[g_name]
             const marker_size = normZ === undefined ? config.pointRadius * 2 : _.at(normZ, g_index)
-            plot_data.push(createScatterTrace(_.at(data.X, g_index), _.at(data.Y, g_index),
+            plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
                 _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
                 marker_opacity, config.pointBorderColor, config.pointBorderWidth))
         }

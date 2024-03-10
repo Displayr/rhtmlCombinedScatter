@@ -37,20 +37,6 @@ class LabeledScatter {
     if (!(_.isNull(data.X)) && !(_.isNull(data.Y))) {
       this.data = data
     }
-
-    if (data.xIsDateTime)
-      this.data.xDataType = DataTypeEnum.date
-    else if (Utils.isArrOfNumTypes(data.X))
-      this.data.xDataType = DataTypeEnum.numeric
-    else
-      this.data.xDataType = DataTypeEnum.ordinal
-
-    if (data.yIsDateTime)
-      this.data.yDataType = DataTypeEnum.date
-    else if (Utils.isArrOfNumTypes(data.Y))
-      this.data.yDataType = DataTypeEnum.numeric
-    else
-      this.data.yDataType = DataTypeEnum.ordinal
   }
 
   setUserState (userStateInput) {
@@ -84,7 +70,7 @@ class LabeledScatter {
 
     const config = buildConfig(this.data, this.width, this.height)
     try {
-      const plot_data = createPlotlyData(this.data, config)
+      const plot_data = createPlotlyData(config)
       const plot_layout = createPlotlyLayout(config, this.marginRight())
       const plot_config = { displayModeBar: false, editable: false }
 
@@ -136,10 +122,10 @@ class LabeledScatter {
         .attr('height', plot_height)
     config.legendBubblesShow = false
     config.legendShow = false
-    config.yBoundsMinimum = this.convertValueType(plotly_chart_layout.yaxis.range[0], this.data.yDataType)
-    config.yBoundsMaximum = this.convertValueType(plotly_chart_layout.yaxis.range[1], this.data.yDataType)
-    config.xBoundsMinimum = this.convertValueType(plotly_chart_layout.xaxis.range[0], this.data.xDataType)
-    config.xBoundsMaximum = this.convertValueType(plotly_chart_layout.xaxis.range[1], this.data.xDataType)
+    config.yBoundsMinimum = this.convertValueType(plotly_chart_layout.yaxis.range[0], config.yDataType)
+    config.yBoundsMaximum = this.convertValueType(plotly_chart_layout.yaxis.range[1], config.yDataType)
+    config.xBoundsMinimum = this.convertValueType(plotly_chart_layout.xaxis.range[0], config.xDataType)
+    config.xBoundsMaximum = this.convertValueType(plotly_chart_layout.xaxis.range[1], config.xDataType)
     config.width = plot_width
     config.height = plot_height
 
