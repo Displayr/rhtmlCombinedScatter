@@ -59,6 +59,9 @@ class LabeledScatter {
       .style('width', this.width + 'px')
       .style('height', this.height + 'px')
 
+    // Tell visual tests widget as not ready
+    d3.select(this.rootElement).node().setAttribute('rhtmlwidget-status', 'loading')
+
     // Error checking
     DisplayError.isAxisValid(this.data.X, this.rootElement, 'Given X values is neither array of nums, dates, or strings!')
     DisplayError.isAxisValid(this.data.Y, this.rootElement, 'Given Y values is neither array of nums, dates, or strings!')
@@ -98,6 +101,9 @@ class LabeledScatter {
       } else {
         throw err
       }
+    } finally {
+      // Tell visual tests widget is done rendering
+      d3.select(this.rootElement).node().setAttribute('rhtmlwidget-status', 'ready')
     }
   }
 
