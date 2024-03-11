@@ -65,8 +65,8 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
 
 // Creates the first trace to ensure categorical data is ordered properly
 function createBaseTrace (config) {
-    const x_levels = config.xLevels ? config.xLevels : []
-    const y_levels = config.yLevels ? _(config.yLevels).cloneDeep().reverse() : []
+    let x_levels = config.xLevels ? config.xLevels : []
+    let y_levels = config.yLevels ? _(config.yLevels).cloneDeep().reverse() : []
     if (x_levels.length < y_levels.length) {
         x_levels = x_levels.concat(new Array(y_levels.length - x_levels.length).fill(config.X[0]))
     }
