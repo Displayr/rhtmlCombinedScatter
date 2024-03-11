@@ -312,7 +312,7 @@ describe('state interactions', () => {
     await page.close()
   })
 
-  // This works locally but not in CircleCI. Disabling for now
+  // Disabling as this works locally but not in CircleCI (clicking on a marker doesn't toggle the label)
   // test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
   //   const { page, scatterPlot } = await loadWidget({
   //     browser,
