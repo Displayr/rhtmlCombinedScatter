@@ -122,7 +122,7 @@ function createPlotlyLayout (config, margin_right) {
             automargin: true,
             autotypenumbers: 'strict',
             type: plotlyNumberType(config.xDataType),
-            range: [config.xBoundsMinimum, config.xBoundsMaximum],
+            range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X),
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
@@ -156,7 +156,7 @@ function createPlotlyLayout (config, margin_right) {
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             type: plotlyNumberType(config.yDataType),
-            range: [config.yBoundsMinimum, config.yBoundsMaximum],
+            range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y),
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
@@ -205,6 +205,24 @@ function createPlotlyLayout (config, margin_right) {
         plot_bgcolor: config.plotAreaBackgroundColor,
     }
     return plot_layout
+}
+
+function getRange (minBounds, maxBounds, type, values) {
+    let bounds = [minBounds, maxBounds]
+    // Plotly seems to find a reasonable default range for non-date values
+    if (type === DataTypeEnum.date && (minBounds === null || maxBounds === null)) {
+        const dates = values.map(d => d.getTime())
+        dates.sort()
+        let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
+        for (let i = 1; i < dates.length; i++) {
+            min_diff = Math.min(min_diff, dates[i] - dates[i-1])
+        }
+        if (minBounds === null)
+            bounds[0] = dates[0] - min_diff
+        if (maxBounds === null)
+            bounds[1] = dates[dates.length - 1] + min_diff
+    }
+    return bounds
 }
 
 function addLines (config) {
