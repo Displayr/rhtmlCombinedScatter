@@ -14,7 +14,6 @@ import { Legend } from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
 import ResetButton from './ResetButton'
-import DataTypeEnum from './utils/DataTypeEnum'
 
 const DEBUG_ADD_BBOX_TO_IMG = false
 
@@ -25,37 +24,13 @@ class RectPlot {
     this.state = stateObj
     this.width = config.width
     this.height = config.height
-
-    const { X, xLevels, xIsDateTime } = config
-    if (xIsDateTime) {
-      this.X = _.map(X, (d) => new Date(d))
-      this.xLevels = null
-      this.xDataType = DataTypeEnum.date
-    } else if (Utils.isArrOfNumTypes(X)) {
-      this.X = X
-      this.xLevels = null
-      this.xDataType = DataTypeEnum.numeric
-    } else {
-      this.X = X
-      this.xLevels = _.isNull(xLevels) ? _.uniq(X) : xLevels
-      this.xDataType = DataTypeEnum.ordinal
-    }
-
-    const { Y, yLevels, yIsDateTime } = config
-    if (yIsDateTime) {
-      this.Y = _.map(Y, (d) => new Date(d))
-      this.yLevels = null
-      this.yDataType = DataTypeEnum.date
-    } else if (Utils.isArrOfNumTypes(Y)) {
-      this.Y = Y
-      this.yLevels = null
-      this.yDataType = DataTypeEnum.numeric
-    } else {
-      this.Y = Y
-      this.yLevels = _.isNull(yLevels) ? _(Y).uniq().reverse().value() : yLevels
-      this.yDataType = DataTypeEnum.ordinal
-    }
-
+    this.X = config.X
+    this.xDataType = config.xDataType
+    this.xIsDateTime = config.xIsDateTime
+    this.xLevels = config.xLevels
+    this.Y = config.Y
+    this.yDataType = config.yDataType
+    this.yLevels = config.yLevels
     this.Z = config.Z
     this.group = config.group
     this.label = config.label
@@ -232,9 +207,6 @@ class RectPlot {
   }
 
   async draw () {
-    // Tell visual tests widget as not ready
-    this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
-
     return this.drawLabsAndPlot().then(() => this.drawLegend())
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
@@ -255,11 +227,8 @@ class RectPlot {
         }
 
         throw err
-      }).finally(() => {
-        // Tell visual tests that widget is done rendering
-        this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'ready')
       })
-  }
+    }
 
   isEqual (otherPlot) {
     // Test if RectPlot is equal to another, does not include all parameters for comparison (only those set in Displayr added now)

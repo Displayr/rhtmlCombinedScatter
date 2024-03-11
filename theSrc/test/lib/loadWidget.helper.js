@@ -9,7 +9,7 @@ const ScatterPlotPage = require('./scatterPlotPage')
 // TODO the 'data.bdd.three_point_brand' default is questionable but serves this suite ...
 const waitForScatterplotToLoad = async ({ page }) => page.waitForFunction(selectorString => {
   return document.querySelectorAll(selectorString).length
-}, { timeout: 3000 }, 'body[widgets-ready], .main-svg, .rhtml-error-container')
+}, { timeout: 3000 }, 'body[widgets-ready], .rhtml-error-container')
 
 const loadWidget = async ({
   browser,
