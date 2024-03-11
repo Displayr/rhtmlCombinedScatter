@@ -13,6 +13,7 @@ import 'babel-polyfill'
 
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
 import InsufficientWidthError from './exceptions/InsufficientWidthError'
+import DataTypeEnum from './utils/DataTypeEnum'
 
 const MARGIN_RIGHT_FOR_LEGEND_POINTS = 100
 const LEGEND_POINTS_PADDING_TOP = 10
@@ -69,18 +70,17 @@ class LabeledScatter {
 
     const config = buildConfig(this.data, this.width, this.height)
     try {
-      const plot_data = createPlotlyData(this.data, config)
+      const plot_data = createPlotlyData(config)
       const plot_layout = createPlotlyLayout(config, this.marginRight())
       const plot_config = { displayModeBar: false, editable: false }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-
+      const tmp_layout = {}
       const is_legend_points_to_right_of_plotly_legend = plotlyChart._fullLayout.legend && this.stateObj.legendPts.length > 0 && !this.isEnoughHeightUnderLegendForLegendPoints(plotlyChart._fullLayout, config)
       if (is_legend_points_to_right_of_plotly_legend) {
-        const plot_layout_2 = createPlotlyLayout(config, this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS)
-        plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout_2, plot_config)
+        tmp_layout['margin.r'] = this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS
       }
-
+      if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
 
       plotlyChart.on('plotly_afterplot', () => {
@@ -121,10 +121,10 @@ class LabeledScatter {
         .attr('height', plot_height)
     config.legendBubblesShow = false
     config.legendShow = false
-    config.yBoundsMinimum = plotly_chart_layout.yaxis.range[0]
-    config.yBoundsMaximum = plotly_chart_layout.yaxis.range[1]
-    config.xBoundsMinimum = plotly_chart_layout.xaxis.range[0]
-    config.xBoundsMaximum = plotly_chart_layout.xaxis.range[1]
+    config.yBoundsMinimum = this.convertValueType(plotly_chart_layout.yaxis.range[0], config.yDataType)
+    config.yBoundsMaximum = this.convertValueType(plotly_chart_layout.yaxis.range[1], config.yDataType)
+    config.xBoundsMinimum = this.convertValueType(plotly_chart_layout.xaxis.range[0], config.xDataType)
+    config.xBoundsMaximum = this.convertValueType(plotly_chart_layout.xaxis.range[1], config.xDataType)
     config.width = plot_width
     config.height = plot_height
 
@@ -132,6 +132,12 @@ class LabeledScatter {
 
     this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw(), legendPointsRect: legend_points_rect })
     await this.plot.draw()
+  }
+
+  convertValueType (x, type) {
+    if (x === null) return x
+    if (type !== DataTypeEnum.date) return x
+    else return new Date(x).getTime()
   }
 
   resize (el, width, height) {

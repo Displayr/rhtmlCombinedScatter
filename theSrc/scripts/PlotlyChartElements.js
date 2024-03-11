@@ -1,39 +1,39 @@
 import _ from 'lodash'
-import LegendUtils from './utils/LegendUtils'
+import DataTypeEnum from './utils/DataTypeEnum'
 
-function createPlotlyData (data, config) {
+function createPlotlyData (config) {
     // Check for empty labels
-    const indices = _.range(data.X.length)
-    let tooltip_labels = data.labelAlt === undefined ? data.label : data.labelAlt
-    if (tooltip_labels === undefined) tooltip_labels = indices.map(i => '')
-    let tooltips = indices.map(i => `${tooltip_labels[i]} (${data.X[i]}, ${data.Y[i]})`)
+    const indices = _.range(config.X.length)
+    let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
+    if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
+    let tooltips = indices.map(i => `${tooltip_labels[i]} (${config.X[i]}, ${config.Y[i]})`)
 
     // Check if this is a bubbleplot
-    let normZ
     let marker_opacity = config.transparency
-    if (Array.isArray(data.Z)) {
-        const maxZ = _.max(data.Z)
-        normZ = LegendUtils.normalizeZValues(data.Z, maxZ)
-            .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+    if (config.normZ) {
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle ? config.zTitle + ': ' : ''
-        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${data.Z[i]}`)
+        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
-    if (!Array.isArray(data.group)) {
-        const marker_size = data.Z === undefined ? config.pointRadius * 2 : normZ
-        plot_data.push(createScatterTrace(data.X, data.Y, tooltips, ' ', marker_size,
+    if (config.xLevels || config.yLevels) {
+        plot_data.push(createBaseTrace(config))
+    }
+
+    if (!Array.isArray(config.group)) {
+        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
+        plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else {
-        const indices_by_group = _.groupBy(indices, i => data.group[i])
+        const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
             const g_name = group_names[g]
             const g_index = indices_by_group[g_name]
-            const marker_size = normZ === undefined ? config.pointRadius * 2 : _.at(normZ, g_index)
-            plot_data.push(createScatterTrace(_.at(data.X, g_index), _.at(data.Y, g_index),
+            const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, g_index)
+            plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
                 _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
                 marker_opacity, config.pointBorderColor, config.pointBorderWidth))
         }
@@ -63,6 +63,28 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
     }
 }
 
+// Creates the first trace to ensure categorical data is ordered properly
+function createBaseTrace (config) {
+    let x_levels = config.xLevels ? config.xLevels : []
+    let y_levels = config.yLevels ? config.yLevels.toReversed() : []
+    if (x_levels.length < y_levels.length) {
+        x_levels = x_levels.concat(new Array(y_levels.length - x_levels.length).fill(config.X[0]))
+    }
+    if (y_levels.length < x_levels.length) {
+        y_levels = y_levels.concat(new Array(x_levels.length - y_levels.length).fill(config.Y[0]))
+    }
+
+    return {
+        x: x_levels,
+        y: y_levels,
+        type: 'scatter',
+        mode: 'lines',
+        hoverinfo: 'skip',
+        showlegend: false,
+        opacity: 0
+    }
+}
+
 function createPlotlyLayout (config, margin_right) {
     const plot_layout = {
         xaxis: {
@@ -72,7 +94,7 @@ function createPlotlyLayout (config, margin_right) {
                     family: config.xTitleFontFamily,
                     color: config.xTitleFontColor,
                     size: config.xTitleFontSize
-                }
+                },
             },
             showgrid: config.grid,
             gridcolor: config.xAxisGridColor,
@@ -93,7 +115,10 @@ function createPlotlyLayout (config, margin_right) {
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             automargin: true,
-            range: [config.xBoundsMinimum, config.xBoundsMaximum],
+            autotypenumbers: 'strict',
+            type: plotlyNumberType(config.xDataType),
+            range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X, _.max(config.normZ), config.width),
+            rangemode: 'normal',
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
@@ -106,7 +131,7 @@ function createPlotlyLayout (config, margin_right) {
                     family: config.yTitleFontFamily,
                     color: config.yTitleFontColor,
                     size: config.yTitleFontSize
-                }
+                },
             },
             showgrid: config.grid,
             gridcolor: config.yAxisGridColor,
@@ -126,7 +151,9 @@ function createPlotlyLayout (config, margin_right) {
             scaleanchor: config.fixedAspectRatio ? 'x' : null,
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
-            range: [config.yBoundsMinimum, config.yBoundsMaximum],
+            type: plotlyNumberType(config.yDataType),
+            range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y, _.max(config.normZ), config.width),
+            rangemode: 'normal',
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
@@ -143,7 +170,7 @@ function createPlotlyLayout (config, margin_right) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
-        showlegend: config.legendShow,
+        showlegend: config.legendShow && config.group !== null && config.group.length > 0,
         legend: {
             font: {
                 family: config.legendFontFamily,
@@ -177,15 +204,38 @@ function createPlotlyLayout (config, margin_right) {
     return plot_layout
 }
 
+function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth) {
+    let bounds = [minBounds, maxBounds]
+    // Plotly seems to find a reasonable default range for non-date values
+    if (type === DataTypeEnum.date && (minBounds === null || maxBounds === null)) {
+        const dates = values.map(d => d.getTime())
+        dates.sort()
+        let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
+        for (let i = 1; i < dates.length; i++) {
+            min_diff = Math.min(min_diff, dates[i] - dates[i - 1])
+        }
+        if (minBounds === null) bounds[0] = dates[0] - min_diff
+        if (maxBounds === null) bounds[1] = dates[dates.length - 1] + min_diff
+
+        // Estimate the extra space we need to add for bubbles
+        // This is approximate because we don't know plotWidth yet
+        const bubble_offset = !maxBubbleSize ? 0
+            : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+        bounds[0] -= bubble_offset
+        bounds[1] += bubble_offset
+    }
+    return bounds
+}
+
 function addLines (config) {
     const lines = []
-    if (config.origin) {
+    if (config.origin && (!config.xLevels || !config.xLevels.length)) {
         lines.push({
             type: 'line',
             layer: 'above',
             line: {
                 color: config.xAxisZeroLineColor,
-                dash: config.xAxisZeroLineType,
+                dash: config.xAxisZeroLineDash,
                 width: config.xAxisZeroLineWidth
             },
             x0: 0,
@@ -195,6 +245,8 @@ function addLines (config) {
             y1: 1,
             yref: 'paper'
         })
+    }
+    if (config.origin && (!config.yLevels || !config.yLevels.length)) {
         lines.push({
             type: 'line',
             layer: 'above',
@@ -252,6 +304,14 @@ function blackOrWhite (bg_color) {
         return luminosity > 126 ? '#2C2C2C' : '#FFFFFF'
     }
     return '#2C2C2C'
+}
+
+function plotlyNumberType (type) {
+    switch (type) {
+        case DataTypeEnum.date: return 'date'
+        case DataTypeEnum.numeric: return 'linear'
+        default: return 'category'
+    }
 }
 
 module.exports = {

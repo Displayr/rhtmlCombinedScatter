@@ -37,18 +37,12 @@ class PlotData {
     legendSettings
   ) {
     autoBind(this)
-    if (xDataType === DataTypeEnum.date) {
-      this.X = _.map(X, d => d.getTime())
-    } else {
-      this.X = X
-      this.xLevels = xLevels
-    }
-    if (yDataType === DataTypeEnum.date) {
-      this.Y = _.map(Y, d => d.getTime())
-    } else {
-      this.Y = Y
-      this.yLevels = yLevels
-    }
+    this.X = X
+    this.xDataType = xDataType
+    this.xLevels = xLevels
+    this.Y = Y
+    this.yDataType = yDataType
+    this.yLevels = yLevels
     this.Z = Z
     this.xDataType = xDataType
     this.yDataType = yDataType

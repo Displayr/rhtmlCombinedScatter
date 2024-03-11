@@ -1,3 +1,6 @@
+import Utils from './utils/Utils'
+import DataTypeEnum from './utils/DataTypeEnum'
+import LegendUtils from './utils/LegendUtils'
 const _ = require('lodash')
 
 // TODO all of the margin config params below can probably be removed
@@ -144,13 +147,44 @@ function buildConfig (userConfig, width, height) {
       ? 4 : 2
   }
 
-   if (config.xAxisFontColor === null) { config.xAxisFontColor = config.axisFontColor }
-   if (config.xAxisFontFamily === null) { config.xAxisFontFamily = config.axisFontFamily }
-   if (config.xAxisFontSize === null) { config.xAxisFontSize = config.axisFontSize }
-   if (config.yAxisFontColor === null) { config.yAxisFontColor = config.axisFontColor }
-   if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
-   if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
+  if (config.xAxisFontColor === null) { config.xAxisFontColor = config.axisFontColor }
+  if (config.xAxisFontFamily === null) { config.xAxisFontFamily = config.axisFontFamily }
+  if (config.xAxisFontSize === null) { config.xAxisFontSize = config.axisFontSize }
+  if (config.yAxisFontColor === null) { config.yAxisFontColor = config.axisFontColor }
+  if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
+  if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
 
+  if (config.xIsDateTime) {
+    config.X = _.map(config.X, (d) => new Date(d))
+    config.xDataType = DataTypeEnum.date
+    config.xLevels = null
+  } else if (Utils.isArrOfNumTypes(config.X)) {
+    config.xDataType = DataTypeEnum.numeric
+    config.xLevels = null
+  } else {
+    config.xDataType = DataTypeEnum.ordinal
+    config.xLevels = _.isNull(config.xLevels) ? _.uniq(config.X) : config.xLevels
+  }
+
+  if (config.yIsDateTime) {
+    config.yDataType = DataTypeEnum.date
+    config.Y = _.map(config.Y, (d) => new Date(d))
+    config.yLevels = null
+  } else if (Utils.isArrOfNumTypes(config.Y)) {
+    config.yDataType = DataTypeEnum.numeric
+    config.yLevels = null
+  } else {
+    config.yDataType = DataTypeEnum.ordinal
+    config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().reverse().value() : config.yLevels
+  }
+
+  // Normalize bubble sizes to compute diameter in pixels
+  config.normZ = null
+  if (Array.isArray(config.Z)) {
+    const maxZ = _.max(config.Z)
+    config.normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
+        .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+  }
   return config
 }
 
