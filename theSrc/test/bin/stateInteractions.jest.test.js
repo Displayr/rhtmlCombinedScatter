@@ -324,6 +324,7 @@ describe('state interactions', () => {
 
     // await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
     await scatterPlot.clickMouseOnAnchor()
+    await page.waitFor(2000)
     await testSnapshots({ page, testName: 'labels_after_toggling' })
 
     await scatterPlot.clickResetButton()
