@@ -71,8 +71,8 @@ class ScatterPlotPage {
     return this.page.mouse.move(initialMousePosition.x, initialMousePosition.y)
   }
 
-  async clickMouseOnFirstAnchor () {
-    return this.page.click('.point')
+  async clickMouseOnAnchor () {
+    return this.page.click('.point:nth-child(2)')
   }
 
   async clickResetButton () {
