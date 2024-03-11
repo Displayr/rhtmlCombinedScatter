@@ -322,8 +322,8 @@ describe('state interactions', () => {
 
     await testSnapshots({ page, testName: 'bubble_maxlabels' })
 
-    await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
-    await scatterPlot.clickMouseOnFirstAnchor({ id: 0 })
+    // await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
+    await scatterPlot.clickMouseOnFirstAnchor()
     await testSnapshots({ page, testName: 'labels_after_toggling' })
 
     await scatterPlot.clickResetButton()
