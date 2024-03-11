@@ -287,12 +287,11 @@ function blackOrWhite (bg_color) {
 }
 
 function plotlyNumberType (type) {
-    if (type == DataTypeEnum.date)
-        return 'date'
-    else if (type === DataTypeEnum.numeric)
-        return 'linear'
-    else
-        return 'category'
+    switch (type) {
+        case DataTypeEnum.date: return 'date'
+        case DataTypeEnum.numeric: return 'linear'
+        default: return 'category'
+    }
 }
 
 module.exports = {

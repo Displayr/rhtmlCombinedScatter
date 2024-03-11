@@ -1,6 +1,6 @@
-const _ = require('lodash')
 import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
+const _ = require('lodash')
 
 // TODO all of the margin config params below can probably be removed
 const defaultConfig = {
@@ -153,19 +153,29 @@ function buildConfig (userConfig, width, height) {
   if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
   if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
 
-  if (config.xIsDateTime)
+  if (config.xIsDateTime) {
+    config.X = _.map(config.X, (d) => new Date(d))
     config.xDataType = DataTypeEnum.date
-  else if (Utils.isArrOfNumTypes(config.X))
+    config.xLevels = null
+  } else if (Utils.isArrOfNumTypes(config.X)) {
     config.xDataType = DataTypeEnum.numeric
-  else
+    config.xLevels = null
+  } else {
     config.xDataType = DataTypeEnum.ordinal
+    config.xLevels = _.isNull(config.xLevels) ? _.uniq(config.X) : config.xLevels
+  }
 
-  if (config.yIsDateTime)
+  if (config.yIsDateTime) {
     config.yDataType = DataTypeEnum.date
-  else if (Utils.isArrOfNumTypes(config.Y))
+    config.Y = _.map(config.Y, (d) => new Date(d))
+    config.yLevels = null
+  } else if (Utils.isArrOfNumTypes(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
-  else
+    config.yLevels = null
+  } else {
     config.yDataType = DataTypeEnum.ordinal
+    config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().reverse().value() : config.yLevels
+  }
 
   return config
 }

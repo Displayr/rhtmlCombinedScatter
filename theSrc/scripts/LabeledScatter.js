@@ -135,7 +135,7 @@ class LabeledScatter {
     await this.plot.draw()
   }
 
-  convertValueType(x, type) {
+  convertValueType (x, type) {
     if (x === null) return x
     if (type !== DataTypeEnum.date) return x
     else return new Date(x).getTime()
