@@ -1,5 +1,6 @@
 import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
+import LegendUtils from './utils/LegendUtils'
 const _ = require('lodash')
 
 // TODO all of the margin config params below can probably be removed
@@ -177,6 +178,13 @@ function buildConfig (userConfig, width, height) {
     config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().reverse().value() : config.yLevels
   }
 
+  // Normalize bubble sizes to compute diameter in pixels
+  config.normZ = null
+  if (Array.isArray(config.Z)) {
+    const maxZ = _.max(config.Z)
+    config.normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
+        .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+  }
   return config
 }
 

@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import LegendUtils from './utils/LegendUtils'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 function createPlotlyData (config) {
@@ -10,12 +9,8 @@ function createPlotlyData (config) {
     let tooltips = indices.map(i => `${tooltip_labels[i]} (${config.X[i]}, ${config.Y[i]})`)
 
     // Check if this is a bubbleplot
-    let normZ
     let marker_opacity = config.transparency
-    if (Array.isArray(config.Z)) {
-        const maxZ = _.max(config.Z)
-        normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
-           .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+    if (config.normZ) {
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle ? config.zTitle + ': ' : ''
         tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
@@ -28,7 +23,7 @@ function createPlotlyData (config) {
     }
 
     if (!Array.isArray(config.group)) {
-        const marker_size = config.Z === undefined ? config.pointRadius * 2 : normZ
+        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else {
@@ -37,7 +32,7 @@ function createPlotlyData (config) {
         for (let g = 0; g < group_names.length; g++) {
             const g_name = group_names[g]
             const g_index = indices_by_group[g_name]
-            const marker_size = normZ === undefined ? config.pointRadius * 2 : _.at(normZ, g_index)
+            const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, g_index)
             plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
                 _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
                 marker_opacity, config.pointBorderColor, config.pointBorderWidth))
@@ -122,7 +117,7 @@ function createPlotlyLayout (config, margin_right) {
             automargin: true,
             autotypenumbers: 'strict',
             type: plotlyNumberType(config.xDataType),
-            range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X),
+            range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X, _.max(config.normZ), config.width),
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
@@ -156,7 +151,7 @@ function createPlotlyLayout (config, margin_right) {
             // draw zero line separately to ensure it sit on top layer
             zeroline: false,
             type: plotlyNumberType(config.yDataType),
-            range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y),
+            range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y, _.max(config.normZ), config.width),
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
@@ -207,7 +202,7 @@ function createPlotlyLayout (config, margin_right) {
     return plot_layout
 }
 
-function getRange (minBounds, maxBounds, type, values) {
+function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth) {
     let bounds = [minBounds, maxBounds]
     // Plotly seems to find a reasonable default range for non-date values
     if (type === DataTypeEnum.date && (minBounds === null || maxBounds === null)) {
@@ -219,6 +214,13 @@ function getRange (minBounds, maxBounds, type, values) {
         }
         if (minBounds === null) bounds[0] = dates[0] - min_diff
         if (maxBounds === null) bounds[1] = dates[dates.length - 1] + min_diff
+
+        // Estimate the extra space we need to add for bubbles
+        // This is approximate because we don't know plotWidth yet
+        const bubble_offset = !maxBubbleSize ? 0
+            : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+        bounds[0] -= bubble_offset
+        bounds[1] += bubble_offset
     }
     return bounds
 }
