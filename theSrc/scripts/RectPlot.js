@@ -207,9 +207,6 @@ class RectPlot {
   }
 
   async draw () {
-    // Tell visual tests widget as not ready
-    this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'loading')
-
     return this.drawLabsAndPlot().then(() => this.drawLegend())
       .then(() => {
         const debugMsg = new DebugMessage(this.svg, this.vb, this.debugMode)
@@ -230,11 +227,8 @@ class RectPlot {
         }
 
         throw err
-      }).finally(() => {
-        // Tell visual tests that widget is done rendering
-        this.svg.node().parentNode.setAttribute('rhtmlwidget-status', 'ready')
       })
-  }
+    }
 
   isEqual (otherPlot) {
     // Test if RectPlot is equal to another, does not include all parameters for comparison (only those set in Displayr added now)
