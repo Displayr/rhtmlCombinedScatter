@@ -33,7 +33,7 @@ describe('state interactions', () => {
 
     await testSnapshots({ page, testName: 'initial_three_point' })
 
-    await scatterPlot.movePlotLabel({ id: 0, x: 50, y: 50 })
+    await scatterPlot.movePlotLabel({ id: 0, x: 50, y: -50 })
 
     await testSnapshots({ page, testName: 'after_porche_drag_on_canvas' })
     await testState({ page, stateName: 'data.bdd.three_point_brand_state.porche_label_moved_50x50', tolerance: 1 })
@@ -281,31 +281,16 @@ describe('state interactions', () => {
     await page.close()
   })
 
-  // unrelated truncated plot
-  test(`${++testId}: Load saved state and see truncated scatterplot with 2 columns`, async function () {
+  test(`${++testId}: Load saved state and see scatterplot with scolled legend and dragged points`, async function () {
     const { page } = await loadWidget({
       browser,
       configName: 'data.bdd.scatterplot_yaxis_not_visible',
-      stateName: 'data.bdd.scatterplot_yaxis_not_visible_state.legend_truncation_2cols',
+      stateName: 'data.bdd.scatterplot_yaxis_not_visible_state.legend_truncation',
       width: 755,
-      height: 150,
+      height: 250,
     })
 
-    await testSnapshots({ page, testName: 'legend_truncation_2cols' })
-
-    await page.close()
-  })
-
-  test(`${++testId}: Load saved state and see truncated scatterplot with 3 columns`, async function () {
-    const { page } = await loadWidget({
-      browser,
-      configName: 'data.bdd.scatterplot_yaxis_not_visible',
-      stateName: 'data.bdd.scatterplot_yaxis_not_visible_state.legend_truncation_3cols',
-      width: 755,
-      height: 150,
-    })
-
-    await testSnapshots({ page, testName: 'legend_truncation_3cols' })
+    await testSnapshots({ page, testName: 'legend_truncation' })
 
     await page.close()
   })
