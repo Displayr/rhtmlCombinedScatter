@@ -90,7 +90,7 @@ function createBaseTrace (config) {
     }
 }
 
-function createPlotlyLayout (config, margin_right) {
+function createPlotlyLayout (config) {
     const plot_layout = {
         xaxis: {
             title: {
@@ -188,7 +188,7 @@ function createPlotlyLayout (config, margin_right) {
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
-            r: !isNaN(margin_right) ? margin_right : config.marginRight,
+            r: config.marginRight,
             l: config.marginLeft,
             automargin: true
         },
@@ -215,12 +215,10 @@ function getRange (minBounds, maxBounds, type, values) {
         dates.sort()
         let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
         for (let i = 1; i < dates.length; i++) {
-            min_diff = Math.min(min_diff, dates[i] - dates[i-1])
+            min_diff = Math.min(min_diff, dates[i] - dates[i - 1])
         }
-        if (minBounds === null)
-            bounds[0] = dates[0] - min_diff
-        if (maxBounds === null)
-            bounds[1] = dates[dates.length - 1] + min_diff
+        if (minBounds === null) bounds[0] = dates[0] - min_diff
+        if (maxBounds === null) bounds[1] = dates[dates.length - 1] + min_diff
     }
     return bounds
 }

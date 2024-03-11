@@ -75,13 +75,12 @@ class LabeledScatter {
       const plot_config = { displayModeBar: false, editable: false }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-
+      const tmp_layout = {}
       const is_legend_points_to_right_of_plotly_legend = plotlyChart._fullLayout.legend && this.stateObj.legendPts.length > 0 && !this.isEnoughHeightUnderLegendForLegendPoints(plotlyChart._fullLayout, config)
       if (is_legend_points_to_right_of_plotly_legend) {
-        const plot_layout_2 = createPlotlyLayout(config, this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS)
-        plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout_2, plot_config)
+        tmp_layout['margin.r'] = this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS
       }
-
+      if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
 
       plotlyChart.on('plotly_afterplot', () => {
