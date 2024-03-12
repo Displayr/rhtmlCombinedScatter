@@ -222,14 +222,15 @@ class PlotData {
           if (this.xDataType === DataTypeEnum.ordinal) {
             const scaleOrdinal = d3.scale.ordinal().domain(this.xLevels).rangePoints([0, 1])
             const unit_length = this.vb.width / (this.maxX - this.minX)
-            x = this.vb.x - this.minX * unit_length + scaleOrdinal(this.X[i]) * Math.floor(this.maxX) * unit_length
+            x = this.vb.x - this.minX * unit_length + scaleOrdinal(this.X[i]) * (this.xLevels.length - 1) * unit_length
           } else {
             x = (this.normX[i] * this.vb.width) + this.vb.x
           }
           if (this.yDataType === DataTypeEnum.ordinal) {
             const scaleOrdinal = d3.scale.ordinal().domain(this.yLevels).rangePoints([0, 1])
             const unit_length = this.vb.height / (this.maxY - this.minY)
-            y = this.vb.y - this.minY * unit_length + scaleOrdinal(this.Y[i]) * Math.floor(this.maxY) * unit_length
+            const n_levels = this.yLevels.length
+            y = this.vb.y + (this.maxY - (n_levels - 1)) * unit_length + scaleOrdinal(this.Y[i]) * (n_levels - 1) * unit_length
           } else {
             y = ((1 - this.normY[i]) * this.vb.height) + this.vb.y
           }
