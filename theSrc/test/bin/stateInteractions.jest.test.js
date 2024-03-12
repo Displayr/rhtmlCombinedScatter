@@ -47,7 +47,7 @@ describe('state interactions', () => {
       stateName: 'data.bdd.three_point_brand_state.porche_label_moved_50x50',
     })
 
-    await testSnapshots({ page, testName: 'after_porche_drag_on_canvas' })
+    await testSnapshots({ page, testName: 'after_porche_drag_on_canvas_from_state' })
 
     await page.close()
   })
