@@ -125,5 +125,5 @@
   "showAxis": true,
   "axisFontSize": 8,
   "pointRadius": 2,
-  "showResetButton": false
+  "showResetButton": true
 }

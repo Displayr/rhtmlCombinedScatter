@@ -6,5 +6,5 @@
   "xBoundsMaximum": 4,
   "yBoundsMinimum": 0,
   "yBoundsMaximum": 4,
-  "showResetButton": false
+  "showResetButton": true
 }

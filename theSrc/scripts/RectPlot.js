@@ -18,7 +18,7 @@ import ResetButton from './ResetButton'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg, reset, legendPointsRect } = {}) {
+  constructor ({ config, stateObj, svg, rootElement, reset, legendPointsRect } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -36,6 +36,7 @@ class RectPlot {
     this.label = config.label
     this.labelAlt = config.labelAlt
     this.svg = svg
+    this.rootElement = rootElement
     this.reset = reset
     this.legendPointsRect = legendPointsRect
     this.zTitle = config.zTitle
@@ -295,7 +296,7 @@ class RectPlot {
   drawResetButton () {
     if (this.showResetButton) {
       this.resetButton = new ResetButton(this)
-      this.resetButton.drawWith(this.svg, this.width, this.height, this.state)
+      this.resetButton.drawWith(this.svg, this.rootElement, this.width, this.height, this.state)
     }
   }
 

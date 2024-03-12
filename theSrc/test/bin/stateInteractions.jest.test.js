@@ -196,8 +196,7 @@ describe('state interactions', () => {
       height: 600,
     })
 
-    // await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas' }) // this is ideal behaviour (equality)
-    await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas-reload' }) // this is current behaviour (small diff)
+    await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas' })
 
     await page.close()
   })
@@ -214,7 +213,7 @@ describe('state interactions', () => {
 
     await scatterPlot.movePlotLabelToLegend({ id: 2 })
 
-    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend' })
+    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend_showing_reset' })
     await testState({ page, stateName: 'data.bdd.bubbleplot_simple_state.label_moved_to_legend', tolerance: 1 })
 
     await page.close()

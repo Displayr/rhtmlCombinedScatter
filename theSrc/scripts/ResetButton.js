@@ -3,7 +3,7 @@ class ResetButton {
     this.plot = plot
   }
 
-  drawWith (svg, width, height, state) {
+  drawWith (svg, root_element, width, height, state) {
     svg.selectAll('.plot-reset-button').remove()
 
     const svgResetButton = svg.append('text')
@@ -19,8 +19,8 @@ class ResetButton {
         this.plot.reset()
       })
 
-    svg.on('mouseover', () => { if (state.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
-       .on('mouseout', () => svgResetButton.style('opacity', 0))
+    root_element.on('mouseover', () => { if (state.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
+      .on('mouseout', () => svgResetButton.style('opacity', 0))
 
     const svgResetButtonBB = svgResetButton.node().getBBox()
     const xAxisPadding = 5

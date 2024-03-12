@@ -136,7 +136,7 @@ class LabeledScatter {
 
     const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend)
 
-    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, reset: () => this.draw(), legendPointsRect: legend_points_rect })
+    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, rootElement: d3.select(this.rootElement), reset: () => this.draw(), legendPointsRect: legend_points_rect })
     await this.plot.draw()
   }
 
