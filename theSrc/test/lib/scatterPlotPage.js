@@ -33,6 +33,7 @@ class ScatterPlotPage {
       y: labelBox.y + labelBox.height / 2,
     }
 
+    // Drag to point below legend instead of legend to avoid accidentally clicking on the plotly legend
     const finalMousePosition = {
       x: legendBox.x + legendBox.width / 2,
       y: legendBox.y + legendBox.height + 5,
