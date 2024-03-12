@@ -214,7 +214,7 @@ describe('state interactions', () => {
 
     await scatterPlot.movePlotLabelToLegend({ id: 2 })
 
-    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend' })
+    await testSnapshots({ page, testName: 'after_bubble_drag_to_legend_showing_reset' })
     await testState({ page, stateName: 'data.bdd.bubbleplot_simple_state.label_moved_to_legend', tolerance: 1 })
 
     await page.close()
