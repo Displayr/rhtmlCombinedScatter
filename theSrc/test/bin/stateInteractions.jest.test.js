@@ -47,7 +47,7 @@ describe('state interactions', () => {
       stateName: 'data.bdd.three_point_brand_state.porche_label_moved_50x50',
     })
 
-    await testSnapshots({ page, testName: 'after_porche_drag_on_canvas_from_state' })
+    await testSnapshots({ page, testName: 'after_porche_drag_on_canvas' })
 
     await page.close()
   })
@@ -196,8 +196,7 @@ describe('state interactions', () => {
       height: 600,
     })
 
-    await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas' }) // this is ideal behaviour (equality)
-    // await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas-reload' }) // this is current behaviour (small diff)
+    await testSnapshots({ page, testName: 'after_bubble_drag_on_canvas' })
 
     await page.close()
   })
