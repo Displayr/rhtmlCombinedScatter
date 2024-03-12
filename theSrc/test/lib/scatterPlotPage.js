@@ -71,12 +71,8 @@ class ScatterPlotPage {
     return this.page.mouse.move(initialMousePosition.x, initialMousePosition.y)
   }
 
-  async moveMouseOntoAnchor ({ id }) {
-    return this.page.hover(`#anc-${id}`)
-  }
-
-  async clickMouseOnAnchor ({ id }) {
-    return this.page.click(`#anc-${id}`)
+  async clickMouseOnAnchor () {
+    return this.page.click('.point')
   }
 
   async clickResetButton () {
@@ -88,7 +84,7 @@ class ScatterPlotPage {
   }
 
   async legendGroup () {
-    return this.page.$('.legend-groups-text')
+    return this.page.$('.legend')
   }
 
   async legendLabel ({ id }) {

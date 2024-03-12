@@ -10,21 +10,19 @@ class State {
     if (!(_.isObject(this.stateObj))) {
       this.stateObj = {}
     }
-
     // NB If the plot data (i.e., X, Y, labels) has changed we reset all user state
     const storedX = this.isStoredInState('X') ? this.getStored('X') : []
     const storedY = this.isStoredInState('Y') ? this.getStored('Y') : []
     const storedLabel = this.isStoredInState('label') ? this.getStored('label') : []
     if (!_.isEqual(storedX, X) ||
-           !_.isEqual(storedY, Y) ||
-           !_.isEqual(storedLabel, label)) {
+        !_.isEqual(storedY, Y) ||
+        !_.isEqual(storedLabel, label)) {
       this.stateObj = {}
       this.saveToState({ 'X': X, 'Y': Y, 'label': label, 'labelsMaxShown': labelsMaxShown })
     } else {
         // If X, Y or labels have changed whole saved state is discarded
         // but changing labelsMaxShown will only change the labels shown
-        const storedLabelsMaxShown = this.isStoredInState('labelsMaxShown') ? this.getStored('labelsMaxShown') : null
-        if (storedLabelsMaxShown !== labelsMaxShown) {
+        if (this.isStoredInState('labelsMaxShown') && this.getStored('labelsMaxShown') !== labelsMaxShown) {
             delete this.stateObj['labelsMaxShown']
             delete this.stateObj['hiddenlabel.pts']
             this.saveToState({ 'labelsMaxShown': labelsMaxShown })

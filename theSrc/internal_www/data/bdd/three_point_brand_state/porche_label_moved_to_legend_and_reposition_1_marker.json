@@ -14,21 +14,21 @@
     "Nike athletic shoes",
     "/images/apple.jpg"
   ],
+  "hiddenlabel.pts": [],
   "legend.pts": [
     0
   ],
   "userPositionedLabs": [
     {
       "id": 0,
-      "x": 0.2691984731081417,
-      "y": 0.7265220580937605
+      "x": 0.2599800127904508,
+      "y": 1.0331668157587741
     }
   ],
-  "hiddenlabel.pts": [],
   "vb": {
-    "width": 742.1556062734082,
-    "height": 509,
-    "x": 40.84375,
-    "y": 70
+    "width": 714,
+    "height": 420,
+    "x": 0,
+    "y": 0
   }
 }
