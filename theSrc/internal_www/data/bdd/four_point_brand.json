@@ -56,5 +56,5 @@
   "axisFontColor": "red",
   "axisFontSize": "10",
   "pointRadius": 2,
-  "showResetButton": false
+  "showResetButton": true
 }

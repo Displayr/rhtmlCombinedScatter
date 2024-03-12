@@ -29,7 +29,7 @@
     "G3",
     "G3"
   ],
-  "showResetButton": false,
+  "showResetButton": true,
   "pointRadius": 4,
   "origin":false,
   "showXAxis": false,
