@@ -53,7 +53,7 @@ class LabeledScatter {
   }
 
   async draw () {
-    $(this.rootElement).find('*').remove()
+    d3.select(this.rootElement).selectAll('*').remove()
     d3.select(this.rootElement)
       .attr('class', 'plot-container rhtmlwidget-outer-svg')
       .style('width', this.width + 'px')
@@ -108,7 +108,7 @@ class LabeledScatter {
   }
 
   async drawScatterLabelLayer (plotly_chart_layout, config, is_legend_points_to_right_of_plotly_legend) {
-    d3.select('.scatterlabellayer').remove()
+    d3.select(this.rootElement).select('.scatterlabellayer').remove()
 
     // The scatter labels need to be in the drag layer so that mouse events
     // such as dragging labels work (the drag layer covers the whole plot area
@@ -172,7 +172,7 @@ class LabeledScatter {
           if (typeof this.plot === 'undefined') {
             this.draw()
           } else {
-            d3.select('.plot-container').remove()
+            d3.select(el).select('.plot-container').remove()
             const svg = d3.select(el)
                     .append('svg')
                     .attr('width', this.width)
