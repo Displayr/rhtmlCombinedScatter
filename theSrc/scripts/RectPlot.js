@@ -131,7 +131,6 @@ class RectPlot {
 
     this.grid = config.grid
     this.origin = config.origin
-    this.fixedRatio = config.fixedAspectRatio // TODO rename for consistency
 
     if (_.isNull(this.label)) {
       this.label = _.map(config.X, () => { return '' })
@@ -197,7 +196,6 @@ class RectPlot {
                          this.vb,
                          this.legend,
                          this.colors,
-                         this.fixedRatio,
                          this.originAlign,
                          this.pointRadius,
                          this.bounds,

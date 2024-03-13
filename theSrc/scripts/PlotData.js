@@ -7,13 +7,7 @@ import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
 import d3 from 'd3'
 
-// To Refactor:
-//   * fixed aspect ratio code can (probably) be simplified : see Pictograph utils/geometryUtils.js
-//
-
 const labelTopPadding = 3 // TODO needs to be configurable, and is duplicated !
-const extraPaddingProportion = 0.08
-const extraBubblePaddingProportion = 0.05
 
 class PlotData {
   constructor (X,
@@ -29,7 +23,6 @@ class PlotData {
     vb,
     legend,
     colorWheel,
-    fixedAspectRatio,
     originAlign,
     pointRadius,
     bounds,
@@ -52,7 +45,6 @@ class PlotData {
     this.vb = vb
     this.legend = legend
     this.colorWheel = colorWheel
-    this.fixedAspectRatio = fixedAspectRatio
     this.originAlign = originAlign
     this.pointRadius = pointRadius
     this.bounds = bounds
@@ -91,7 +83,6 @@ class PlotData {
     // TODO KZ remove this side effect. Plus Data.calcMinMax is called over and over in the code. Why ??
     let i
     this.calculateMinMax()
-    this.calculateOrdinalPaddingProportions()
 
     // create list of movedOffPts that need markers
     this.outsidePlotMarkers = []
@@ -230,15 +221,16 @@ class PlotData {
           let y = 0
           if (this.xDataType === DataTypeEnum.ordinal) {
             const scaleOrdinal = d3.scale.ordinal().domain(this.xLevels).rangePoints([0, 1])
-            const nonPaddingProportion = 1 - this.ordinalMinXPaddingProportion - this.ordinalMaxXPaddingProportion
-            x = scaleOrdinal(this.X[i]) * this.vb.width * nonPaddingProportion + this.vb.x + this.vb.width * this.ordinalMinXPaddingProportion
+            const unit_length = this.vb.width / (this.maxX - this.minX)
+            x = this.vb.x - this.minX * unit_length + scaleOrdinal(this.X[i]) * (this.xLevels.length - 1) * unit_length
           } else {
             x = (this.normX[i] * this.vb.width) + this.vb.x
           }
           if (this.yDataType === DataTypeEnum.ordinal) {
             const scaleOrdinal = d3.scale.ordinal().domain(this.yLevels).rangePoints([0, 1])
-            const nonPaddingProportion = 1 - this.ordinalMinYPaddingProportion - this.ordinalMaxYPaddingProportion
-            y = scaleOrdinal(this.Y[i]) * this.vb.height * nonPaddingProportion + this.vb.y + this.vb.height * this.ordinalMinYPaddingProportion
+            const unit_length = this.vb.height / (this.maxY - this.minY)
+            const n_levels = this.yLevels.length
+            y = this.vb.y + (this.maxY - (n_levels - 1)) * unit_length + scaleOrdinal(this.Y[i]) * (n_levels - 1) * unit_length
           } else {
             y = ((1 - this.normY[i]) * this.vb.height) + this.vb.y
           }
@@ -411,73 +403,6 @@ class PlotData {
 
   getImgLabels () {
     return _.filter(this.lab, l => l.url !== '')
-  }
-
-  // For ordinal coordinates, determine extra padding for min and max bounds
-  // as a proportion of the original range. The padding includes marker and
-  // bubble radii as well as some extra space.
-  calculateOrdinalPaddingProportions () {
-    const r = this.pointRadius
-
-    if (this.xDataType === DataTypeEnum.ordinal) {
-      if (Utils.isArrOfNums(this.Z)) {
-        const nLevels = this.xLevels.length
-        let bubbleRadiusMinX = 0
-        let bubbleRadiusMaxX = 0
-
-        for (let i = 0; i < this.origLen; i++) {
-          if (!_.includes(this.outsideBoundsPtsId, i)) {
-            const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
-            const idx = this.xLevels.indexOf(this.origX[i])
-            const bubbleRadiusMinXCandidate = bubbleRadius - idx * this.vb.width / nLevels
-            if (bubbleRadiusMinXCandidate > bubbleRadiusMinX) {
-              bubbleRadiusMinX = bubbleRadiusMinXCandidate
-            }
-            const bubbleRadiusMaxXCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.width / nLevels
-            if (bubbleRadiusMaxXCandidate > bubbleRadiusMaxX) {
-              bubbleRadiusMaxX = bubbleRadiusMaxXCandidate
-            }
-          }
-        }
-        this.ordinalMinXPaddingProportion = bubbleRadiusMinX / this.vb.width + extraBubblePaddingProportion
-        this.ordinalMaxXPaddingProportion = bubbleRadiusMaxX / this.vb.width + extraBubblePaddingProportion
-      } else {
-        this.ordinalMinXPaddingProportion = r / this.vb.width + extraPaddingProportion
-        this.ordinalMaxXPaddingProportion = r / this.vb.width + extraPaddingProportion
-      }
-      this.ordinalMinXPaddingProportion = Math.min(this.ordinalMinXPaddingProportion, 0.5)
-      this.ordinalMaxXPaddingProportion = Math.min(this.ordinalMaxXPaddingProportion, 0.5)
-    }
-
-    if (this.yDataType === DataTypeEnum.ordinal) {
-      if (Utils.isArrOfNums(this.Z)) {
-        const nLevels = this.yLevels.length
-        let bubbleRadiusMinY = 0
-        let bubbleRadiusMaxY = 0
-
-        for (let i = 0; i < this.origLen; i++) {
-          if (!_.includes(this.outsideBoundsPtsId, i)) {
-            const bubbleRadius = LegendUtils.normalizedZtoRadius(r, this.normZ[i])
-            const idx = this.yLevels.indexOf(this.origY[i])
-            const bubbleRadiusMinYCandidate = bubbleRadius - idx * this.vb.height / nLevels
-            if (bubbleRadiusMinYCandidate > bubbleRadiusMinY) {
-              bubbleRadiusMinY = bubbleRadiusMinYCandidate
-            }
-            const bubbleRadiusMaxYCandidate = bubbleRadius - (nLevels - idx - 1) * this.vb.height / nLevels
-            if (bubbleRadiusMaxYCandidate > bubbleRadiusMaxY) {
-              bubbleRadiusMaxY = bubbleRadiusMaxYCandidate
-            }
-          }
-        }
-        this.ordinalMinYPaddingProportion = bubbleRadiusMinY / this.vb.height + extraBubblePaddingProportion
-        this.ordinalMaxYPaddingProportion = bubbleRadiusMaxY / this.vb.height + extraBubblePaddingProportion
-      } else {
-        this.ordinalMinYPaddingProportion = r / this.vb.height + extraPaddingProportion
-        this.ordinalMaxYPaddingProportion = r / this.vb.height + extraPaddingProportion
-      }
-      this.ordinalMinYPaddingProportion = Math.min(this.ordinalMinYPaddingProportion, 0.5)
-      this.ordinalMaxYPaddingProportion = Math.min(this.ordinalMaxYPaddingProportion, 0.5)
-    }
   }
 }
 
