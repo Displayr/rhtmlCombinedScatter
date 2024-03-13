@@ -116,14 +116,16 @@ class LabeledScatter {
     const drag_layer = d3.select(this.rootElement).select('.draglayer')
     this.moveDragLayerToBeLast()
 
-    const plot_width = plotly_chart_layout.xaxis._length
-    const plot_height = plotly_chart_layout.yaxis._length
+    const nsewdrag_rect = this.nsewdragRect()
+
+    const plot_width = nsewdrag_rect.width
+    const plot_height = nsewdrag_rect.height
     const svg = drag_layer
         .append('svg')
         .attr('class', 'scatterlabellayer')
-        .attr('x', plotly_chart_layout.margin.l)
-        .attr('y', plotly_chart_layout.margin.t)
-        .attr('width', this.width - plotly_chart_layout.margin.l)
+        .attr('x', nsewdrag_rect.x)
+        .attr('y', nsewdrag_rect.y)
+        .attr('width', this.width - nsewdrag_rect.x)
         .attr('height', plot_height)
     config.legendBubblesShow = false
     config.legendShow = false
@@ -134,7 +136,7 @@ class LabeledScatter {
     config.width = plot_width
     config.height = plot_height
 
-    const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend)
+    const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect)
 
     this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, rootElement: d3.select(this.rootElement), reset: () => this.draw(), legendPointsRect: legend_points_rect })
     await this.plot.draw()
@@ -224,27 +226,27 @@ class LabeledScatter {
     }
   }
 
-  getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend) {
+  getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect) {
     if (is_legend_points_to_right_of_plotly_legend) {
       return {
-        x: plotly_chart_layout.xaxis._length + this.plotlyLegendWidth(),
+        x: nsewdrag_rect.width + this.plotlyLegendWidth(),
         y: LEGEND_POINTS_PADDING_TOP,
         width: MARGIN_RIGHT_FOR_LEGEND_POINTS,
-        height: plotly_chart_layout.yaxis._length - LEGEND_POINTS_PADDING_TOP
+        height: nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP
      }
     } else if (plotly_chart_layout.legend) {
       return {
-        x: plotly_chart_layout.xaxis._length,
+        x: nsewdrag_rect.width,
         y: plotly_chart_layout.legend._height + LEGEND_POINTS_PADDING_TOP,
-        width: this.width - plotly_chart_layout.margin.l - plotly_chart_layout.xaxis._length,
-        height: plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
+        width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
+        height: nsewdrag_rect.height - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
       }
      } else {
       return {
-        x: plotly_chart_layout.xaxis._length,
+        x: nsewdrag_rect.width,
         y: LEGEND_POINTS_PADDING_TOP,
-        width: this.width - plotly_chart_layout.margin.l - plotly_chart_layout.xaxis._length,
-        height: plotly_chart_layout.yaxis._length - LEGEND_POINTS_PADDING_TOP
+        width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
+        height: nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP
       }
     }
   }
@@ -281,6 +283,11 @@ class LabeledScatter {
     // The first "main-svg" containing the cartesian layer
     const main_svg = d3.select(this.rootElement).select('.main-svg')
     main_svg[0][0].appendChild(drag_layer[0][0])
+  }
+
+  nsewdragRect () {
+    const nsewdrag = d3.select(this.rootElement).select('.nsewdrag')
+    return nsewdrag[0][0].getBBox()
   }
 }
 
