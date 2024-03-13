@@ -33,11 +33,9 @@ class PlotData {
     this.X = X
     this.xDataType = xDataType
     this.xLevels = xLevels
-    this.xScaleOrdinal = xDataType === DataTypeEnum.ordinal ? d3.scale.ordinal().domain(xLevels).rangePoints([0, xLevels.length - 1]) : null
     this.Y = Y
     this.yDataType = yDataType
     this.yLevels = yLevels
-    this.yScaleOrdinal = yDataType === DataTypeEnum.ordinal ? d3.scale.ordinal().domain(yLevels).rangePoints([0, yLevels.length - 1]) : null
     this.Z = Z
     this.xDataType = xDataType
     this.yDataType = yDataType
@@ -60,6 +58,12 @@ class PlotData {
     this.hiddenLabelsId = []
     this.outsidePlotCondensedPts = []
     this.legendSettings = legendSettings
+    this.ordinalXToNumeric = x => {
+      return d3.scale.ordinal().domain(xLevels).rangePoints([0, xLevels.length - 1])(x)
+    }
+    this.ordinalYToNumeric = y => {
+      return d3.scale.ordinal().domain(yLevels).rangePoints([yLevels.length - 1, 0])(y)
+    }
 
     if (this.X.length === this.Y.length) {
       this.len = (this.origLen = X.length)
@@ -192,12 +196,12 @@ class PlotData {
   }
 
   isXOutsideBounds (i) {
-    const x = this.xDataType === DataTypeEnum.ordinal ? this.xScaleOrdinal(this.X[i]) : this.X[i]
+    const x = this.xDataType === DataTypeEnum.ordinal ? this.ordinalXToNumeric(this.X[i]) : this.X[i]
     return (x < this.minX) || (x > this.maxX)
   }
 
   isYOutsideBounds (i) {
-    const y = this.yDataType === DataTypeEnum.ordinal ? this.yScaleOrdinal(this.Y[i]) : this.Y[i]
+    const y = this.yDataType === DataTypeEnum.ordinal ? this.ordinalYToNumeric(this.Y[i]) : this.Y[i]
     return (y < this.minY) || (y > this.maxY)
   }
 
@@ -232,14 +236,13 @@ class PlotData {
           let y = 0
           if (this.xDataType === DataTypeEnum.ordinal) {
             const unit_length = this.vb.width / (this.maxX - this.minX)
-            x = this.vb.x - this.minX * unit_length + this.xScaleOrdinal(this.X[i]) * unit_length
+            x = this.vb.x - this.minX * unit_length + this.ordinalXToNumeric(this.X[i]) * unit_length
           } else {
             x = (this.normX[i] * this.vb.width) + this.vb.x
           }
           if (this.yDataType === DataTypeEnum.ordinal) {
             const unit_length = this.vb.height / (this.maxY - this.minY)
-            const n_levels = this.yLevels.length
-            y = this.vb.y + (this.maxY - (n_levels - 1)) * unit_length + this.yScaleOrdinal(this.Y[i]) * unit_length
+            y = this.vb.y + this.vb.height + this.minY * unit_length - this.ordinalYToNumeric(this.Y[i]) * unit_length
           } else {
             y = ((1 - this.normY[i]) * this.vb.height) + this.vb.y
           }
