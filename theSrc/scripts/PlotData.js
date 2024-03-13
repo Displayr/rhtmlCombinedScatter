@@ -62,7 +62,7 @@ class PlotData {
       return d3.scale.ordinal().domain(xLevels).rangePoints([0, xLevels.length - 1])(x)
     }
     this.ordinalYToNumeric = y => {
-      return d3.scale.ordinal().domain(yLevels).rangePoints([yLevels.length - 1, 0])(y)
+      return d3.scale.ordinal().domain(yLevels).rangePoints([0, yLevels.length - 1])(y)
     }
 
     if (this.X.length === this.Y.length) {
