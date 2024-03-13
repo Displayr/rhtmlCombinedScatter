@@ -170,9 +170,6 @@ class PlotData {
       i = 0
       while (i < this.origLen) {
         if (!_.includes(this.outsideBoundsPtsId, i)) {
-          if (this.xDataType === DataTypeEnum.ordinal) {
-
-          }
           if (this.isXOutsideBounds(i) || this.isYOutsideBounds(i)) {
             this.outsideBoundsPtsId.push(i)
           }
