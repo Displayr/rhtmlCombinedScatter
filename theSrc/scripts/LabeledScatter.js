@@ -1,4 +1,3 @@
-import $ from 'jquery'
 import d3 from 'd3'
 import _ from 'lodash'
 import { buildConfig } from './buildConfig'
