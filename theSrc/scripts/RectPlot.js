@@ -474,21 +474,6 @@ class RectPlot {
   drawTrendLines () {
     this.tl.drawWith(this.svg, this.data.plotColors, this.trendLines)
   }
-
-  resized (svg, width, height) {
-    // some of the below throw, so wrap in a promise chain to ensure errors do not escape
-    return Promise.resolve()
-      .then(() => {
-      this.svg = svg
-      this.width = width
-      this.height = height
-      this.footer.updateContainerHeight(this.height)
-      this.setDim(this.svg, this.width, this.height)
-      this.labelPlacement.updateSvgOnResize(this.svg)
-      this.state.resetStateOnResize(this.vb)
-      return this.draw()
-    })
-  }
 }
 
 module.exports = RectPlot
