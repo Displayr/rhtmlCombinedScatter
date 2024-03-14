@@ -26,7 +26,7 @@ class Legend {
       y: axisSettings.y.suffix,
       z: axisSettings.z.suffix,
     }
-    this.width = 0
+    this.width = outsidePointsRect.width
     this.maxWidth = outsidePointsRect.width
     this.setHeight(outsidePointsRect.height)
     this.heightOfRow = legendSettings.getFontSize() + ROW_PADDING
