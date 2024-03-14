@@ -175,7 +175,7 @@ function buildConfig (userConfig, width, height) {
     config.yLevels = null
   } else {
     config.yDataType = DataTypeEnum.ordinal
-    config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().reverse().value() : config.yLevels.reverse()
+    config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().value() : config.yLevels
   }
 
   // Normalize bubble sizes to compute diameter in pixels
