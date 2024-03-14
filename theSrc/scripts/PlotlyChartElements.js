@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 function createPlotlyData (config) {
@@ -26,6 +27,37 @@ function createPlotlyData (config) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
+    } else if (Utils.isArrOfNumTypes(config.group)) { 
+        tooltips = indices.map(i => `${tooltips[i]}<br>${config.group[i]}`)
+        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
+        const trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
+
+        const col_min = Math.min(config.group)
+        const col_max = Math.max(config.group)
+        const col_vals = [col_min, col_max]
+        const colorbar = { 
+            //tickmode: 'array',
+            //tickvals: col_vals,
+            //ticktext: col_vals.map(x => toString(x)),
+            outlinewidth: 0, 
+            tickfont: {
+                family: config.legendFontFamily,
+                color: config.legendFontColor,
+                size: config.legendFontSize
+            }
+        }
+        trace['marker'].color = config.group
+        //trace['marker'].colorscale = 'Greens'
+        trace['marker'].showscale = true
+        trace['marker'].colorbar = colorbar
+        // trace['colorscale'] = 'RdBu',
+        plot_data.push(trace)
+        /*color = colors, opacity = opacity,
+        color = toRGB(marker.border.colors, alpha = marker.border.opacity)),
+        colorscale = col.scale, cmin = col.min, cmax = col.max,
+        showscale = colorbar.show, colorbar = colorbar)*/
+
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
