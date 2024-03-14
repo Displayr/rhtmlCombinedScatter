@@ -41,7 +41,7 @@
     "jquery": "^3.5.1",
     "lodash": "^4.17.21",
     "md5": "^2.2.1",
-    "plotly.js-dist-min": "^2.11.1",
+    "plotly.js-basic-dist-min": "^2.11.1",
     "random-js": "^1.0.8",
     "rbush": "^3.0.1",
     "shelljs": "^0.8.4"
