@@ -90,8 +90,8 @@ const defaultConfig = {
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)
-  pointBorderColor: '#000000',
-  pointBorderWidth: 0,
+  pointBorderColor: '#FFFFFF',
+  pointBorderWidth: 1,
   showLabels: true,
   showResetButton: true,
   showXAxis: true,
