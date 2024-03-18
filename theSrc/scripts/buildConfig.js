@@ -189,6 +189,9 @@ function buildConfig (userConfig, width, height) {
     const maxZ = _.max(config.Z)
     config.normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+    if (config.pointBorderWidth === null) config.pointBorderWidth = 1
+  } else {
+    if (config.pointBorderWidth === null) config.pointBorderWidth = 0
   }
   return config
 }
