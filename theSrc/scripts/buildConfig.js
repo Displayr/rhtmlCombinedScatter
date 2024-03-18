@@ -35,6 +35,11 @@ const defaultConfig = {
   yAxisZeroLineColor: '#000000',
   yAxisZeroLineDash: 'dot',
   yAxisZeroLineWidth: 1,
+  // The colorScale differs from the colors in that the colors supplied
+  // should be regularly spaced and in ascending order.
+  // We expect that R wrapper function will ensure the colorScale
+  // matches the colors (which is still used for the labels)
+  colorScale: null,
   colors: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47', '#255E91', '#9E480E', '#636363', '#997300', '#264478', '#43682B', '#FF2323'],
   debugMode: false,
   fixedAspectRatio: false,

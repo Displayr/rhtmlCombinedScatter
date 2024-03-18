@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import Utils from './utils/Utils'
+import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 function createPlotlyData (config) {
@@ -27,37 +27,14 @@ function createPlotlyData (config) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
-    } else if (Utils.isArrOfNumTypes(config.group)) { 
-        tooltips = indices.map(i => `${tooltips[i]}<br>${config.group[i]}`)
+    } else if (config.colorScale !== null && config.colorScale.length >= 2) {
+        tooltips = indices.map(i => `${tooltips[i]}<br>${
+            config.colorLevels ? config.colorLevels[config.group[i] - 1] : config.group[i]}`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
-        const trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
+        let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
-
-        const col_min = Math.min(config.group)
-        const col_max = Math.max(config.group)
-        const col_vals = [col_min, col_max]
-        const colorbar = { 
-            //tickmode: 'array',
-            //tickvals: col_vals,
-            //ticktext: col_vals.map(x => toString(x)),
-            outlinewidth: 0, 
-            tickfont: {
-                family: config.legendFontFamily,
-                color: config.legendFontColor,
-                size: config.legendFontSize
-            }
-        }
-        trace['marker'].color = config.group
-        //trace['marker'].colorscale = 'Greens'
-        trace['marker'].showscale = true
-        trace['marker'].colorbar = colorbar
-        // trace['colorscale'] = 'RdBu',
+        addColorScale(trace, config)
         plot_data.push(trace)
-        /*color = colors, opacity = opacity,
-        color = toRGB(marker.border.colors, alpha = marker.border.opacity)),
-        colorscale = col.scale, cmin = col.min, cmax = col.max,
-        showscale = colorbar.show, colorbar = colorbar)*/
-
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
@@ -88,8 +65,10 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
             size: size,
             sizemode: 'diameter',
             opacity: opacity,
-            outlinecolor: outlinecolor,
-            outlinewidth: outlinewidth
+            line: {
+                color: outlinecolor,
+                width: outlinewidth
+            }
         },
         cliponaxis: false
     }
@@ -115,6 +94,42 @@ function createBaseTrace (config) {
         showlegend: false,
         opacity: 0
     }
+}
+
+function addColorScale (trace, config) {
+    const color_values = config.colorIsDateTime
+        ? config.group.map(x => new Date(x).getTime())
+        : config.group
+    const color_min = Math.min(...color_values)
+    const color_max = Math.max(...color_values)
+    const color_normalized = color_values.map(x => (x - color_min) / (color_max - color_min))
+    const n = config.colorScale.length
+    const delta = 1.0 / (n - 1)
+    let color_scale = []
+    for (let i = 0; i < n; i++) {
+        color_scale.push([i * delta, config.colorScale[i]])
+    }
+    const tick_values = color_scale.map(x => x[0])
+    let tick_labels = config.colorLevels
+    if (!tick_labels) tick_labels = tick_values.map(x => ((x * (color_max - color_min)) + color_min))
+    const formatDate = d3.time.format('%Y-%m-%d')
+    if (config.colorIsDateTime) tick_labels = tick_labels.map(x => formatDate(new Date(x)))
+    const color_bar = {
+        tickvals: tick_values,
+        ticktext: tick_labels,
+        tickfont: {
+            family: config.legendFontFamily,
+            color: config.legendFontColor,
+            size: config.legendFontSize
+        },
+        outlinewidth: 0
+    }
+    trace['marker'].color = color_normalized
+    trace['marker'].showscale = true
+    trace['marker'].colorbar = color_bar
+    trace['marker'].colorscale = color_scale
+    trace['marker'].cmin = 0
+    trace['marker'].cmax = 1
 }
 
 function createPlotlyLayout (config, margin_right) {
