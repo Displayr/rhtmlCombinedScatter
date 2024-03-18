@@ -91,7 +91,7 @@ const defaultConfig = {
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)
   pointBorderColor: '#FFFFFF',
-  pointBorderWidth: 1,
+  pointBorderWidth: null,
   showLabels: true,
   showResetButton: true,
   showXAxis: true,
