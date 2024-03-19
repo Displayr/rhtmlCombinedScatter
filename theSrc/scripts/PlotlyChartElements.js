@@ -23,19 +23,16 @@ function createPlotlyData (config) {
         plot_data.push(createBaseTrace(config))
     }
 
-    const clip_markers = config.plotBorderShow
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-            clip_markers))
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         tooltips = indices.map(i => `${tooltips[i]}<br>${
             config.colorLevels ? config.colorLevels[config.group[i] - 1] : config.group[i]}`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-            clip_markers)
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
         addColorScale(trace, config)
         plot_data.push(trace)
     } else {
@@ -53,7 +50,7 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, clip) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth) {
     return {
         x: X,
         y: Y,
@@ -73,7 +70,7 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
                 width: outlinewidth
             }
         },
-        cliponaxis: clip
+        cliponaxis: false
     }
 }
 
