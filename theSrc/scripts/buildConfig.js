@@ -40,6 +40,8 @@ const defaultConfig = {
   // We expect that R wrapper function will ensure the colorScale
   // matches the colors (which is still used for the labels)
   colorScale: null,
+  colorIsDateTime: false,
+  colorScaleFormat: null,
   colors: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47', '#255E91', '#9E480E', '#636363', '#997300', '#264478', '#43682B', '#FF2323'],
   debugMode: false,
   fixedAspectRatio: false,
@@ -117,6 +119,7 @@ const defaultConfig = {
   xBoundsUnitsMajor: null,
   xDecimals: null,
   xFormat: null,
+  xTooltipFormat: null,
   xIsDateTime: null, // NB computed in R
   xLevels: null,
   xPrefix: '',
@@ -130,6 +133,7 @@ const defaultConfig = {
   yBoundsUnitsMajor: null,
   yDecimals: null,
   yFormat: null,
+  yTooltipFormat: null,
   yIsDateTime: null, // NB computed in R
   yLevels: null,
   yPrefix: '',
@@ -163,6 +167,8 @@ function buildConfig (userConfig, width, height) {
     config.X = _.map(config.X, (d) => new Date(d))
     config.xDataType = DataTypeEnum.date
     config.xLevels = null
+    if (config.xFormat === null) config.xFormat = '%b %d %Y' // default date format to match R viz
+    if (config.xTooltipFormat === null) config.xTooltipFormat = '%Y-%m-%d' // this is from R conversion of date to string
   } else if (Utils.isArrOfNumTypes(config.X)) {
     config.xDataType = DataTypeEnum.numeric
     config.xLevels = null
@@ -175,12 +181,18 @@ function buildConfig (userConfig, width, height) {
     config.yDataType = DataTypeEnum.date
     config.Y = _.map(config.Y, (d) => new Date(d))
     config.yLevels = null
+    if (config.yFormat === null) config.yFormat = '%b %d %Y' // default date format to match R viz
+    if (config.yTooltipFormat === null) config.yTooltipFormat = '%Y-%m-%d' // this is from R conversion of date to string
   } else if (Utils.isArrOfNumTypes(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
     config.yLevels = null
   } else {
     config.yDataType = DataTypeEnum.ordinal
     config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().value() : config.yLevels
+  }
+
+  if (config.colorIsDateTime && config.colorScale !== null && config.colorScaleFormat === null) {
+    config.colorScaleFormat = '%Y-%m-%d'
   }
 
   // Normalize bubble sizes to compute diameter in pixels

@@ -109,6 +109,7 @@
     "#FFFFFF",
     "#0000FF"
   ],
+  "colorScaleFormat": "%b %y",
   "transparency": 0.4,
   "origin": false,
   "xTitle": "Interview Date",

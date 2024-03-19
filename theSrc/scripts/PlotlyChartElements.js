@@ -3,11 +3,15 @@ import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 
 function createPlotlyData (config) {
-    // Check for empty labels
+    // Create tooltip text
     const indices = _.range(config.X.length)
     let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
-    let tooltips = indices.map(i => `${tooltip_labels[i]} (${config.X[i]}, ${config.Y[i]})`)
+    const xFormatter = getFormatter(config.xTooltipFormat, config.X[0], config.xIsDateTime)
+    const yFormatter = getFormatter(config.yTooltipFormat, config.Y[0], config.yIsDateTime)
+    let tooltips = indices.map(
+        i => `${tooltip_labels[i]} (${xFormatter(config.X[i])}, ${yFormatter(config.Y[i])})`
+    )
 
     // Check if this is a bubbleplot
     let marker_opacity = config.transparency
@@ -28,8 +32,10 @@ function createPlotlyData (config) {
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
+        const colorFormatter = getFormatter(config.colorScaleFormat, config.group[0], false)
         tooltips = indices.map(i => `${tooltips[i]}<br>${
-            config.colorLevels ? config.colorLevels[config.group[i] - 1] : config.group[i]}`)
+            config.colorLevels ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
+        }`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
@@ -109,11 +115,11 @@ function addColorScale (trace, config) {
     for (let i = 0; i < n; i++) {
         color_scale.push([i * delta, config.colorScale[i]])
     }
+    const colorFormatter = getFormatter(config.colorScaleFormat, color_values[0], config.colorIsDateTime)
     const tick_values = color_scale.map(x => x[0])
-    let tick_labels = config.colorLevels
-    if (!tick_labels) tick_labels = tick_values.map(x => ((x * (color_max - color_min)) + color_min))
-    const formatDate = d3.time.format('%Y-%m-%d')
-    if (config.colorIsDateTime) tick_labels = tick_labels.map(x => formatDate(new Date(x)))
+    const tick_labels = config.colorLevels
+        ? config.colorLevels
+        : tick_values.map(x => (colorFormatter((x * (color_max - color_min)) + color_min)))
     const color_bar = {
         tickvals: tick_values,
         ticktext: tick_labels,
@@ -130,6 +136,15 @@ function addColorScale (trace, config) {
     trace['marker'].colorscale = color_scale
     trace['marker'].cmin = 0
     trace['marker'].cmax = 1
+}
+
+function getFormatter (format, value, value_is_date) {
+    if (!value_is_date && !_.isNumber(value)) return function (x) { return x }
+    if (value_is_date) {
+        const formatter = d3.time.format(format)
+        return function (x) { return formatter(new Date(x)) }
+    }
+    return d3.format(format)
 }
 
 function createPlotlyLayout (config, margin_right) {
@@ -169,6 +184,8 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
+            tickformat: config.xFormat,
+            hoverformat: config.xTooltipFormat,
             layer: 'below traces'
          },
         yaxis: {
@@ -204,6 +221,8 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
+            tickformat: config.yFormat,
+            hoverformat: config.yTooltipFormat,
             automargin: true,
             layer: 'below traces'
         },

@@ -98,6 +98,7 @@
     "#DE2D26",
     "#A50F15"
   ],
+  "colorScaleFormat": ".2f",
   "transparency": 1,
   "origin": false,
   "xTitle": "q2: Coca-Cola - When 'at home'",
