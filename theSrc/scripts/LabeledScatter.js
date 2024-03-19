@@ -80,9 +80,9 @@ class LabeledScatter {
       const tmp_layout = {}
       const is_legend_points_to_right_of_plotly_legend = this.stateObj.legendPts.length > 0 &&
         (config.colorScale !== null ||
-          this.isLegendTooTallForLegendPoints(plotlyChart._fullLayout, config))
+          this.canLegendPointsFitUnderLegend(plotlyChart._fullLayout, config))
       if (is_legend_points_to_right_of_plotly_legend) {
-        tmp_layout['margin.r'] = this.plotlyLegendWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS
+        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
@@ -207,7 +207,7 @@ class LabeledScatter {
   getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect) {
     if (is_legend_points_to_right_of_plotly_legend) {
       return {
-        x: nsewdrag_rect.width + this.plotlyLegendWidth(),
+        x: nsewdrag_rect.width + this.plotlyLegendOrColorBarWidth(),
         y: LEGEND_POINTS_PADDING_TOP,
         width: MARGIN_RIGHT_FOR_LEGEND_POINTS,
         height: nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP
@@ -237,7 +237,7 @@ class LabeledScatter {
     }
   }
 
-  isLegendTooTallForLegendPoints (plotly_chart_layout, config) {
+  canLegendPointsFitUnderLegend (plotly_chart_layout, config) {
     if (!plotly_chart_layout.legend) return false
     const legend_points_height = this.stateObj.legendPts.length * this.legendPointsRowHeight(config)
     const height_under_legend = plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
@@ -248,7 +248,7 @@ class LabeledScatter {
     return config.legendFontSize + ROW_PADDING
   }
 
-  plotlyLegendWidth () {
+  plotlyLegendOrColorBarWidth () {
     let el = d3.select(this.rootElement).select('.legend')
     if (el === undefined || el.empty()) el = d3.select(this.rootElement).select('.colorbar')
     return el[0][0].getBBox().width
