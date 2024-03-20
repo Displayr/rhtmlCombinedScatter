@@ -187,9 +187,7 @@ function buildConfig (userConfig, width, height) {
     config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().value() : config.yLevels
   }
 
-  if (config.colorIsDateTime && config.colorScale !== null && config.colorScaleFormat === null) {
-    config.colorScaleFormat = '%Y-%m-%d'
-  }
+  if (config.colorIsDateTime) config.group = _.map(config.group, (d) => new Date(d))
 
   // Normalize bubble sizes to compute diameter in pixels
   config.normZ = null

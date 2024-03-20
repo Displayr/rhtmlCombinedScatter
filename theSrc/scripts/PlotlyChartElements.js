@@ -9,12 +9,12 @@ function createPlotlyData (config) {
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
     const xFormatter = getFormatter(
         config.xTooltipFormat ? config.xTooltipFormat : config.xFormat,
-        config.X[0],
+        config.X,
         config.xIsDateTime
     )
     const yFormatter = getFormatter(
         config.yTooltipFormat ? config.yTooltipFormat : config.yFormat,
-        config.Y[0],
+        config.Y,
         config.yIsDateTime
     )
     let tooltips = indices.map(
@@ -40,7 +40,7 @@ function createPlotlyData (config) {
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
             config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
-        const colorFormatter = getFormatter(config.colorScaleFormat, config.group[0], false)
+        const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
         tooltips = indices.map(i => `${tooltips[i]}<br>${
             config.colorLevels ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
         }`)
@@ -146,26 +146,46 @@ function addColorScale (trace, config) {
     trace['marker'].cmax = 1
 }
 
-function getFormatter (format, value, value_is_date) {
-    if (!value_is_date && !_.isNumber(value)) return function (x) { return x }
+// Returns a function that can be applied later
+function getFormatter (format, values, value_is_date) {
+    if (!value_is_date && !_.isNumber(values[0])) return function (x) { return x }
     if (value_is_date) {
-        if (!format) format = "" // allow time scale to adjust automatically
+        if (!format) format = getDefaultDateFormat(values)
         const formatter = d3.time.format(format)
         return function (x) { return formatter(new Date(x)) }
     }
-    return d3.format(tidyD3Format(format))
+    return d3.format(checkD3Format(format, values, value_is_date))
 }
 
-// Specify precision for some formats that tend to cause trouble 
-// for plotly (version 2 and above) - copied from flipChartBasics::ChartNumberFormat
-function tidyD3Format (format) {
+function checkD3Format (format, values, value_is_date) {
+    if (value_is_date && !format) return getDefaultDateFormat(values)
+    if (value_is_date) return format
+
+    // Specify precision for some formats that tend to cause trouble
+    // for plotly (version 2 and above) - copied from flipChartBasics::ChartNumberFormat
     switch (format) {
         case '%': return '.0%'
         case 'e': return '~e'
         case 'f': return '~f'
         case ',f': return ',.f'
+        case null: case undefined: case '': return '~r' // avoid SI prefix
         default: return format
     }
+}
+
+function getDefaultDateFormat (dates) {
+    const dvals = dates.map(x => x.getTime()) // all values in milliseconds
+    const dmin = Math.min(...dvals)
+    const dmax = Math.max(...dvals)
+    const diff = dmax - dmin
+    const min_mult = 4
+
+    // Values after new line only appear uniquely
+    // https://plotly.com/python/time-series/#configuring-tick-labels
+    if (diff < min_mult * 60 * 60 * 1000) return '%H:%M:%s:%L\n%b %d %Y'
+    else if (diff < min_mult * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
+    else if (diff < min_mult * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
+    else return '%b %Y'
 }
 
 function createPlotlyLayout (config, margin_right) {
@@ -205,7 +225,7 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
-            tickformat: tidyD3Format(config.xFormat),
+            tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
             layer: 'below traces'
          },
         yaxis: {
@@ -241,7 +261,7 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
-            tickformat: tidyD3Format(config.yFormat),
+            tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
             automargin: true,
             layer: 'below traces'
         },
