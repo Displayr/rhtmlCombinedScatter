@@ -168,7 +168,7 @@ function checkD3Format (format, values, value_is_date) {
         case 'e': return '~e'
         case 'f': return '~f'
         case ',f': return ',.f'
-        case null: case undefined: case '': return '~r' // avoid SI prefix
+        case null: case undefined: case '': return '~f' // avoid SI prefix
         default: return format
     }
 }
