@@ -167,8 +167,6 @@ function buildConfig (userConfig, width, height) {
     config.X = _.map(config.X, (d) => new Date(d))
     config.xDataType = DataTypeEnum.date
     config.xLevels = null
-    if (config.xFormat === null) config.xFormat = '%b %d %Y' // default date format to match R viz
-    if (config.xTooltipFormat === null) config.xTooltipFormat = '%Y-%m-%d' // this is from R conversion of date to string
   } else if (Utils.isArrOfNumTypes(config.X)) {
     config.xDataType = DataTypeEnum.numeric
     config.xLevels = null
@@ -181,8 +179,6 @@ function buildConfig (userConfig, width, height) {
     config.yDataType = DataTypeEnum.date
     config.Y = _.map(config.Y, (d) => new Date(d))
     config.yLevels = null
-    if (config.yFormat === null) config.yFormat = '%b %d %Y' // default date format to match R viz
-    if (config.yTooltipFormat === null) config.yTooltipFormat = '%Y-%m-%d' // this is from R conversion of date to string
   } else if (Utils.isArrOfNumTypes(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
     config.yLevels = null

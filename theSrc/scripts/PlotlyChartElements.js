@@ -7,8 +7,16 @@ function createPlotlyData (config) {
     const indices = _.range(config.X.length)
     let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
-    const xFormatter = getFormatter(config.xTooltipFormat, config.X[0], config.xIsDateTime)
-    const yFormatter = getFormatter(config.yTooltipFormat, config.Y[0], config.yIsDateTime)
+    const xFormatter = getFormatter(
+        config.xTooltipFormat ? config.xTooltipFormat : config.xFormat,
+        config.X[0],
+        config.xIsDateTime
+    )
+    const yFormatter = getFormatter(
+        config.yTooltipFormat ? config.yTooltipFormat : config.yFormat,
+        config.Y[0],
+        config.yIsDateTime
+    )
     let tooltips = indices.map(
         i => `${tooltip_labels[i]} (${xFormatter(config.X[i])}, ${yFormatter(config.Y[i])})`
     )
@@ -141,10 +149,23 @@ function addColorScale (trace, config) {
 function getFormatter (format, value, value_is_date) {
     if (!value_is_date && !_.isNumber(value)) return function (x) { return x }
     if (value_is_date) {
+        if (!format) format = "" // allow time scale to adjust automatically
         const formatter = d3.time.format(format)
         return function (x) { return formatter(new Date(x)) }
     }
-    return d3.format(format)
+    return d3.format(tidyD3Format(format))
+}
+
+// Specify precision for some formats that tend to cause trouble 
+// for plotly (version 2 and above) - copied from flipChartBasics::ChartNumberFormat
+function tidyD3Format (format) {
+    switch (format) {
+        case '%': return '.0%'
+        case 'e': return '~e'
+        case 'f': return '~f'
+        case ',f': return ',.f'
+        default: return format
+    }
 }
 
 function createPlotlyLayout (config, margin_right) {
@@ -184,8 +205,7 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
-            tickformat: config.xFormat,
-            hoverformat: config.xTooltipFormat,
+            tickformat: tidyD3Format(config.xFormat),
             layer: 'below traces'
          },
         yaxis: {
@@ -221,8 +241,7 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
-            tickformat: config.yFormat,
-            hoverformat: config.yTooltipFormat,
+            tickformat: tidyD3Format(config.yFormat),
             automargin: true,
             layer: 'below traces'
         },
