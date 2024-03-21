@@ -120,9 +120,12 @@ function addColorScale (trace, config) {
     const n = config.colorScale.length
     const delta = 1.0 / (n - 1)
     let color_scale = []
+    let tmp_font_color = []
     for (let i = 0; i < n; i++) {
         color_scale.push([i * delta, config.colorScale[i]])
+        tmp_font_color.push(blackOrWhite(config.colorScale[i]))
     }
+    const hover_font_color = color_normalized.map(x => tmp_font_color[Math.round(x / delta)])
     const colorFormatter = getFormatter(config.colorScaleFormat, color_values[0], config.colorIsDateTime)
     const tick_values = color_scale.map(x => x[0])
     const tick_labels = config.colorLevels
@@ -144,6 +147,7 @@ function addColorScale (trace, config) {
     trace['marker'].colorscale = color_scale
     trace['marker'].cmin = 0
     trace['marker'].cmax = 1
+    trace['hoverlabel'].font = { color: hover_font_color }
 }
 
 // Returns a function that can be applied later
