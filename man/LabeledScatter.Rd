@@ -44,6 +44,9 @@ LabeledScatter(
   color.transparency = NULL,
   colors = c("#5B9BD5", "#ED7D31", "#A5A5A5", "#1EC000", "#4472C4", "#70AD47", "#255E91",
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
+  color.scale = NULL,
+  color.scale.format = NULL,
+  color.levels = NULL,
   debug.mode = FALSE,
   fixed.aspect = FALSE,
   footer = "",
@@ -120,6 +123,7 @@ LabeledScatter(
   x.bounds.units.major = NULL,
   x.decimals = NULL,
   x.format = NULL,
+  x.hover.format = NULL,
   x.levels = NULL,
   x.prefix = "",
   x.suffix = "",
@@ -133,6 +137,7 @@ LabeledScatter(
   y.bounds.units.major = NULL,
   y.decimals = NULL,
   y.format = NULL,
+  y.hover.format = NULL,
   y.levels = NULL,
   y.prefix = "",
   y.suffix = "",
@@ -173,7 +178,15 @@ LabeledScatter(
 
 \item{color.transparency}{Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z}
 
-\item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel.}
+\item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel. 
+It should have the same length as the number of levels in `group`}
+
+\item{color.scale}{Default to NULL. It can be set to a vector of hex colors in order to show
+`group` as a continuous color scale. In this case `group` can be numeric, categorical or a date time variable}
+
+\item{color.scale.format}{A D3 format string to modify the tick format on the color scale bar}
+
+\item{color.levels}{The levels of `group`. This is only used if using `color.scale` with categorical values.}
 
 \item{debug.mode}{Boolean toggle to display widget internals for debugging (Default is FALSE)}
 
@@ -317,6 +330,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{x.format}{A string that is interpreted for the format of the x axis labels. Default is NULL.}
 
+\item{x.hover.format}{A string that is interpreted for the format of the x axis values in the tooltips.}
+
 \item{x.levels}{is the levels for the categorical X input array. Default is levels(X)}
 
 \item{x.prefix}{A string that prefixes all x values(eg. "$")}
@@ -342,6 +357,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{y.decimals}{the number of decimals in the y axis}
 
 \item{y.format}{A string that is interpreted for the format of the y axis labels. Default is NULL.}
+
+\item{y.hover.format}{A string that is interpreted for the format of the y axis values in the tooltips.}
 
 \item{y.levels}{is the levels for the categorical Y input array. Default is levels(Y)}
 
