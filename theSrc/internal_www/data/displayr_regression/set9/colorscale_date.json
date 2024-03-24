@@ -101,7 +101,19 @@
     "18 to 24"
   ],
   "colors": [
-    "#5C9AD3"
+    "#FF0000",
+    "#FF0000",
+    "#FF0000",
+    "#FFA9A9",
+    "#FFA9A9",
+    "#FFA9A9",
+    "#FFA9A9",
+    "#ABABFF",
+    "#ABABFF",
+    "#ABABFF",
+    "#0000FF",
+    "#0000FF",
+    "#0000FF"
   ],
   "colorIsDateTime": true,
   "colorScale": [

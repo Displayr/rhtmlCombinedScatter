@@ -46,7 +46,6 @@ LabeledScatter(
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
   color.scale = NULL,
   color.scale.format = NULL,
-  color.levels = NULL,
   debug.mode = FALSE,
   fixed.aspect = FALSE,
   footer = "",
@@ -178,15 +177,11 @@ LabeledScatter(
 
 \item{color.transparency}{Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z}
 
-\item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel. 
+\item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel.
 It should have the same length as the number of levels in `group`}
 
 \item{color.scale}{Default to NULL. It can be set to a vector of hex colors in order to show
 `group` as a continuous color scale. In this case `group` can be numeric, categorical or a date time variable}
-
-\item{color.scale.format}{A D3 format string to modify the tick format on the color scale bar}
-
-\item{color.levels}{The levels of `group`. This is only used if using `color.scale` with categorical values.}
 
 \item{debug.mode}{Boolean toggle to display widget internals for debugging (Default is FALSE)}
 

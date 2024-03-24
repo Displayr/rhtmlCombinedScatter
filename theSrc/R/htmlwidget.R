@@ -16,8 +16,6 @@
 #' @param color.transparency Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case `group` can be numeric, categorical or a date time variable
-#' @param color.scale.format A D3 format string to modify the tick format on the color scale bar
-#' @param color.levels The levels of `group`. This is only used if using `color.scale` with categorical values.
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
@@ -170,7 +168,6 @@ LabeledScatter <- function(
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
     color.scale.format = NULL,
-    color.levels = NULL,
     debug.mode = FALSE,
     fixed.aspect = FALSE,
     footer = "",
@@ -289,10 +286,28 @@ LabeledScatter <- function(
     isDateTime <- function(x) { return (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXt"))}
     xIsDateTime <- isDateTime(X[1])
     yIsDateTime <- isDateTime(Y[1])
-    colorIsDateTime <- FALSE
-    if (!is.null(color.scale))
-        colorIsDateTime <- isDateTime(group)
 
+    color.levels <- NULL
+    colorIsDateTime <- FALSE
+    if (!is.null(color.scale)) {
+        color.func <- colorRamp(color.scale)
+        colorIsDateTime <- isDateTime(group)
+        colorLevels <- levels(group)
+        if (!is.null(colorLevels))
+        {
+            color.levels <- group
+            group <- as.numeric(group)
+            color.tmp <- group
+        } else if (colorIsDateTime) {
+            color.tmp <- as.numeric(group)
+        } else {
+            color.tmp <- group
+        }
+        color.min <- min(color.tmp, na.rm = TRUE)
+        color.max <- max(color.tmp, na.rm = TRUE)
+        colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
+        colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
+    }
     x = list(X = toJSON(X),
              Y = toJSON(Y),
              Z = toJSON(Z),
@@ -304,11 +319,11 @@ LabeledScatter <- function(
              group = toJSON(group),
              xLevels = toJSON(x.levels),
              yLevels = toJSON(y.levels),
-             colorLevels = if (is.null(color.scale)) NULL else toJSON(color.levels),
+             colorLevels = toJSON(color.levels),
              fixedAspectRatio = fixed.aspect,
              colors = toJSON(colors),
-             color.scale = toJSON(color.levels),
-             color.scale.format = NULL,
+             colorScale = toJSON(color.scale),
+             colorScaleFormat = color.scale.format,
              transparency = color.transparency,
              grid = grid,
              origin = origin,

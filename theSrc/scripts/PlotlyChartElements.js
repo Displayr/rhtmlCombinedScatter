@@ -116,24 +116,19 @@ function addColorScale (trace, config) {
         : config.group
     const color_min = Math.min(...color_values)
     const color_max = Math.max(...color_values)
-    const color_normalized = color_values.map(x => (x - color_min) / (color_max - color_min))
     const n = config.colorScale.length
     const delta = 1.0 / (n - 1)
     let color_scale = []
-    let tmp_font_color = []
     for (let i = 0; i < n; i++) {
         color_scale.push([i * delta, config.colorScale[i]])
-        tmp_font_color.push(blackOrWhite(config.colorScale[i]))
     }
-    const hover_font_color = color_normalized.map(x => tmp_font_color[Math.round(x / delta)])
+    const hover_font_color = config.colors.map(x => blackOrWhite(x))
     const colorFormatter = getFormatter(config.colorScaleFormat, color_values, config.colorIsDateTime)
     const tick_values = color_scale.map(x => x[0])
     const tick_labels = config.colorLevels
         ? config.colorLevels
         : tick_values.map(x => (colorFormatter((x * (color_max - color_min)) + color_min)))
     const color_bar = {
-        tickvals: tick_values,
-        ticktext: tick_labels,
         tickfont: {
             family: config.legendFontFamily,
             color: config.legendFontColor,
@@ -141,12 +136,20 @@ function addColorScale (trace, config) {
         },
         outlinewidth: 0
     }
-    trace['marker'].color = color_normalized
+    if (config.colorIsDateTime || config.colorLevels) {
+        color_bar.tickvals = tick_values
+        color_bar.ticktext = tick_labels
+        trace['marker'].cmin = 0
+        trace['marker'].cmax = 1
+    } else {
+        color_bar.tickformat = config.colorScaleFormat
+        trace['marker'].cmin = color_min
+        trace['marker'].cmax = color_max
+    }
+    trace['marker'].color = config.colors
     trace['marker'].showscale = true
     trace['marker'].colorbar = color_bar
     trace['marker'].colorscale = color_scale
-    trace['marker'].cmin = 0
-    trace['marker'].cmax = 1
     trace['hoverlabel'].font = { color: hover_font_color }
 }
 
