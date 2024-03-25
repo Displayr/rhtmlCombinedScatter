@@ -42,7 +42,7 @@ function createPlotlyData (config) {
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
         tooltips = indices.map(i => `${tooltips[i]}<br>${
-            config.colorLevels ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
+            Array.isArray(config.colorLevels) ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
         }`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
@@ -125,7 +125,7 @@ function addColorScale (trace, config) {
     const hover_font_color = config.colors.map(x => blackOrWhite(x))
     const colorFormatter = getFormatter(config.colorScaleFormat, color_values, config.colorIsDateTime)
     const tick_values = color_scale.map(x => x[0])
-    const tick_labels = config.colorLevels
+    const tick_labels = Array.isArray(config.colorLevels)
         ? config.colorLevels
         : tick_values.map(x => (colorFormatter((x * (color_max - color_min)) + color_min)))
     const color_bar = {
@@ -136,7 +136,7 @@ function addColorScale (trace, config) {
         },
         outlinewidth: 0
     }
-    if (config.colorIsDateTime || config.colorLevels) {
+    if (config.colorIsDateTime || Array.isArray(config.colorLevels)) {
         color_bar.tickvals = tick_values
         color_bar.ticktext = tick_labels
         trace['marker'].cmin = 0
@@ -181,7 +181,7 @@ function checkD3Format (format, values, value_is_date) {
 }
 
 function getDefaultDateFormat (dates) {
-    const dvals = dates.map(x => x.getTime()) // all values in milliseconds
+    const dvals = dates.map(x => new Date(x).getTime()) // all values in milliseconds
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin

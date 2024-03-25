@@ -15,7 +15,8 @@
 #'  It should have the same length as the number of levels in `group`
 #' @param color.transparency Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
-#'  `group` as a continuous color scale. In this case `group` can be numeric, categorical or a date time variable
+#'  `group` as a continuous color scale. In this case, `color` will be ignored.
+#' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
@@ -292,29 +293,29 @@ LabeledScatter <- function(
     if (!is.null(color.scale)) {
         color.func <- colorRamp(color.scale)
         colorIsDateTime <- isDateTime(group)
-        colorLevels <- levels(group)
-        if (!is.null(colorLevels))
-        {
-            color.levels <- group
-            group <- as.numeric(group)
-            color.tmp <- group
-        } else if (colorIsDateTime) {
+        if (colorIsDateTime) {
             color.tmp <- as.numeric(group)
-        } else {
+        } else if (is.numeric(group)) {
             color.tmp <- group
+        } else {
+            tmp <- as.factor(group)
+            color.levels <- as.character(tmp)
+            tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
+            color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
+            color.tmp <- as.numeric(tmp)
+            group <- 1:length(group)
         }
         color.min <- min(color.tmp, na.rm = TRUE)
         color.max <- max(color.tmp, na.rm = TRUE)
         colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
         colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
     }
-    print(group)
     x = list(X = toJSON(X),
              Y = toJSON(Y),
              Z = toJSON(Z),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
-             colorIsDatetime = colorIsDateTime,
+             colorIsDateTime = colorIsDateTime,
              label = toJSON(label),
              labelAlt = toJSON(label.alt),
              group = toJSON(group),

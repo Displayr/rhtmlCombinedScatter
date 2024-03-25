@@ -181,7 +181,9 @@ LabeledScatter(
 It should have the same length as the number of levels in `group`}
 
 \item{color.scale}{Default to NULL. It can be set to a vector of hex colors in order to show
-`group` as a continuous color scale. In this case `group` can be numeric, categorical or a date time variable}
+`group` as a continuous color scale. In this case, `color` will be ignored.}
+
+\item{color.scale.format}{A string that is interpreted for the format of the tick labels along the color scale bar.}
 
 \item{debug.mode}{Boolean toggle to display widget internals for debugging (Default is FALSE)}
 
