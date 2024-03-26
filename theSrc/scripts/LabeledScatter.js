@@ -251,6 +251,7 @@ class LabeledScatter {
   plotlyLegendOrColorBarWidth () {
     let el = d3.select(this.rootElement).select('.legend')
     if (el === undefined || el.empty()) el = d3.select(this.rootElement).select('.colorbar')
+    if (el === undefined || el.empty()) return null
     return el[0][0].getBBox().width
   }
 

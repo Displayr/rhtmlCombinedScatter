@@ -316,7 +316,7 @@ LabeledScatter <- function(
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
              colorIsDateTime = colorIsDateTime,
-             label = toJSON(label),
+             label = toJSON(as.character(label)),
              labelAlt = toJSON(label.alt),
              group = toJSON(group),
              xLevels = toJSON(x.levels),
