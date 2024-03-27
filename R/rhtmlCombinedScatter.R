@@ -289,11 +289,11 @@ LabeledScatter <- function(
     yIsDateTime <- isDateTime(Y[1])
 
     color.levels <- NULL
-    colorIsDateTime <- FALSE
+    color.is.date.time <- FALSE
     if (!is.null(color.scale)) {
         color.func <- colorRamp(color.scale)
-        colorIsDateTime <- isDateTime(group)
-        if (colorIsDateTime) {
+        color.is.date.time <- isDateTime(group)
+        if (color.is.date.time) {
             color.tmp <- as.numeric(group)
         } else if (is.numeric(group)) {
             color.tmp <- group
@@ -315,7 +315,7 @@ LabeledScatter <- function(
              Z = toJSON(Z),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
-             colorIsDateTime = colorIsDateTime,
+             colorIsDateTime = color.is.date.time,
              label = toJSON(as.character(label)),
              labelAlt = toJSON(label.alt),
              group = toJSON(group),
