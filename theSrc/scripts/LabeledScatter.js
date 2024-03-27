@@ -82,9 +82,7 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       const tmp_layout = {}
       const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
-      if (is_extra_margin_needed_for_legend &&
-        (config.colorScale !== null ||
-          this.canLegendPointsFitUnderLegend(plotlyChart._fullLayout, config))) {
+      if (is_extra_margin_needed_for_legend) {
         tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
@@ -250,8 +248,11 @@ class LabeledScatter {
   }
 
   isExtraMarginNeededForLegend (plotly_chart_layout, config) {
+    if (config.colorScale !== null) {
+      return true
+    }
     if (!plotly_chart_layout.legend) {
-      return
+      return false
     }
 
     const height_under_legend = plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
