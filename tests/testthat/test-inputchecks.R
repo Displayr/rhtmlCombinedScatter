@@ -5,6 +5,15 @@ context("Input checks")
 test_that("Basic working scatterplot", {
     expect_error(LabeledScatter(X = 1:10, Y = 11:20, Z = 0:9,
                                 label = letters[1:10]), NA)
+
+    col.ord <- c(3,2,1,4,5)
+    col.scale <- c("#FF0000", "#CCCCCC", "#0000FF")
+    expect_error(LabeledScatter(X=1:5, Y=1:5, label = letters[col.ord],
+        color.scale = col.scale, group = col.ord), NA)
+    expect_error(LabeledScatter(X=1:5, Y=1:5, label = letters[col.ord],
+        color.scale = col.scale, group = letters[col.ord]), NA)
+    expect_error(LabeledScatter(X=1:5, Y=1:5, label = letters[col.ord],
+        color.scale = col.scale, group = Sys.Date() + col.ord), NA)
 })
 
 test_that("Invalid X error", {
