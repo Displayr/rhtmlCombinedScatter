@@ -94,14 +94,9 @@ class Legend {
   }
 
   getLegendItemsPositions (vb, legendBubbles, itemsArray, pointRadius) {
-    const bubbleLegendTextHeight = 20
     const numItems = itemsArray.length
 
-    if ((this.getBubblesTitle() !== null) && this.legendSettings.showBubblesInLegend()) {
-      this.height = this.getBubblesTitle()[0].y - bubbleLegendTextHeight - vb.y
-    }
-
-    if (legendBubbles != null && this.legendSettings.showBubblesInLegend) {
+    if (legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
       const legendUtils = LegendUtils
       legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius, this.legendPointsRect)
     }

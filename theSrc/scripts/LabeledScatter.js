@@ -248,7 +248,7 @@ class LabeledScatter {
   }
 
   isExtraMarginNeededForLegend (plotly_chart_layout, config) {
-    if (config.colorScale !== null) {
+    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || config.legendBubblesShow)) {
       return true
     }
     if (!plotly_chart_layout.legend) {
@@ -275,9 +275,9 @@ class LabeledScatter {
     if (!config.legendBubblesShow) {
       return 0
     }
-    let height = LegendUtils.normalizedZtoRadius(config.pointRadius, 1) * 2 + LEGEND_BUBBLE_PADDING_TOP
+    let height = LegendUtils.normalizedZtoRadius(config.pointRadius, 1) * 2 + config.legendBubbleFontSize + LEGEND_BUBBLE_PADDING_TOP
     if (config.zTitle) {
-      height += config.legendBubbleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT
+      height += config.legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT
     }
     return height
   }
