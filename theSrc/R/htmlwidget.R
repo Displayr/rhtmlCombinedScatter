@@ -12,7 +12,11 @@
 #' @param y.levels is the levels for the categorical Y input array. Default is levels(Y)
 #' @param fixed.aspect Default to FALSE. Cannot be guarenteed if any of the axis bounds are set.
 #' @param colors is the color wheel to be used when plotting the data points. Defaults to Q color wheel.
+#'  It should have the same length as the number of levels in `group`
 #' @param color.transparency Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z
+#' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
+#'  `group` as a continuous color scale. In this case, `color` will be ignored.
+#' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
@@ -83,7 +87,9 @@
 #' @param x.suffix A string that suffixes all x values(eg. "kg")
 #' @param z.suffix A string that suffixes all bubble values(eg. "kg")
 #' @param x.format A string that is interpreted for the format of the x axis labels. Default is NULL.
+#' @param x.hover.format A string that is interpreted for the format of the x axis values in the tooltips.
 #' @param y.format A string that is interpreted for the format of the y axis labels. Default is NULL.
+#' @param y.hover.format A string that is interpreted for the format of the y axis values in the tooltips.
 #' @param point.radius Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 #'     When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
 #'     \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).
@@ -161,6 +167,8 @@ LabeledScatter <- function(
     background.color = 'transparent',
     color.transparency = NULL,
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
+    color.scale = NULL,
+    color.scale.format = NULL,
     debug.mode = FALSE,
     fixed.aspect = FALSE,
     footer = "",
@@ -237,6 +245,7 @@ LabeledScatter <- function(
     x.bounds.units.major = NULL,
     x.decimals = NULL,
     x.format = NULL,
+    x.hover.format = NULL,
     x.levels = NULL,
     x.prefix = "",
     x.suffix = "",
@@ -250,6 +259,7 @@ LabeledScatter <- function(
     y.bounds.units.major = NULL,
     y.decimals = NULL,
     y.format = NULL,
+    y.hover.format = NULL,
     y.levels = NULL,
     y.prefix = "",
     y.suffix = "",
@@ -278,18 +288,44 @@ LabeledScatter <- function(
     xIsDateTime <- isDateTime(X[1])
     yIsDateTime <- isDateTime(Y[1])
 
+    color.levels <- NULL
+    color.is.date.time <- FALSE
+    if (!is.null(color.scale)) {
+        color.func <- colorRamp(color.scale)
+        color.is.date.time <- isDateTime(group)
+        if (color.is.date.time) {
+            color.tmp <- as.numeric(group)
+        } else if (is.numeric(group)) {
+            color.tmp <- group
+        } else {
+            tmp <- as.factor(group)
+            color.levels <- as.character(tmp)
+            tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
+            color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
+            color.tmp <- as.numeric(tmp)
+            group <- 1:length(group)
+        }
+        color.min <- min(color.tmp, na.rm = TRUE)
+        color.max <- max(color.tmp, na.rm = TRUE)
+        colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
+        colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
+    }
     x = list(X = toJSON(X),
              Y = toJSON(Y),
              Z = toJSON(Z),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
-             label = toJSON(label),
+             colorIsDateTime = color.is.date.time,
+             label = toJSON(as.character(label)),
              labelAlt = toJSON(label.alt),
              group = toJSON(group),
              xLevels = toJSON(x.levels),
              yLevels = toJSON(y.levels),
+             colorLevels = toJSON(color.levels),
              fixedAspectRatio = fixed.aspect,
              colors = toJSON(colors),
+             colorScale = toJSON(color.scale),
+             colorScaleFormat = color.scale.format,
              transparency = color.transparency,
              grid = grid,
              origin = origin,
@@ -308,7 +344,9 @@ LabeledScatter <- function(
              ySuffix = y.suffix,
              zSuffix = z.suffix,
              xFormat = x.format,
+             xTooltipFormat = x.hover.format,
              yFormat = y.format,
+             yTooltipFormat = y.hover.format,
              titleFontFamily = title.font.family,
              titleFontColor = title.font.color,
              titleFontSize = title.font.size,

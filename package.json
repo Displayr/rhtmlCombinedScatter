@@ -27,7 +27,7 @@
     "gulp": "^4.0.2",
     "npm-force-resolutions": "0.0.10",
     "request-promise": "^4.2.5",
-    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#revert-dependabot"
+    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#7.2.6"
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
@@ -41,7 +41,7 @@
     "jquery": "^3.5.1",
     "lodash": "^4.17.21",
     "md5": "^2.2.1",
-    "plotly.js-dist-min": "^2.11.1",
+    "plotly.js-basic-dist-min": "^2.11.1",
     "random-js": "^1.0.8",
     "rbush": "^3.0.1",
     "shelljs": "^0.8.4"

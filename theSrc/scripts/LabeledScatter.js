@@ -4,7 +4,7 @@ import { buildConfig } from './buildConfig'
 import { createPlotlyData, createPlotlyLayout } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import { LEGEND_POINTS_PADDING_TOP, LEGEND_POINTS_ROW_PADDING, LEGEND_BUBBLE_TITLE_HEIGHT } from './Legend'
-import Plotly from 'plotly.js-dist-min'
+import Plotly from 'plotly.js-basic-dist-min'
 import RectPlot from './RectPlot'
 import State from './State'
 import Utils from './utils/Utils'
@@ -82,8 +82,10 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       const tmp_layout = {}
       const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
-      if (is_extra_margin_needed_for_legend) {
-        tmp_layout['margin.r'] = this.plotlyLegendWidth() + LEGEND_POINTS_MARGIN_RIGHT
+      if (is_extra_margin_needed_for_legend &&
+        (config.colorScale !== null ||
+          this.canLegendPointsFitUnderLegend(plotlyChart._fullLayout, config))) {
+        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
@@ -213,7 +215,7 @@ class LabeledScatter {
   getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config) {
     if (is_legend_points_to_right_of_plotly_legend) {
       return {
-        x: nsewdrag_rect.width + this.plotlyLegendWidth(),
+        x: nsewdrag_rect.width + this.plotlyLegendOrColorBarWidth(),
         y: LEGEND_POINTS_PADDING_TOP,
         width: LEGEND_POINTS_MARGIN_RIGHT,
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
@@ -279,8 +281,10 @@ class LabeledScatter {
     return height
   }
 
-  plotlyLegendWidth () {
-    const el = d3.select(this.rootElement).select('.legend')
+  plotlyLegendOrColorBarWidth () {
+    let el = d3.select(this.rootElement).select('.legend')
+    if (el === undefined || el.empty()) el = d3.select(this.rootElement).select('.colorbar')
+    if (el === undefined || el.empty()) return null
     return el[0][0].getBBox().width
   }
 

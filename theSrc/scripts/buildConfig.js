@@ -35,6 +35,14 @@ const defaultConfig = {
   yAxisZeroLineColor: '#000000',
   yAxisZeroLineDash: 'dot',
   yAxisZeroLineWidth: 1,
+  // The colorScale differs from the colors in that the colors supplied
+  // should be regularly spaced and in ascending order.
+  // We expect that R wrapper function will ensure the colorScale
+  // matches the colors (which is still used for the labels)
+  colorScale: null,
+  colorLevels: null,
+  colorIsDateTime: false,
+  colorScaleFormat: null,
   colors: ['#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47', '#255E91', '#9E480E', '#636363', '#997300', '#264478', '#43682B', '#FF2323'],
   debugMode: false,
   fixedAspectRatio: false,
@@ -85,8 +93,8 @@ const defaultConfig = {
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)
-  pointBorderColor: '#000000',
-  pointBorderWidth: 0,
+  pointBorderColor: '#FFFFFF',
+  pointBorderWidth: null,
   showLabels: true,
   showResetButton: true,
   showXAxis: true,
@@ -112,6 +120,7 @@ const defaultConfig = {
   xBoundsUnitsMajor: null,
   xDecimals: null,
   xFormat: null,
+  xTooltipFormat: null,
   xIsDateTime: null, // NB computed in R
   xLevels: null,
   xPrefix: '',
@@ -125,6 +134,7 @@ const defaultConfig = {
   yBoundsUnitsMajor: null,
   yDecimals: null,
   yFormat: null,
+  yTooltipFormat: null,
   yIsDateTime: null, // NB computed in R
   yLevels: null,
   yPrefix: '',
@@ -178,12 +188,17 @@ function buildConfig (userConfig, width, height) {
     config.yLevels = _.isNull(config.yLevels) ? _(config.Y).uniq().value() : config.yLevels
   }
 
+  if (config.colorIsDateTime) config.group = _.map(config.group, (d) => new Date(d))
+
   // Normalize bubble sizes to compute diameter in pixels
   config.normZ = null
   if (Array.isArray(config.Z)) {
     const maxZ = _.max(config.Z)
     config.normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+    if (config.pointBorderWidth === null) config.pointBorderWidth = 1
+  } else {
+    if (config.pointBorderWidth === null) config.pointBorderWidth = 0
   }
   return config
 }
