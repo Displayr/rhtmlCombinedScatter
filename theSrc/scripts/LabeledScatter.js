@@ -3,19 +3,25 @@ import _ from 'lodash'
 import { buildConfig } from './buildConfig'
 import { createPlotlyData, createPlotlyLayout } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
-import { ROW_PADDING } from './Legend'
+import {
+  LEGEND_POINTS_PADDING_TOP,
+  LEGEND_POINTS_ROW_PADDING,
+  LEGEND_BUBBLE_TITLE_HEIGHT,
+  LEGEND_POINTS_MARGIN_RIGHT,
+  LEGEND_POINTS_MINIMUM_HEIGHT,
+  LEGEND_BUBBLE_PADDING_SIDE,
+  LEGEND_BUBBLE_PADDING_TOP
+} from './Legend'
 import Plotly from 'plotly.js-basic-dist-min'
 import RectPlot from './RectPlot'
 import State from './State'
 import Utils from './utils/Utils'
+import LegendUtils from './utils/LegendUtils'
 import 'babel-polyfill'
 
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
 import InsufficientWidthError from './exceptions/InsufficientWidthError'
 import DataTypeEnum from './utils/DataTypeEnum'
-
-const MARGIN_RIGHT_FOR_LEGEND_POINTS = 100
-const LEGEND_POINTS_PADDING_TOP = 10
 
 class LabeledScatter {
   constructor (element, width, height, stateChangedCallback) {
@@ -73,22 +79,20 @@ class LabeledScatter {
     const config = buildConfig(this.data, this.width, this.height)
     try {
       const plot_data = createPlotlyData(config)
-      const plot_layout = createPlotlyLayout(config, this.marginRight())
+      const plot_layout = createPlotlyLayout(config, this.marginRight(config))
       const plot_config = { displayModeBar: false, editable: false }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       const tmp_layout = {}
-      const is_legend_points_to_right_of_plotly_legend = this.stateObj.legendPts.length > 0 &&
-        (config.colorScale !== null ||
-          this.canLegendPointsFitUnderLegend(plotlyChart._fullLayout, config))
-      if (is_legend_points_to_right_of_plotly_legend) {
-        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + MARGIN_RIGHT_FOR_LEGEND_POINTS
+      const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
+      if (is_extra_margin_needed_for_legend) {
+        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-      await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
+      await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
 
       plotlyChart.on('plotly_afterplot', () => {
-        this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_legend_points_to_right_of_plotly_legend)
+        this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
       })
 
       this.addMarkerClickHandler()
@@ -128,8 +132,6 @@ class LabeledScatter {
         .attr('y', nsewdrag_rect.y)
         .attr('width', this.width - nsewdrag_rect.x)
         .attr('height', plot_height)
-    config.legendBubblesShow = false
-    config.legendShow = false
     config.yBoundsMinimum = this.convertValueType(plotly_chart_layout.yaxis.range[0], config.yDataType)
     config.yBoundsMaximum = this.convertValueType(plotly_chart_layout.yaxis.range[1], config.yDataType)
     config.xBoundsMinimum = this.convertValueType(plotly_chart_layout.xaxis.range[0], config.xDataType)
@@ -137,9 +139,16 @@ class LabeledScatter {
     config.width = plot_width
     config.height = plot_height
 
-    const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect)
+    const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config)
 
-    this.plot = new RectPlot({ config, stateObj: this.stateObj, svg, rootElement: d3.select(this.rootElement), reset: () => this.draw(), legendPointsRect: legend_points_rect })
+    this.plot = new RectPlot({
+      config,
+      stateObj: this.stateObj,
+      svg,
+      rootElement: d3.select(this.rootElement),
+      reset: () => this.draw(),
+      legendPointsRect: legend_points_rect
+    })
     await this.plot.draw()
   }
 
@@ -204,48 +213,79 @@ class LabeledScatter {
     }
   }
 
-  getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect) {
+  getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config) {
     if (is_legend_points_to_right_of_plotly_legend) {
       return {
         x: nsewdrag_rect.width + this.plotlyLegendOrColorBarWidth(),
         y: LEGEND_POINTS_PADDING_TOP,
-        width: MARGIN_RIGHT_FOR_LEGEND_POINTS,
-        height: nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP
+        width: LEGEND_POINTS_MARGIN_RIGHT,
+        height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
     } else if (plotly_chart_layout.legend) {
+      const legend_rect = this.legendRect()
       return {
         x: nsewdrag_rect.width,
-        y: plotly_chart_layout.legend._height + LEGEND_POINTS_PADDING_TOP,
+        y: legend_rect.height + LEGEND_POINTS_PADDING_TOP,
         width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
-        height: nsewdrag_rect.height - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
+        height: Math.max(nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
       }
-     } else {
+    } else {
       return {
         x: nsewdrag_rect.width,
         y: LEGEND_POINTS_PADDING_TOP,
         width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
-        height: nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP
+        height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
       }
     }
   }
 
-  marginRight () {
+  marginRight (config) {
+    let margin = 0
     if (this.stateObj.legendPts.length > 0) {
-      return MARGIN_RIGHT_FOR_LEGEND_POINTS
-    } else {
-      return NaN
+      margin = Math.max(LEGEND_POINTS_MARGIN_RIGHT, margin)
     }
+    if (this.hasBubbleLegend(config)) {
+      const bubble_radius = LegendUtils.normalizedZtoRadius(config.pointRadius, 1)
+      margin = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), margin)
+    }
+    return margin > 0 ? margin : null
   }
 
-  canLegendPointsFitUnderLegend (plotly_chart_layout, config) {
-    if (!plotly_chart_layout.legend) return false
-    const legend_points_height = this.stateObj.legendPts.length * this.legendPointsRowHeight(config)
-    const height_under_legend = plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
-    return legend_points_height > height_under_legend
+  isExtraMarginNeededForLegend (plotly_chart_layout, config) {
+    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
+      return true
+    }
+    if (!plotly_chart_layout.legend) {
+      return false
+    }
+
+    const nsewdrag_rect = this.nsewdragRect()
+    const legend_rect = this.legendRect()
+    const height_under_legend = nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP
+
+    let required_height = 0
+    if (this.stateObj.legendPts.length > 0) {
+      required_height += this.stateObj.legendPts.length * this.legendPointsRowHeight(config)
+    }
+    if (this.hasBubbleLegend(config)) {
+      required_height += this.legendBubbleHeight(config)
+    }
+    return required_height > 0 && required_height > height_under_legend
   }
 
   legendPointsRowHeight (config) {
-    return config.legendFontSize + ROW_PADDING
+    return config.legendFontSize + LEGEND_POINTS_ROW_PADDING
+  }
+
+  legendBubbleHeight (config) {
+    if (!this.hasBubbleLegend(config)) {
+      return 0
+    }
+    let height = LegendUtils.normalizedZtoRadius(config.pointRadius, 1) * 2 + config.legendBubbleFontSize + LEGEND_BUBBLE_PADDING_TOP
+    if (config.zTitle) {
+      height += config.legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT
+    }
+    return height
   }
 
   plotlyLegendOrColorBarWidth () {
@@ -269,6 +309,15 @@ class LabeledScatter {
   nsewdragRect () {
     const nsewdrag = d3.select(this.rootElement).select('.nsewdrag')
     return nsewdrag[0][0].getBBox()
+  }
+
+  legendRect () {
+    const legend_bg = d3.select(this.rootElement).select('.legend rect.bg')
+    return legend_bg[0][0].getBBox()
+  }
+
+  hasBubbleLegend (config) {
+    return config.legendBubblesShow && config.Z && !_.isEmpty(config.Z)
   }
 }
 

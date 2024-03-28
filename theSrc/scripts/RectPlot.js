@@ -300,6 +300,12 @@ class RectPlot {
 
   drawLegend () {
     return new Promise((resolve) => {
+      if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
+        this.legend.drawBubblesWith(this.svg, this.axisSettings)
+        this.legend.drawBubblesLabelsWith(this.svg)
+        this.legend.drawBubblesTitleWith(this.svg)
+      }
+
       const drag = DragUtils.getLegendLabelDragAndDrop(this, this.data)
       this.legend.drawDraggedPtsTextWith(this.svg, drag)
       return resolve()
