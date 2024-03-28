@@ -314,7 +314,7 @@ class LabeledScatter {
   }
 
   hasBubbleLegend (config) {
-    return config.legendBubblesShow && config.Z && _.isEmpty(config.Z)
+    return config.legendBubblesShow && config.Z && !_.isEmpty(config.Z)
   }
 }
 
