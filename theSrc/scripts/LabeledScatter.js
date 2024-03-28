@@ -3,7 +3,15 @@ import _ from 'lodash'
 import { buildConfig } from './buildConfig'
 import { createPlotlyData, createPlotlyLayout } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
-import { LEGEND_POINTS_PADDING_TOP, LEGEND_POINTS_ROW_PADDING, LEGEND_BUBBLE_TITLE_HEIGHT } from './Legend'
+import {
+  LEGEND_POINTS_PADDING_TOP,
+  LEGEND_POINTS_ROW_PADDING,
+  LEGEND_BUBBLE_TITLE_HEIGHT,
+  LEGEND_POINTS_MARGIN_RIGHT,
+  LEGEND_POINTS_MINIMUM_HEIGHT,
+  LEGEND_BUBBLE_PADDING_SIDE,
+  LEGEND_BUBBLE_PADDING_TOP
+} from './Legend'
 import Plotly from 'plotly.js-basic-dist-min'
 import RectPlot from './RectPlot'
 import State from './State'
@@ -14,11 +22,6 @@ import 'babel-polyfill'
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
 import InsufficientWidthError from './exceptions/InsufficientWidthError'
 import DataTypeEnum from './utils/DataTypeEnum'
-
-const LEGEND_POINTS_MARGIN_RIGHT = 100
-const LEGEND_POINTS_MINIMUM_HEIGHT = 50
-const LEGEND_BUBBLE_PADDING_SIDE = 10
-const LEGEND_BUBBLE_PADDING_TOP = 10
 
 class LabeledScatter {
   constructor (element, width, height, stateChangedCallback) {
