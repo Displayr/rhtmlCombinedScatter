@@ -219,11 +219,12 @@ class LabeledScatter {
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
     } else if (plotly_chart_layout.legend) {
+      const legend_rect = this.legendRect()
       return {
         x: nsewdrag_rect.width,
-        y: plotly_chart_layout.legend._height + LEGEND_POINTS_PADDING_TOP,
+        y: legend_rect.height + LEGEND_POINTS_PADDING_TOP,
         width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
-        height: Math.max(nsewdrag_rect.height - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
+        height: Math.max(nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
       }
     } else {
       return {
@@ -255,7 +256,9 @@ class LabeledScatter {
       return false
     }
 
-    const height_under_legend = plotly_chart_layout.yaxis._length - plotly_chart_layout.legend._height - LEGEND_POINTS_PADDING_TOP
+    const nsewdrag_rect = this.nsewdragRect()
+    const legend_rect = this.legendRect()
+    const height_under_legend = nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP
 
     let required_height = 0
     if (this.stateObj.legendPts.length > 0) {
@@ -264,7 +267,7 @@ class LabeledScatter {
     if (config.legendBubblesShow && config.Z) {
       required_height += this.legendBubbleHeight(config)
     }
-    return required_height > height_under_legend
+    return required_height > 0 && required_height > height_under_legend
   }
 
   legendPointsRowHeight (config) {
@@ -303,6 +306,11 @@ class LabeledScatter {
   nsewdragRect () {
     const nsewdrag = d3.select(this.rootElement).select('.nsewdrag')
     return nsewdrag[0][0].getBBox()
+  }
+
+  legendRect () {
+    const legend_bg = d3.select(this.rootElement).select('.legend rect.bg')
+    return legend_bg[0][0].getBBox()
   }
 }
 
