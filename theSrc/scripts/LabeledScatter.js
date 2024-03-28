@@ -240,7 +240,7 @@ class LabeledScatter {
     if (this.stateObj.legendPts.length > 0) {
       margin = Math.max(LEGEND_POINTS_MARGIN_RIGHT, margin)
     }
-    if (config.legendBubblesShow) {
+    if (config.legendBubblesShow && config.Z) {
       const bubble_radius = LegendUtils.normalizedZtoRadius(config.pointRadius, 1)
       margin = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), margin)
     }
@@ -248,7 +248,7 @@ class LabeledScatter {
   }
 
   isExtraMarginNeededForLegend (plotly_chart_layout, config) {
-    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || config.legendBubblesShow)) {
+    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || (config.legendBubblesShow && config.Z))) {
       return true
     }
     if (!plotly_chart_layout.legend) {
@@ -261,7 +261,7 @@ class LabeledScatter {
     if (this.stateObj.legendPts.length > 0) {
       required_height += this.stateObj.legendPts.length * this.legendPointsRowHeight(config)
     }
-    if (config.legendBubblesShow) {
+    if (config.legendBubblesShow && config.Z) {
       required_height += this.legendBubbleHeight(config)
     }
     return required_height > height_under_legend
@@ -272,7 +272,7 @@ class LabeledScatter {
   }
 
   legendBubbleHeight (config) {
-    if (!config.legendBubblesShow) {
+    if (!config.legendBubblesShow && config.Z) {
       return 0
     }
     let height = LegendUtils.normalizedZtoRadius(config.pointRadius, 1) * 2 + config.legendBubbleFontSize + LEGEND_BUBBLE_PADDING_TOP
