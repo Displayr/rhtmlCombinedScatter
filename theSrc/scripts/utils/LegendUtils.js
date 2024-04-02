@@ -122,11 +122,11 @@ class LegendUtils {
     })
   }
 
-  static setupBubbles (vb, legendBubbles, legend, pointRadius) {
+  static setupBubbles (vb, legendBubbles, legend, pointRadius, legendPointsRect) {
     const rTop = this.normalizedZtoRadius(pointRadius, legendBubbles.large.size / legendBubbles.maxSize)
     const rMid = this.normalizedZtoRadius(pointRadius, legendBubbles.medium.size / legendBubbles.maxSize)
     const rBot = this.normalizedZtoRadius(pointRadius, legendBubbles.small.size / legendBubbles.maxSize)
-    const cx = vb.x + vb.width + (legend.getWidth() / 2)
+    const cx = legendPointsRect.x + (legend.getWidth() / 2)
     const viewBoxYBottom = vb.y + vb.height
     const bubbleTextPadding = 2
     legend.setBubblesMaxWidth(rTop * 2)

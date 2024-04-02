@@ -4,13 +4,22 @@ import LegendUtils from './utils/LegendUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
 
-const ROW_PADDING = 9
+const LEGEND_POINTS_PADDING_TOP = 10
+const LEGEND_POINTS_ROW_PADDING = 9
+const LEGEND_POINTS_MARGIN_RIGHT = 100
+const LEGEND_POINTS_MINIMUM_HEIGHT = 50
+
+const LEGEND_BUBBLE_PADDING_SIDE = 10
+const LEGEND_BUBBLE_PADDING_TOP = 10
+
+/** Legend bubble title height as a multiple of font size */
+const LEGEND_BUBBLE_TITLE_HEIGHT = 1.5
 
 class Legend {
-  constructor (legendSettings, axisSettings, outsidePointsRect) {
+  constructor (legendSettings, axisSettings, legendPointsRect) {
     autoBind(this)
     this.legendSettings = legendSettings
-    this.outsidePointsRect = outsidePointsRect
+    this.legendPointsRect = legendPointsRect
     this.decimals = {
       x: axisSettings.x.decimals,
       y: axisSettings.y.decimals,
@@ -26,10 +35,10 @@ class Legend {
       y: axisSettings.y.suffix,
       z: axisSettings.z.suffix,
     }
-    this.width = 0
-    this.maxWidth = outsidePointsRect.width
-    this.setHeight(outsidePointsRect.height)
-    this.heightOfRow = legendSettings.getFontSize() + ROW_PADDING
+    this.width = legendPointsRect.width
+    this.maxWidth = legendPointsRect.width
+    this.setHeight(legendPointsRect.height)
+    this.heightOfRow = legendSettings.getFontSize() + LEGEND_POINTS_ROW_PADDING
     this.padding = {
       right: legendSettings.getFontSize() / 1.6,
       left: legendSettings.getFontSize() / 0.8,
@@ -46,7 +55,7 @@ class Legend {
       charWidth: 4,
     }
 
-    this.x = outsidePointsRect.x
+    this.x = legendPointsRect.x
     this.pts = []
     this.groups = []
     this.setColSpace(20)
@@ -90,21 +99,17 @@ class Legend {
   }
 
   getLegendItemsPositions (vb, legendBubbles, itemsArray, pointRadius) {
-    const bubbleLegendTextHeight = 20
     const numItems = itemsArray.length
 
-    if ((this.getBubblesTitle() !== null) && this.legendSettings.showBubblesInLegend()) {
-      this.height = this.getBubblesTitle()[0].y - bubbleLegendTextHeight - vb.y
-    }
-
-    if (legendBubbles != null && this.legendSettings.showBubblesInLegend) {
+    if (legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
       const legendUtils = LegendUtils
-      legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius)
+      legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius, this.legendPointsRect)
     }
 
-    const legendStartY = this.outsidePointsRect.y
+    const legendStartY = this.legendPointsRect.y
 
-    this.setCols(Math.ceil(numItems / (Math.ceil(this.height / this.heightOfRow))))
+    // TODO: figure out why the number of cols is wrong!!! see bubbleplot_overlap example and drag labels across
+    this.setCols(Math.ceil(numItems / (Math.ceil((this.height) / this.heightOfRow))))
 
     let colSpacing = 0
     let numItemsInPrevCols = 0
@@ -212,7 +217,7 @@ class Legend {
          .append('text')
          .attr('class', 'legend-bubbles-title')
          .attr('x', d => d.x)
-         .attr('y', d => d.y - (legendBubbleTitleFontSize * 1.5))
+         .attr('y', d => d.y - (legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT))
          .attr('text-anchor', 'middle')
          .attr('font-weight', 'normal')
          .attr('font-size', this.legendSettings.getBubbleTitleFontSize())
@@ -279,4 +284,13 @@ class Legend {
   }
 }
 
-module.exports = { Legend, ROW_PADDING }
+module.exports = {
+  Legend,
+  LEGEND_POINTS_ROW_PADDING,
+  LEGEND_BUBBLE_TITLE_HEIGHT,
+  LEGEND_POINTS_PADDING_TOP,
+  LEGEND_POINTS_MARGIN_RIGHT,
+  LEGEND_POINTS_MINIMUM_HEIGHT,
+  LEGEND_BUBBLE_PADDING_SIDE,
+  LEGEND_BUBBLE_PADDING_TOP
+}
