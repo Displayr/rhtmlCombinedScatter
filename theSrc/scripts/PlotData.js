@@ -27,7 +27,8 @@ class PlotData {
     pointRadius,
     bounds,
     transparency,
-    legendSettings
+    legendSettings,
+    state
   ) {
     autoBind(this)
     this.X = X
@@ -58,6 +59,7 @@ class PlotData {
     this.hiddenLabelsId = []
     this.outsidePlotCondensedPts = []
     this.legendSettings = legendSettings
+    this.state = state
     this.ordinalXToNumeric = x => {
       return d3.scale.ordinal().domain(xLevels).rangePoints([0, xLevels.length - 1])(x)
     }
@@ -274,8 +276,9 @@ class PlotData {
           let fontOpacity = _.includes(this.hiddenLabelsId, i) ? 0.0 : 1.0
           if ((this.vb.labelFontColor != null) && !(this.vb.labelFontColor === '')) { fontColor = this.vb.labelFontColor }
           const group = (this.group != null) ? this.group[i] : ''
+          const hidePointAndLabel = this.state.hiddenSeries.indexOf(group) > -1
           this.pts.push({ x, y, r, label, labelAlt, labelX: this.origX[i].toString(), labelY: this.origY[i].toString(), labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
-          this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url })
+          this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url, hidePointAndLabel })
         }
         i++
       }
@@ -328,7 +331,7 @@ class PlotData {
   }
 
   toggleLabelShowFromMarkerIndex (index) {
-    this.toggleLabelShow(this.markerIndexToDataIndex[index])
+    return this.toggleLabelShow(this.markerIndexToDataIndex[index])
   }
 
   toggleLabelShow (id) {
@@ -410,11 +413,11 @@ class PlotData {
   }
 
   getTextLabels () {
-    return _.filter(this.lab, l => l.url === '')
+    return _.filter(this.lab, l => l.url === '' && !l.hidePointAndLabel)
   }
 
   getImgLabels () {
-    return _.filter(this.lab, l => l.url !== '')
+    return _.filter(this.lab, l => l.url !== '' && !l.hidePointAndLabel)
   }
 }
 
