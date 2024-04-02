@@ -200,7 +200,8 @@ class RectPlot {
                          this.pointRadius,
                          this.bounds,
                          this.transparency,
-                         this.legendSettings)
+                         this.legendSettings,
+                         this.state)
 
     this.drawFailureCount = 0
   }

@@ -36,6 +36,7 @@ class State {
     this.legendPts = this.retrieveLegendPts()
     this.userPositionedLabs = this.isStoredInState('userPositionedLabs') ? this.getStored('userPositionedLabs') : []
     // this.algoPositionedLabs = this.isStoredInState('algoPositionedLabs') ? this.getStored('algoPositionedLabs') : []
+    this.hiddenSeries = []
     this.vb = this.isStoredInState('vb') ? this.getStored('vb') : {}
   }
 
@@ -216,6 +217,11 @@ class State {
         return this.getUserPositionedLabIds()
       }
     }
+  }
+
+  setHiddenSeries (hidden_series) {
+    this.hiddenSeries = hidden_series
+    this.saveToState({ 'hidden.series': hidden_series })
   }
 
   // saveAlgoPositionedLabs (labels, vb) {

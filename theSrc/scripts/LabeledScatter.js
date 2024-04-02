@@ -92,6 +92,8 @@ class LabeledScatter {
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
 
       plotlyChart.on('plotly_afterplot', () => {
+        const hidden_series = plotlyChart._fullData.filter(d => d.visible === 'legendonly').map(d => d.name)
+        this.stateObj.setHiddenSeries(hidden_series)
         this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
       })
 
@@ -142,7 +144,7 @@ class LabeledScatter {
     const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config)
 
     this.plot = new RectPlot({
-      config,
+      config: config,
       stateObj: this.stateObj,
       svg,
       rootElement: d3.select(this.rootElement),
