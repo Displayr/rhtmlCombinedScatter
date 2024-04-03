@@ -92,6 +92,10 @@ class ScatterPlotPage {
     return this.page.$(`#legend-${id}`)
   }
 
+  async clickFirstLegendItem () {
+    return this.page.click('.legendtext')
+  }
+
   async drag ({ to, from }) {
     await this.page.mouse.move(from.x, from.y)
     await this.page.mouse.down()
