@@ -36,7 +36,6 @@ class State {
     this.legendPts = this.retrieveLegendPts()
     this.userPositionedLabs = this.isStoredInState('userPositionedLabs') ? this.getStored('userPositionedLabs') : []
     // this.algoPositionedLabs = this.isStoredInState('algoPositionedLabs') ? this.getStored('algoPositionedLabs') : []
-    this.hiddenSeries = []
     this.vb = this.isStoredInState('vb') ? this.getStored('vb') : {}
   }
 
