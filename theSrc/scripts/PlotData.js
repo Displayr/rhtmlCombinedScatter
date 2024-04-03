@@ -28,7 +28,7 @@ class PlotData {
     bounds,
     transparency,
     legendSettings,
-    state
+    hiddenSeries
   ) {
     autoBind(this)
     this.X = X
@@ -59,7 +59,7 @@ class PlotData {
     this.hiddenLabelsId = []
     this.outsidePlotCondensedPts = []
     this.legendSettings = legendSettings
-    this.state = state
+    this.hiddenSeries = hiddenSeries
     this.ordinalXToNumeric = x => {
       return d3.scale.ordinal().domain(xLevels).rangePoints([0, xLevels.length - 1])(x)
     }
@@ -276,7 +276,7 @@ class PlotData {
           let fontOpacity = _.includes(this.hiddenLabelsId, i) ? 0.0 : 1.0
           if ((this.vb.labelFontColor != null) && !(this.vb.labelFontColor === '')) { fontColor = this.vb.labelFontColor }
           const group = (this.group != null) ? this.group[i] : ''
-          const hidePointAndLabel = this.state.hiddenSeries.indexOf(group) > -1
+          const hidePointAndLabel = this.hiddenSeries.indexOf(group) > -1
           this.pts.push({ x, y, r, label, labelAlt, labelX: this.origX[i].toString(), labelY: this.origY[i].toString(), labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
           this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url, hidePointAndLabel })
         }

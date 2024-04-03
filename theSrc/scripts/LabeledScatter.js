@@ -89,12 +89,10 @@ class LabeledScatter {
         tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-      await this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
+      await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
 
       plotlyChart.on('plotly_afterplot', () => {
-        const hidden_series = plotlyChart._fullData.filter(d => d.visible === 'legendonly').map(d => d.name)
-        this.stateObj.setHiddenSeries(hidden_series)
-        this.drawScatterLabelLayer(plotlyChart._fullLayout, config, is_extra_margin_needed_for_legend)
+        this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
       })
 
       this.addMarkerClickHandler()
@@ -114,7 +112,7 @@ class LabeledScatter {
     }
   }
 
-  async drawScatterLabelLayer (plotly_chart_layout, config, is_legend_points_to_right_of_plotly_legend) {
+  async drawScatterLabelLayer (plotly_chart_layout, plotly_chart_data, config, is_legend_points_to_right_of_plotly_legend) {
     d3.select(this.rootElement).select('.scatterlabellayer').remove()
 
     // The scatter labels need to be in the drag layer so that mouse events
@@ -142,6 +140,8 @@ class LabeledScatter {
     config.height = plot_height
 
     const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config)
+
+    config.hiddenSeries = plotly_chart_data.filter(d => d.visible === 'legendonly').map(d => d.name)
 
     this.plot = new RectPlot({
       config: config,

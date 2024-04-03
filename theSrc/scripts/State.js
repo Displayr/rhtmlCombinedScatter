@@ -219,11 +219,6 @@ class State {
     }
   }
 
-  setHiddenSeries (hidden_series) {
-    this.hiddenSeries = hidden_series
-    this.saveToState({ 'hidden.series': hidden_series })
-  }
-
   // saveAlgoPositionedLabs (labels, vb) {
   //   _.map(labels, lab => {
   //     if (_.every(this.userPositionedLabs, userlab => userlab.id !== lab.id)) {
