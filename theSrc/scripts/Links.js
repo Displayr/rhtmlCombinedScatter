@@ -6,13 +6,14 @@ class Links {
     const _labIsText = labelData => labelData.url === ''
     const _labIsEmpty = labelData => labelData.text === '' && labelData.url === ''
     const _labIsInvisible = labelData => labelData.opacity === 0
+    const _labAndPointIsHidden = labelData => labelData.hidePointAndLabel
     this.topBorderOffset = 3 // extra space between text label and link point
 
     this.links = []
     for (let i = 0; i < pts.length; i++) {
       const pt = pts[i]
       let newLinkPt = null
-      if (_labIsEmpty(lab[i]) || _labIsInvisible(lab[i])) {
+      if (_labIsEmpty(lab[i]) || _labIsInvisible(lab[i]) || _labAndPointIsHidden(lab[i])) {
         newLinkPt = null
       } else if (!this._labIsInsideBubblePt(lab[i], pt)) {
         if (_labIsText(lab[i])) {

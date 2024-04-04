@@ -68,7 +68,9 @@ class LabelPlacement {
 
   placeLabels (vb, anchors, labels, state, resolve) {
     const labelsSvg = this.svg.selectAll(`.plt-${this.pltId}-lab`)
-    const labsToBePlaced = _.filter(labels, l => (l.text !== '' && l.opacity > 0) || (l.text === '' && l.url !== ''))
+    const labsToBePlaced = _.filter(labels, l => {
+      return ((l.text !== '' && l.opacity > 0) || (l.text === '' && l.url !== '')) && !l.hidePointAndLabel
+    })
     SvgUtils.setMatchingSvgBBoxWidthAndHeight(labsToBePlaced, labelsSvg)
     this.computeAdjustedLabelHeight(labsToBePlaced)
 

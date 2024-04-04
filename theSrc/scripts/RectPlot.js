@@ -45,6 +45,7 @@ class RectPlot {
     this.originAlign = config.originAlign
     this.showLabels = config.showLabels
     this.pointRadius = config.pointRadius
+    this.hiddenSeries = config.hiddenSeries
 
     this.plotBorder = {
       show: config.plotBorderShow,
@@ -200,7 +201,8 @@ class RectPlot {
                          this.pointRadius,
                          this.bounds,
                          this.transparency,
-                         this.legendSettings)
+                         this.legendSettings,
+                         this.hiddenSeries)
 
     this.drawFailureCount = 0
   }
