@@ -372,7 +372,7 @@ class PlotData {
     const checkId = e => e.id === id
     const movedPt = _.remove(this.pts, checkId)
     const movedLab = _.remove(this.lab, checkId)
-    if (movedPt.length > 0 && movedLab.length > 0) {
+    if (movedPt.length > 0 && movedLab.length > 0 && !movedLab[0].hidePointAndLabel) {
       this.legend.addPt(id, movedPt, movedLab)
     }
     this.outsidePlotPtsId.push(id)
