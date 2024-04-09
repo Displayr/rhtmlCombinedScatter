@@ -115,6 +115,17 @@ LabeledScatter(
   trend.lines.line.thickness = 1,
   trend.lines.point.size = 2,
   trend.lines.show = FALSE,
+  fit.x = NULL,
+  fit.y = NULL,
+  fit.lower.bound = NULL,
+  fit.upper.bound = NULL,
+  fit.line.colors = NULL,
+  fit.line.type = "solid",
+  fit.line.width = 2,
+  fit.line.opacity = 1,
+  fit.line.names = NULL,
+  fit.ci.colors = NULL,
+  fit.ci.label.colors = NULL,
   width = NULL,
   x.axis.show = TRUE,
   x.bounds.maximum = NULL,
@@ -312,6 +323,28 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{trend.lines.point.size}{An integer to set the size of the data points when a trendline is drawn. This setting overrides Z sizes.}
 
 \item{trend.lines.show}{Boolean toggle to show trendlines based on groups given}
+
+\item{fit.x}{A list of numeric vectors containing the x values of the fit lines}
+
+\item{fit.y}{A list of numeric vectors containing the y values of the fit lines}
+
+\item{fit.lower.bound}{A list of numeric vectors containing the y values of the lower bounds}
+
+\item{fit.upper.bound}{A list of numeric vectors containing the y values of the upper bounds}
+
+\item{fit.line.colors}{A character vector of the fit line colors}
+
+\item{fit.line.type}{One of "dot", "dash", "longdash", "dashdot" and "solid"}
+
+\item{fit.line.width}{The width of the fit line in pixels}
+
+\item{fit.line.opacity}{The opacity of the line from 0 to 1}
+
+\item{fit.line.names}{A character vector of the names of the lines}
+
+\item{fit.ci.colors}{A character vector of the CI fill colors}
+
+\item{fit.ci.label.colors}{A character vector of the CI label colors}
 
 \item{width}{is the width of the plot. Defaults to max of window}
 
