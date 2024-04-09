@@ -54,8 +54,6 @@ const defaultConfig = {
   fitLineWidth: 2,
   fitLineOpacity: 1,
   fitLineNames: null,
-  fitFontSize: 10,
-  fitFontFamily: 'Arial',
   fitCIColors: null,
   fitCILabelColors: null,
   fixedAspectRatio: false,

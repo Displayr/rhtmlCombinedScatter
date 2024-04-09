@@ -183,6 +183,7 @@ function createPlotlyLayout (config, margin_right) {
             yref: 'paper',
             y: 1,
             yanchor: 'top',
+            tracegroupgap: 0
         },
         margin: {
             t: config.marginTop,
