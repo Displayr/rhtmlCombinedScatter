@@ -17,6 +17,7 @@ import RectPlot from './RectPlot'
 import State from './State'
 import Utils from './utils/Utils'
 import LegendUtils from './utils/LegendUtils'
+import FitLine from './FitLine'
 import 'babel-polyfill'
 
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
@@ -90,6 +91,10 @@ class LabeledScatter {
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
+
+      if (FitLine.isFitDataAvailable(config)) {
+        FitLine.draw(this.rootElement, config)
+      }
 
       plotlyChart.on('plotly_afterplot', () => {
         this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)

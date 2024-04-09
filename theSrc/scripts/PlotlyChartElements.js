@@ -1,25 +1,13 @@
 import _ from 'lodash'
-import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
+import TooltipUtils from './utils/TooltipUtils'
 
 function createPlotlyData (config) {
-    // Create tooltip text
+    // Check for empty labels
     const indices = _.range(config.X.length)
     let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
-    const xFormatter = getFormatter(
-        config.xTooltipFormat ? config.xTooltipFormat : config.xFormat,
-        config.X,
-        config.xIsDateTime
-    )
-    const yFormatter = getFormatter(
-        config.yTooltipFormat ? config.yTooltipFormat : config.yFormat,
-        config.Y,
-        config.yIsDateTime
-    )
-    let tooltips = indices.map(
-        i => `${tooltip_labels[i]} (${xFormatter(config.X[i])}, ${yFormatter(config.Y[i])})`
-    )
+    let tooltips = indices.map(i => `${tooltip_labels[i]} (${config.X[i]}, ${config.Y[i]})`)
 
     // Check if this is a bubbleplot
     let marker_opacity = config.transparency
@@ -38,17 +26,7 @@ function createPlotlyData (config) {
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
-    } else if (config.colorScale !== null && config.colorScale.length >= 2) {
-        const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
-        tooltips = indices.map(i => `${tooltips[i]}<br>${
-            Array.isArray(config.colorLevels) ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
-        }`)
-        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
-        let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
-        addColorScale(trace, config)
-        plot_data.push(trace)
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 0))
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
@@ -58,20 +36,20 @@ function createPlotlyData (config) {
             const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, g_index)
             plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
                 _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
-                marker_opacity, config.pointBorderColor, config.pointBorderWidth))
+                marker_opacity, config.pointBorderColor, config.pointBorderWidth, g))
         }
     }
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group) {
     return {
         x: X,
         y: Y,
         name: name,
         text: tooltips,
         hoverinfo: 'name+text',
-        hoverlabel: { font: { color: blackOrWhite(color) } },
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(color) } },
         type: 'scatter',
         mode: 'markers',
         marker: {
@@ -79,11 +57,10 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
             size: size,
             sizemode: 'diameter',
             opacity: opacity,
-            line: {
-                color: outlinecolor,
-                width: outlinewidth
-            }
+            outlinecolor: outlinecolor,
+            outlinewidth: outlinewidth
         },
+        legendgroup: group,
         cliponaxis: false
     }
 }
@@ -108,91 +85,6 @@ function createBaseTrace (config) {
         showlegend: false,
         opacity: 0
     }
-}
-
-function addColorScale (trace, config) {
-    const color_values = config.colorIsDateTime
-        ? config.group.map(x => new Date(x).getTime())
-        : config.group
-    const color_min = Math.min(...color_values)
-    const color_max = Math.max(...color_values)
-    const n = config.colorScale.length
-    const delta = 1.0 / (n - 1)
-    let color_scale = []
-    for (let i = 0; i < n; i++) {
-        color_scale.push([i * delta, config.colorScale[i]])
-    }
-    const hover_font_color = config.colors.map(x => blackOrWhite(x))
-    const colorFormatter = getFormatter(config.colorScaleFormat, color_values, config.colorIsDateTime)
-    const tick_values = color_scale.map(x => x[0])
-    const tick_labels = Array.isArray(config.colorLevels)
-        ? config.colorLevels
-        : tick_values.map(x => (colorFormatter((x * (color_max - color_min)) + color_min)))
-    const color_bar = {
-        tickfont: {
-            family: config.legendFontFamily,
-            color: config.legendFontColor,
-            size: config.legendFontSize
-        },
-        outlinewidth: 0
-    }
-    if (config.colorIsDateTime || Array.isArray(config.colorLevels)) {
-        color_bar.tickvals = tick_values
-        color_bar.ticktext = tick_labels
-        trace['marker'].cmin = 0
-        trace['marker'].cmax = 1
-    } else {
-        color_bar.tickformat = config.colorScaleFormat
-        trace['marker'].cmin = color_min
-        trace['marker'].cmax = color_max
-    }
-    trace['marker'].color = config.colors
-    trace['marker'].showscale = true
-    trace['marker'].colorbar = color_bar
-    trace['marker'].colorscale = color_scale
-    trace['hoverlabel'].font = { color: hover_font_color }
-}
-
-// Returns a function that can be applied later
-function getFormatter (format, values, value_is_date) {
-    if (!value_is_date && !_.isNumber(values[0])) return function (x) { return x }
-    if (value_is_date) {
-        if (!format) format = getDefaultDateFormat(values)
-        const formatter = d3.time.format(format)
-        return function (x) { return formatter(new Date(x)) }
-    }
-    return d3.format(checkD3Format(format, values, value_is_date))
-}
-
-function checkD3Format (format, values, value_is_date) {
-    if (value_is_date && !format) return getDefaultDateFormat(values)
-    if (value_is_date) return format
-
-    // Specify precision for some formats that tend to cause trouble
-    // for plotly (version 2 and above) - copied from flipChartBasics::ChartNumberFormat
-    switch (format) {
-        case '%': return '.0%'
-        case 'e': return '~e'
-        case 'f': return '~f'
-        case ',f': return ',.f'
-        case null: case undefined: case '': return '~f' // avoid SI prefix
-        default: return format
-    }
-}
-
-function getDefaultDateFormat (dates) {
-    const dvals = dates.map(x => new Date(x).getTime()) // all values in milliseconds
-    const dmin = Math.min(...dvals)
-    const dmax = Math.max(...dvals)
-    const diff = dmax - dmin
-    const min_mult = 4
-
-    // Values after new line only appear uniquely
-    // https://plotly.com/python/time-series/#configuring-tick-labels
-    if (diff < min_mult * 60 * 60 * 1000) return '%H:%M:%s:%L\n%b %d %Y'
-    else if (diff < min_mult * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
-    else if (diff < min_mult * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
-    else return '%b %Y'
 }
 
 function createPlotlyLayout (config, margin_right) {
@@ -232,7 +124,6 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.xBoundsUnitsMajor),
             tickprefix: config.xPrefix,
             ticksuffix: config.xSuffix,
-            tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
             layer: 'below traces'
          },
         yaxis: {
@@ -268,7 +159,6 @@ function createPlotlyLayout (config, margin_right) {
             dtick: parseTickDistance(config.yBoundsUnitsMajor),
             tickprefix: config.yPrefix,
             ticksuffix: config.ySuffix,
-            tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
             automargin: true,
             layer: 'below traces'
         },
@@ -282,7 +172,7 @@ function createPlotlyLayout (config, margin_right) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
-        showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
+        showlegend: config.legendShow && config.group !== null && config.group.length > 0,
         legend: {
             font: {
                 family: config.legendFontFamily,
@@ -405,17 +295,6 @@ function addLines (config) {
 function parseTickDistance (x) {
     if (x === undefined) return null
     return x
-}
-
-function blackOrWhite (bg_color) {
-    let parts = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/i.exec(bg_color)
-    if (parts) {
-        parts.shift()
-        const [r, g, b] = parts.map((part) => parseInt(part, 16))
-        const luminosity = 0.299 * r + 0.587 * g + 0.114 * b
-        return luminosity > 126 ? '#2C2C2C' : '#FFFFFF'
-    }
-    return '#2C2C2C'
 }
 
 function plotlyNumberType (type) {
