@@ -102,6 +102,17 @@
 #' @param trend.lines.show Boolean toggle to show trendlines based on groups given
 #' @param trend.lines.line.thickness An integer for the thickness of the trendlines (Default is 1px)
 #' @param trend.lines.point.size An integer to set the size of the data points when a trendline is drawn. This setting overrides Z sizes.
+#' @param fit.x A list of numeric vectors containing the x values of the fit lines
+#' @param fit.y A list of numeric vectors containing the y values of the fit lines
+#' @param fit.lower.bound A list of numeric vectors containing the y values of the lower bounds
+#' @param fit.upper.bound A list of numeric vectors containing the y values of the upper bounds
+#' @param fit.line.colors A character vector of the fit line colors
+#' @param fit.line.type One of "dot", "dash", "longdash", "dashdot" and "solid"
+#' @param fit.line.width The width of the fit line in pixels
+#' @param fit.line.opacity The opacity of the line from 0 to 1
+#' @param fit.line.names A character vector of the names of the lines
+#' @param fit.ci.colors A character vector of the CI fill colors
+#' @param fit.ci.label.colors A character vector of the CI label colors
 #' @param plot.border.show Boolean toggle to show border around plot area (Default is TRUE).
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
@@ -238,6 +249,17 @@ LabeledScatter <- function(
     trend.lines.line.thickness = 1,
     trend.lines.point.size=2,
     trend.lines.show = FALSE,
+    fit.x = NULL,
+    fit.y = NULL,
+    fit.lower.bound = NULL,
+    fit.upper.bound = NULL,
+    fit.line.colors = NULL,
+    fit.line.type = "solid",
+    fit.line.width = 2,
+    fit.line.opacity = 1,
+    fit.line.names = NULL,
+    fit.ci.colors = NULL,
+    fit.ci.label.colors = NULL,
     width = NULL,
     x.axis.show = TRUE,
     x.bounds.maximum = NULL,
@@ -428,6 +450,17 @@ LabeledScatter <- function(
              trendLines = trend.lines.show,
              trendLinesLineThickness = trend.lines.line.thickness,
              trendLinesPointSize = trend.lines.point.size,
+             fitX = toJSON(fit.x),
+             fitY = toJSON(fit.y),
+             fitLowerBound = toJSON(fit.lower.bound),
+             fitUpperBound = toJSON(fit.upper.bound),
+             fitLineColors = toJSON(fit.line.colors),
+             fitLineType = fit.line.type,
+             fitLineWidth = fit.line.width,
+             fitLineOpacity = fit.line.opacity,
+             fitLineNames = toJSON(fit.line.names),
+             fitCIColors = toJSON(fit.ci.colors),
+             fitCILabelColors = toJSON(fit.ci.label.colors),
              plotBorderShow = plot.border.show,
              labelPlacementWeightDistance = label.placement.weight.distance,
              labelPlacementWeightDistanceMultiplierCenteredAboveAnchor = label.placement.weight.distance.multiplier.centeredAboveAnchor,

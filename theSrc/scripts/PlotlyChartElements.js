@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
+import TooltipUtils from './utils/TooltipUtils'
 
 function createPlotlyData (config) {
     // Create tooltip text
@@ -38,7 +39,7 @@ function createPlotlyData (config) {
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth))
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 0))
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
         tooltips = indices.map(i => `${tooltips[i]}<br>${
@@ -46,7 +47,7 @@ function createPlotlyData (config) {
         }`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth)
+            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 0)
         addColorScale(trace, config)
         plot_data.push(trace)
     } else {
@@ -58,20 +59,20 @@ function createPlotlyData (config) {
             const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, g_index)
             plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
                 _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
-                marker_opacity, config.pointBorderColor, config.pointBorderWidth))
+                marker_opacity, config.pointBorderColor, config.pointBorderWidth, g))
         }
     }
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group) {
     return {
         x: X,
         y: Y,
         name: name,
         text: tooltips,
         hoverinfo: 'name+text',
-        hoverlabel: { font: { color: blackOrWhite(color) } },
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(color) } },
         type: 'scatter',
         mode: 'markers',
         marker: {
@@ -84,6 +85,7 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
                 width: outlinewidth
             }
         },
+        legendgroup: group,
         cliponaxis: false
     }
 }
@@ -122,7 +124,7 @@ function addColorScale (trace, config) {
     for (let i = 0; i < n; i++) {
         color_scale.push([i * delta, config.colorScale[i]])
     }
-    const hover_font_color = config.colors.map(x => blackOrWhite(x))
+    const hover_font_color = config.colors.map(x => TooltipUtils.blackOrWhite(x))
     const colorFormatter = getFormatter(config.colorScaleFormat, color_values, config.colorIsDateTime)
     const tick_values = color_scale.map(x => x[0])
     const tick_labels = Array.isArray(config.colorLevels)
@@ -293,6 +295,7 @@ function createPlotlyLayout (config, margin_right) {
             yref: 'paper',
             y: 1,
             yanchor: 'top',
+            tracegroupgap: 0,
         },
         margin: {
             t: config.marginTop,
@@ -405,17 +408,6 @@ function addLines (config) {
 function parseTickDistance (x) {
     if (x === undefined) return null
     return x
-}
-
-function blackOrWhite (bg_color) {
-    let parts = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/i.exec(bg_color)
-    if (parts) {
-        parts.shift()
-        const [r, g, b] = parts.map((part) => parseInt(part, 16))
-        const luminosity = 0.299 * r + 0.587 * g + 0.114 * b
-        return luminosity > 126 ? '#2C2C2C' : '#FFFFFF'
-    }
-    return '#2C2C2C'
 }
 
 function plotlyNumberType (type) {
