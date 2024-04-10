@@ -285,18 +285,7 @@ function createPlotlyLayout (config, margin_right) {
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
-        legend: {
-            font: {
-                family: config.legendFontFamily,
-                color: config.legendFontColor,
-                size: config.legendFontSize
-            },
-            itemsizing: 'constant',
-            yref: 'paper',
-            y: 1,
-            yanchor: 'top',
-            tracegroupgap: 0,
-        },
+        legend: createLegendSettings(config),
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
@@ -340,6 +329,34 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth)
         bounds[1] += bubble_offset
     }
     return bounds
+}
+
+function createLegendSettings (config) {
+    const settings = {
+        font: {
+            family: config.legendFontFamily,
+            color: config.legendFontColor,
+            size: config.legendFontSize
+        },
+        itemsizing: 'constant',
+        tracegroupgap: 0,
+        orientation: config.legendOrientation === 'Horizontal' ? 'h' : 'v',
+    }
+    if (config.legendX !== null) {
+        settings.x = Math.max(-2, Math.min(3, config.legendX))
+        settings.xanchor = config.legendX === 0.5 ? 'center' : 'left'
+    }
+    if (config.legendY !== null) {
+        settings.y = Math.max(-2, Math.min(3, config.legendY))
+        if (config.legendY < 0) {
+            settings.yanchor = 'top'
+        } else if (config.legendY > 1) {
+            settings.yanchor = 'bottom'
+        } else {
+            settings.yanchor = 'auto'
+        }
+    }
+    return settings
 }
 
 function addLines (config) {
