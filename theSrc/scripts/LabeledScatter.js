@@ -80,14 +80,16 @@ class LabeledScatter {
     const config = buildConfig(this.data, this.width, this.height)
     try {
       const plot_data = createPlotlyData(config)
-      const plot_layout = createPlotlyLayout(config, this.marginRight(config))
+      const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
+      const margin_right = legend_points_and_bubble_legend_width > 0 ? legend_points_and_bubble_legend_width : null
+      const plot_layout = createPlotlyLayout(config, margin_right)
       const plot_config = { displayModeBar: false, editable: false }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       const tmp_layout = {}
       const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
       if (is_extra_margin_needed_for_legend) {
-        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
+        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + legend_points_and_bubble_legend_width
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
       await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
@@ -228,7 +230,7 @@ class LabeledScatter {
         width: LEGEND_POINTS_MARGIN_RIGHT,
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
-    } else if (plotly_chart_layout.legend) {
+    } else if (plotly_chart_layout.legend && plotly_chart_layout.orientation === 'v') {
       const legend_rect = this.legendRect()
       return {
         x: nsewdrag_rect.width,
@@ -246,23 +248,23 @@ class LabeledScatter {
     }
   }
 
-  marginRight (config) {
-    let margin = 0
+  legendPointsAndBubbleLegendWidth (config) {
+    let width = 0
     if (this.stateObj.legendPts.length > 0) {
-      margin = Math.max(LEGEND_POINTS_MARGIN_RIGHT, margin)
+      width = Math.max(LEGEND_POINTS_MARGIN_RIGHT, width)
     }
     if (this.hasBubbleLegend(config)) {
       const bubble_radius = LegendUtils.normalizedZtoRadius(config.pointRadius, 1)
-      margin = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), margin)
+      width = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), width)
     }
-    return margin > 0 ? margin : null
+    return width
   }
 
   isExtraMarginNeededForLegend (plotly_chart_layout, config) {
     if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
       return true
     }
-    if (!plotly_chart_layout.legend) {
+    if (!plotly_chart_layout.legend || plotly_chart_layout.legend.orientation === 'h') {
       return false
     }
 
