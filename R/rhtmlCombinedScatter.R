@@ -54,6 +54,9 @@
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
 #' @param legend.bubble.title.font.size is the font size of the legend bubble title
 #' @param legend.bubble.title.font.family is the font family of the legend bubble title
+#' @param legend.orientation Either "Vertical" or "Horizontal"
+#' @param legend.x The x position of the legend, relative to the plot area
+#' @param legend.y The y position of the legend, relative to the plot area
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -221,6 +224,9 @@ LabeledScatter <- function(
     legend.font.family = "Arial",
     legend.font.size = 12,
     legend.show = TRUE,
+    legend.orientation = "Vertical",
+    legend.x = NULL,
+    legend.y = NULL,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -397,6 +403,9 @@ LabeledScatter <- function(
              legendBubbleTitleFontColor = legend.bubble.title.font.color,
              legendBubbleTitleFontFamily = legend.bubble.title.font.family,
              legendBubbleTitleFontSize = legend.bubble.title.font.size,
+             legendOrientation = legend.orientation,
+             legendX = legend.x,
+             legendY = legend.y,
              yTitleFontColor = y.title.font.color,
              yTitleFontFamily = y.title.font.family,
              yTitleFontSize = y.title.font.size,

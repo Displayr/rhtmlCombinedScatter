@@ -230,7 +230,7 @@ class LabeledScatter {
         width: this.legendPointsAndBubbleLegendWidth(config),
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
-    } else if (plotly_chart_layout.legend && plotly_chart_layout.orientation === 'v') {
+    } else if (plotly_chart_layout.legend && plotly_chart_layout.legend.orientation === 'v') {
       const legend_rect = this.legendRect()
       return {
         x: nsewdrag_rect.width,

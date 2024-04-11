@@ -87,6 +87,9 @@ LabeledScatter(
   legend.font.family = "Arial",
   legend.font.size = 12,
   legend.show = TRUE,
+  legend.orientation = "Vertical",
+  legend.x = NULL,
+  legend.y = NULL,
   margin.top = NULL,
   margin.bottom = NULL,
   margin.left = NULL,
@@ -279,6 +282,12 @@ on the marker.}
 \item{legend.font.size}{is the font size of the legend}
 
 \item{legend.show}{is the toggle to show the legend. Defaults to TRUE}
+
+\item{legend.orientation}{Either "Vertical" or "Horizontal"}
+
+\item{legend.x}{The x position of the legend, relative to the plot area}
+
+\item{legend.y}{The y position of the legend, relative to the plot area}
 
 \item{origin}{Defaults to FALSE. Shows the origin lines as dotted if not along axis.}
 
