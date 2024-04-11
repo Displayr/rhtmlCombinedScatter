@@ -227,7 +227,7 @@ class LabeledScatter {
       return {
         x: nsewdrag_rect.width + this.plotlyLegendOrColorBarWidth(),
         y: LEGEND_POINTS_PADDING_TOP,
-        width: LEGEND_POINTS_MARGIN_RIGHT,
+        width: this.legendPointsAndBubbleLegendWidth(config),
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
     } else if (plotly_chart_layout.legend && plotly_chart_layout.orientation === 'v') {
