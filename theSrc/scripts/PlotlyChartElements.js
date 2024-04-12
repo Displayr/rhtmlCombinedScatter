@@ -351,7 +351,7 @@ function createLegendSettings (config) {
             } else if (config.legendX >= 1) {
                 settings.xanchor = 'left'
             } else {
-                settings.xanchor = 'center'
+                settings.xanchor = 'left'
             }
         } else {
             if (config.legendX <= 0) {
@@ -371,7 +371,7 @@ function createLegendSettings (config) {
             } else if (config.legendY >= 1) {
                 settings.yanchor = 'bottom'
             } else {
-                settings.yanchor = 'center'
+                settings.yanchor = 'top'
             }
         } else {
             if (config.legendY <= 0) {
