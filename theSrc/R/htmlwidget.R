@@ -17,6 +17,8 @@
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
+#' @param background.color The color of the entire background
+#' @param plot.background.color The color of the plot area background
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.

@@ -189,6 +189,8 @@ LabeledScatter(
 
 \item{y.axis.font.size}{Font size of the y axis labels}
 
+\item{background.color}{The color of the entire background}
+
 \item{color.transparency}{Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z}
 
 \item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel.
@@ -298,6 +300,8 @@ on the marker.}
 \item{plot.border.show}{Boolean toggle to show border around plot area (Default is TRUE).}
 
 \item{plot.border.width}{Width of border around plot area in px (Default is 1).}
+
+\item{plot.background.color}{The color of the plot area background}
 
 \item{point.radius}{Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
