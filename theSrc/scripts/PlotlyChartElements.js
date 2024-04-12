@@ -289,7 +289,7 @@ function createPlotlyLayout (config, margin_right) {
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
-            r: !isNaN(margin_right) ? margin_right : config.marginRight,
+            r: config.marginRight !== null ? config.marginRight : margin_right,
             l: config.marginLeft,
             automargin: true
         },
@@ -344,16 +344,42 @@ function createLegendSettings (config) {
     }
     if (config.legendX !== null) {
         settings.x = Math.max(-2, Math.min(3, config.legendX))
-        settings.xanchor = config.legendX === 0.5 ? 'center' : 'left'
+        if (config.legendOrientation === 'Vertical') {
+            if (config.legendX <= 0) {
+                settings.xanchor = 'right'
+            } else if (config.legendX >= 1) {
+                settings.xanchor = 'left'
+            } else {
+                settings.xanchor = 'center'
+            }
+        } else {
+            if (config.legendX <= 0) {
+                settings.xanchor = 'left'
+            } else if (config.legendX >= 1) {
+                settings.xanchor = 'right'
+            } else {
+                settings.xanchor = 'center'
+            }
+        }
     }
     if (config.legendY !== null) {
         settings.y = Math.max(-2, Math.min(3, config.legendY))
-        if (config.legendY < 0) {
-            settings.yanchor = 'top'
-        } else if (config.legendY > 1) {
-            settings.yanchor = 'bottom'
+        if (config.legendOrientation === 'Horizontal') {
+            if (config.legendY <= 0) {
+                settings.yanchor = 'top'
+            } else if (config.legendY >= 1) {
+                settings.yanchor = 'bottom'
+            } else {
+                settings.yanchor = 'center'
+            }
         } else {
-            settings.yanchor = 'auto'
+            if (config.legendY <= 0) {
+                settings.yanchor = 'bottom'
+            } else if (config.legendY >= 1) {
+                settings.yanchor = 'top'
+            } else {
+                settings.yanchor = 'center'
+            }
         }
     }
     return settings

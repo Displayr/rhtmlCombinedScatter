@@ -5,4 +5,8 @@ height:  512
 rowSize: 2
 widgets:
   - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Horizontal","legendX":0.5,"legendY":-0.2}
-  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical"}|{"legendX":1}|{"legendY":0.5}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":1,"legendY":0.5}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Horizontal","legendX":1,"legendY":1.1}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":-0.1,"legendY":1}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":-0.1,"legendY":0}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":1,"legendY":0}
