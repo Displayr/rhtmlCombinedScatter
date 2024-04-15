@@ -97,6 +97,8 @@ const defaultConfig = {
   legendOrientation: 'Vertical',
   legendX: null,
   legendY: null,
+  legendXAnchor: null,
+  legendYAnchor: null,
   marginTop: null,
   marginBottom: null,
   marginRight: null,

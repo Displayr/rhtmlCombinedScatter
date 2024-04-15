@@ -345,41 +345,49 @@ function createLegendSettings (config) {
     }
     if (config.legendX !== null) {
         settings.x = Math.max(-2, Math.min(3, config.legendX))
-        if (config.legendOrientation === 'Vertical') {
-            if (config.legendX <= 0) {
-                settings.xanchor = 'right'
-            } else if (config.legendX >= 1) {
-                settings.xanchor = 'left'
-            } else {
-                settings.xanchor = 'left'
-            }
+        if (config.legendXAnchor) {
+            settings.xanchor = config.legendXAnchor
         } else {
-            if (config.legendX <= 0) {
-                settings.xanchor = 'left'
-            } else if (config.legendX >= 1) {
-                settings.xanchor = 'right'
+            if (config.legendOrientation === 'Vertical') {
+                if (config.legendX <= 0) {
+                    settings.xanchor = 'right'
+                } else if (config.legendX >= 1) {
+                    settings.xanchor = 'left'
+                } else {
+                    settings.xanchor = 'left'
+                }
             } else {
-                settings.xanchor = 'center'
+                if (config.legendX <= 0) {
+                    settings.xanchor = 'left'
+                } else if (config.legendX >= 1) {
+                    settings.xanchor = 'right'
+                } else {
+                    settings.xanchor = 'center'
+                }
             }
         }
     }
     if (config.legendY !== null) {
         settings.y = Math.max(-2, Math.min(3, config.legendY))
-        if (config.legendOrientation === 'Horizontal') {
-            if (config.legendY <= 0) {
-                settings.yanchor = 'top'
-            } else if (config.legendY >= 1) {
-                settings.yanchor = 'bottom'
-            } else {
-                settings.yanchor = 'top'
-            }
+        if (config.legendYAnchor) {
+            settings.yanchor = config.legendYAnchor
         } else {
-            if (config.legendY <= 0) {
-                settings.yanchor = 'bottom'
-            } else if (config.legendY >= 1) {
-                settings.yanchor = 'top'
+            if (config.legendOrientation === 'Horizontal') {
+                if (config.legendY <= 0) {
+                    settings.yanchor = 'top'
+                } else if (config.legendY >= 1) {
+                    settings.yanchor = 'bottom'
+                } else {
+                    settings.yanchor = 'top'
+                }
             } else {
-                settings.yanchor = 'center'
+                if (config.legendY <= 0) {
+                    settings.yanchor = 'bottom'
+                } else if (config.legendY >= 1) {
+                    settings.yanchor = 'top'
+                } else {
+                    settings.yanchor = 'center'
+                }
             }
         }
     }

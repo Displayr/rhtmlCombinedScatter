@@ -8,3 +8,4 @@ widgets:
   - config: data.legacy_bubble.bubbleplot_colas|{"marginRight":300}
   - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":250}
   - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":100,"marginBottom":100,"marginLeft":200}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":0}
