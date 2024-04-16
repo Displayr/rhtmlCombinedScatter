@@ -90,8 +90,8 @@ class LabeledScatter {
       const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
       if (is_legend_elements_to_right_of_plotly_legend) {
         const nsewdrag_rect = this.nsewdragRect()
-        const plotly_legend_rect = this.plotlyLegendRect()
-        const required_margin = (plotly_legend_rect.right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
+        const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
+        const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
         tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
       }
       if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
@@ -230,9 +230,9 @@ class LabeledScatter {
    */
   getLegendElementsRect (plotly_chart_layout, is_legend_elements_to_right_of_plotly_legend, nsewdrag_rect, config) {
     if (is_legend_elements_to_right_of_plotly_legend) {
-      const plotly_legend_rect = this.plotlyLegendRect()
+      const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
       return {
-        x: plotly_legend_rect.right - nsewdrag_rect.x,
+        x: legend_right - nsewdrag_rect.x,
         y: LEGEND_POINTS_PADDING_TOP,
         width: this.legendPointsAndBubbleLegendWidth(config),
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
@@ -337,6 +337,15 @@ class LabeledScatter {
     const nsew_drag_rect = this.nsewdragRect()
     const plotly_legend_rect = this.plotlyLegendRect()
     return plotly_chart_layout.legend.orientation === 'v' && plotly_legend_rect.right > nsew_drag_rect.right
+  }
+
+  plotlyColorbarRect () {
+    const colorbar = d3.select(this.rootElement).select('.colorbar')
+    const rect = colorbar[0][0].getBBox()
+    const ctm = colorbar[0][0].getCTM()
+    rect.x += ctm.e
+    rect.y += ctm.f
+    return Utils.addTopBottomLeftRight(rect)
   }
 
   hasBubbleLegend (config) {
