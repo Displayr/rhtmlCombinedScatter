@@ -81,14 +81,14 @@ class LabeledScatter {
     try {
       const plot_data = createPlotlyData(config)
       const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
-      const margin_right = legend_points_and_bubble_legend_width > 0 ? legend_points_and_bubble_legend_width : null
+      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginRight === null ? legend_points_and_bubble_legend_width : null
       const plot_layout = createPlotlyLayout(config, margin_right)
       const plot_config = { displayModeBar: false, editable: false }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       const tmp_layout = {}
       const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
-      if (is_legend_elements_to_right_of_plotly_legend) {
+      if (is_legend_elements_to_right_of_plotly_legend && config.marginRight === null) {
         const nsewdrag_rect = this.nsewdragRect()
         const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
         const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
