@@ -59,6 +59,8 @@
 #' @param legend.orientation Either "Vertical" or "Horizontal"
 #' @param legend.x The x position of the legend, relative to the plot area
 #' @param legend.y The y position of the legend, relative to the plot area
+#' @param legend.x.anchor Either NULL, "left", "center" or "right"
+#' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -229,6 +231,8 @@ LabeledScatter <- function(
     legend.orientation = "Vertical",
     legend.x = NULL,
     legend.y = NULL,
+    legend.x.anchor = NULL,
+    legend.y.anchor = NULL,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -408,6 +412,8 @@ LabeledScatter <- function(
              legendOrientation = legend.orientation,
              legendX = legend.x,
              legendY = legend.y,
+             legendXAnchor = legend.x.anchor,
+             legendYAnchor = legend.y.anchor,
              yTitleFontColor = y.title.font.color,
              yTitleFontFamily = y.title.font.family,
              yTitleFontSize = y.title.font.size,
