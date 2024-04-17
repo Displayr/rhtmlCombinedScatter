@@ -268,7 +268,7 @@ class RectPlot {
       try {
         this.drawResetButton()
 
-        this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb)
+        this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb, this.bounds)
         if (this.trendLines.show) {
           this.tl = new TrendLine(this.data.pts, this.data.lab)
         }

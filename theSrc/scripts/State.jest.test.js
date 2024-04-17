@@ -19,7 +19,13 @@ describe('VIS-576', function () {
     }
 
     const state = new State({}, stateChangedCallback, X, Y, label, 2)
-    state.pushUserPositionedLabel(2, 600, 400, viewBox)
+    const bounds = {
+      xmin: 0,
+      xmax: 5,
+      ymin: 0,
+      ymax: 10
+    }
+    state.pushUserPositionedLabel(2, 4, 2, viewBox, bounds)
     state.updateHiddenLabelPt(0, true)
     isCallbackFromReset = true
     state.resetState()
@@ -51,7 +57,13 @@ describe('VIS-572', function () {
     }
 
     const state = new State({}, stateChangedCallback, X, Y, label)
-    state.pushUserPositionedLabel(2, 600, 400, viewBox)
+    const bounds = {
+      xmin: 0,
+      xmax: 5,
+      ymin: 0,
+      ymax: 10
+    }
+    state.pushUserPositionedLabel(2, 4, 2, viewBox, bounds)
     isCallbackFromReset = true
     state.resetStateOnResize(newViewBox)
   })

@@ -46,4 +46,17 @@ describe('zoom', () => {
     await testSnapshots({ page, testName: 'categorical_y_axis' })
     await page.close()
   })
+
+  test('Zoom in after dragging label', async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.functionalTest.bubbleplot_simple',
+      width: 500,
+      height: 500,
+    })
+    await scatterPlot.movePlotLabel({ id: 1, x: -50, y: 50 })
+    await scatterPlot.drag({ from: { x: 150, y: 200 }, to: { x: 350, y: 400 } })
+    await testSnapshots({ page, testName: 'drag_and_zoom' })
+    await page.close()
+  })
 })
