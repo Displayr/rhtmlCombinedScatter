@@ -17,6 +17,12 @@ configs:
   - config: data.legacy_bubble.bubbleplot_life_expectancy
     width: 1800
     height: 900
+  - config: data.legacy_bubble.bubbleplot_small_multiples
+    width: 800
+    height: 500
+  - config: data.legacy_bubble.bubbleplot_small_multiples_with_groups
+    width: 800
+    height: 500
   - config: data.legacy_bubble.bubbleplot_overlap
     width: 400
     height: 350

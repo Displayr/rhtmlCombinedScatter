@@ -36,36 +36,64 @@ function createPlotlyData (config) {
         plot_data.push(createBaseTrace(config))
     }
 
+    const n_panels = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
+    const indices_by_panel = n_panels > 1 ? _.groupBy(indices, i => config.panels[i]) : {}
+    const panel_nm = Object.keys(indices_by_panel)
+
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
-        plot_data.push(createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 0))
+        console.log('No groups!')
+        for (let p = 0; p < n_panels; p++) {
+            const p_index = indices_by_panel[panel_nm[p]]
+            plot_data.push(createScatterTrace(
+                n_panels > 1 ? _.at(config.X, p_index) : config.X, 
+                n_panels > 1 ? _.at(config.Y, p_index) : config.Y, 
+                n_panels > 1 ? _.at(tooltips, p_index) : tooltips, 
+                ' ', marker_size, config.colors[0], marker_opacity, 
+                config.pointBorderColor, config.pointBorderWidth, 
+                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
+        }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
+        // Numeric colorscale
         const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
         tooltips = indices.map(i => `${tooltips[i]}<br>${
             Array.isArray(config.colorLevels) ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
         }`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
-        let trace = createScatterTrace(config.X, config.Y, tooltips, ' ', marker_size,
-            config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 0)
-        addColorScale(trace, config)
-        plot_data.push(trace)
+        for (let p = 0; p < n_panels; p++) {
+            const p_index = indices_by_panel[panel_nm[p]]
+            let trace = createScatterTrace(
+                n_panels > 1 ? _.at(config.X, p_index) : config.X, 
+                n_panels > 1 ? _.at(config.Y, p_index) : config.Y, 
+                n_panels > 1 ? _.at(tooltips, p_index) : tooltips, 
+                ' ', marker_size,
+                config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 
+                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
+            addColorScale(trace, config)
+            plot_data.push(trace)
+        }
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
-            const g_name = group_names[g]
-            const g_index = indices_by_group[g_name]
-            const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, g_index)
-            plot_data.push(createScatterTrace(_.at(config.X, g_index), _.at(config.Y, g_index),
-                _.at(tooltips, g_index), g_name, marker_size, config.colors[g],
-                marker_opacity, config.pointBorderColor, config.pointBorderWidth, g))
+            for (let p = 0; p < n_panels; p++) {
+                console.log('g=' + g + '; p=' + p)
+                const p_index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : indices
+                const g_name = group_names[g]
+                const g_index = indices_by_group[g_name]
+                const gp_index = _.intersection(g_index, p_index)
+                const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
+                plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
+                    _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
+                    marker_opacity, config.pointBorderColor, config.pointBorderWidth, 
+                    g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), p === 0))
+            }
         }
     }
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group, xaxis = "", yaxis = "", showlegend = true) {
     return {
         x: X,
         y: Y,
@@ -86,7 +114,10 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
             }
         },
         legendgroup: group,
-        cliponaxis: false
+        showlegend: showlegend,
+        cliponaxis: false,
+        xaxis: 'x' + xaxis,
+        yaxis: 'y' + yaxis
     }
 }
 
@@ -197,83 +228,116 @@ function getDefaultDateFormat (dates) {
     else return '%b %Y'
 }
 
+function getPanelXAxisSuffix (panel, config) {
+    if (panel === 0 || !Array.isArray(config.panelLabels)) return ''
+    if (!config.panelShareAxes) return '' + (panel + 1)
+    const num_panels = config.panelLabels.length
+    const num_columns = Math.ceil(num_panels / config.panelNumRows)
+    const column = panel % num_columns
+    if (column === 0) return ''
+    return '' + (column + 1)
+}
+
+function getPanelYAxisSuffix (panel, config) {
+    if (panel === 0 || !Array.isArray(config.panelLabels)) return ''
+    if (!config.panelShareAxes) return '' + (panel + 1)
+    const num_panels = config.panelLabels.length
+    const num_columns = Math.ceil(num_panels / config.panelNumRows)
+    const row = Math.floor(panel / num_columns)
+    if (row === 0) return ''
+    return '' + (row + 1)
+}
+
 function createPlotlyLayout (config, margin_right) {
-    const plot_layout = {
-        xaxis: {
-            title: {
-                text: config.xTitle,
-                font: {
-                    family: config.xTitleFontFamily,
-                    color: config.xTitleFontColor,
-                    size: config.xTitleFontSize
-                },
+    const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
+    let grid = null
+    if (npanel > 1) {
+        grid = {}
+        grid.pattern = 'independent', //config.panelShareAxis ? 'coupled' : 'independent'
+        grid.rows = config.panelNumRows
+        grid.columns = Math.ceil(npanel / grid.rows)
+    }
+
+    const x_axis = {
+        title: {
+            text: config.xTitle,
+            font: {
+                family: config.xTitleFontFamily,
+                color: config.xTitleFontColor,
+                size: config.xTitleFontSize
             },
-            showgrid: config.grid,
-            gridcolor: config.xAxisGridColor,
-            griddash: config.xAxisGridDash,
-            gridwidth: config.xAxisGridWidth,
-            showticklabels: config.showXAxis,
-            tickcolor: config.xAxisTickColor,
-            ticklen: config.xAxisTickLength,
-            tickfont: {
-                family: config.xAxisFontFamily,
-                color: config.xAxisFontColor,
-                size: config.xAxisFontSize
-            },
-            linecolor: config.plotBorderShow ? config.xAxisLineColor : 'transparent',
-            linewidth: config.xAxisLineWidth,
-            scaleratio: 1,
-            scaleanchor: config.fixedAspectRatio ? 'y' : null,
-            // draw zero line separately to ensure it sit on top layer
-            zeroline: false,
-            automargin: true,
-            autotypenumbers: 'strict',
-            type: plotlyNumberType(config.xDataType),
-            range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X, _.max(config.normZ), config.width),
-            rangemode: 'normal',
-            dtick: parseTickDistance(config.xBoundsUnitsMajor),
-            tickprefix: config.xPrefix,
-            ticksuffix: config.xSuffix,
-            tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
-            layer: 'below traces'
-         },
-        yaxis: {
-            title: {
-                text: config.yTitle,
-                font: {
-                    family: config.yTitleFontFamily,
-                    color: config.yTitleFontColor,
-                    size: config.yTitleFontSize
-                },
-            },
-            showgrid: config.grid,
-            gridcolor: config.yAxisGridColor,
-            griddash: config.yAxisGridDash,
-            gridwidth: config.yAxisGridWidth,
-            showticklabels: config.showYAxis,
-            tickcolor: config.yAxisTickColor,
-            ticklen: config.yAxisTickLength,
-            tickfont: {
-                family: config.yAxisFontFamily,
-                color: config.yAxisFontColor,
-                size: config.yAxisFontSize
-            },
-            linecolor: config.plotBorderShow ? config.yAxisLineColor : 'transparent',
-            linewidth: config.yAxisLineWidth,
-            scaleratio: 1,
-            scaleanchor: config.fixedAspectRatio ? 'x' : null,
-            // draw zero line separately to ensure it sit on top layer
-            zeroline: false,
-            type: plotlyNumberType(config.yDataType),
-            range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y, _.max(config.normZ), config.width),
-            rangemode: 'normal',
-            dtick: parseTickDistance(config.yBoundsUnitsMajor),
-            tickprefix: config.yPrefix,
-            ticksuffix: config.ySuffix,
-            tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
-            automargin: true,
-            layer: 'below traces'
         },
+        showgrid: config.grid,
+        gridcolor: config.xAxisGridColor,
+        griddash: config.xAxisGridDash,
+        gridwidth: config.xAxisGridWidth,
+        showticklabels: config.showXAxis,
+        tickcolor: config.xAxisTickColor,
+        ticklen: config.xAxisTickLength,
+        tickfont: {
+            family: config.xAxisFontFamily,
+            color: config.xAxisFontColor,
+            size: config.xAxisFontSize
+        },
+        linecolor: config.plotBorderShow ? config.xAxisLineColor : 'transparent',
+        linewidth: config.xAxisLineWidth,
+        scaleratio: config.fixedAspectRatio ? 1 : null,
+        scaleanchor: config.fixedAspectRatio ? 'y' : null,
+        // draw zero line separately to ensure it sit on top layer
+        zeroline: false,
+        automargin: true,
+        autotypenumbers: 'strict',
+        type: plotlyNumberType(config.xDataType),
+        range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X, _.max(config.normZ), config.width),
+        rangemode: 'normal',
+        dtick: parseTickDistance(config.xBoundsUnitsMajor),
+        tickprefix: config.xPrefix,
+        ticksuffix: config.xSuffix,
+        tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
+        layer: 'below traces'
+    }
+    const y_axis = {
+        title: {
+            text: config.yTitle,
+            font: {
+                family: config.yTitleFontFamily,
+                color: config.yTitleFontColor,
+                size: config.yTitleFontSize
+            },
+        },
+        showgrid: config.grid,
+        gridcolor: config.yAxisGridColor,
+        griddash: config.yAxisGridDash,
+        gridwidth: config.yAxisGridWidth,
+        showticklabels: config.showYAxis,
+        tickcolor: config.yAxisTickColor,
+        ticklen: config.yAxisTickLength,
+        tickfont: {
+            family: config.yAxisFontFamily,
+            color: config.yAxisFontColor,
+            size: config.yAxisFontSize
+        },
+        linecolor: config.plotBorderShow ? config.yAxisLineColor : 'transparent',
+        linewidth: config.yAxisLineWidth,
+        scaleratio: 1,
+        scaleanchor: config.fixedAspectRatio ? 'x' : null,
+        // draw zero line separately to ensure it sit on top layer
+        zeroline: false,
+        type: plotlyNumberType(config.yDataType),
+        range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y, _.max(config.normZ), config.width),
+        rangemode: 'normal',
+        dtick: parseTickDistance(config.yBoundsUnitsMajor),
+        tickprefix: config.yPrefix,
+        ticksuffix: config.ySuffix,
+        tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
+        automargin: true,
+        layer: 'below traces'
+    }
+
+    const plot_layout = {
+        grid: grid,
+        xaxis: x_axis,
+        yaxis: y_axis,
         title: {
             text: config.title,
             font: {
@@ -295,7 +359,6 @@ function createPlotlyLayout (config, margin_right) {
             yref: 'paper',
             y: 1,
             yanchor: 'top',
-            tracegroupgap: 0,
         },
         margin: {
             t: config.marginTop,
@@ -312,9 +375,15 @@ function createPlotlyLayout (config, margin_right) {
                 size: config.tooltipFontSize
             }
         },
-        shapes: addLines(config),
+        // shapes: addLines(config),
         paper_bgcolor: config.backgroundColor,
         plot_bgcolor: config.plotAreaBackgroundColor,
+    }
+    if (npanel >= 2) {
+        for (let p = 2; p <= npanel; p++) {
+            plot_layout['xaxis' + p] = x_axis
+            plot_layout['yaxis' + p] = y_axis
+        }
     }
     return plot_layout
 }
@@ -418,7 +487,78 @@ function plotlyNumberType (type) {
     }
 }
 
+function addPanelLabels (plotly_layout, config, saved_annotations) {
+    const npanels = config.panelLabels.length
+    let colors = config.colors
+    if (Array.isArray(config.group)) {
+        const gnames = _.uniq(config.group)
+        colors = {}
+        for (let i = 0; i < gnames.length; i++)
+            colors[gnames[i]] = config.colors[i]
+    }
+
+    // Add panel titles
+    let j = 0
+    let k = 0
+    let annotations = []
+    for (let p = 0; p < npanels; p++) {
+        const x_ax = 'xaxis' + getPanelXAxisSuffix(p, config)
+        const y_ax = 'yaxis' + getPanelYAxisSuffix(p, config)
+        const x_range = plotly_layout[x_ax].range
+        const y_range = plotly_layout[y_ax].range
+        annotations.push({
+            text: config.panelLabels[p],
+            x: (x_range[0] + x_range[1]) * 0.5,
+            y: y_range[1],
+            font: {
+                family: config.panelTitleFontFamily,
+                color: config.panelTitleFontColor,
+                size: config.panelTitleFontSize
+            },
+            showarrow: false,
+            xanchor: 'center',
+            yanchor: 'bottom',
+            xref: 'x' + getPanelXAxisSuffix(p, config),
+            yref: 'y' + getPanelYAxisSuffix(p, config)
+        })
+        j++
+    }
+
+    // Add marker labels
+    const n = config.X.length
+    for (let i = 0; i < n; i++) {
+        const curr_is_saved = saved_annotations !== null
+            && k < saved_annotations.length 
+            && j === saved_annotations[k].index 
+        annotations.push({
+            text: config.label[i],
+            arrowhead: 0,
+            arrowwidth: 0.5,
+            arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
+            ax: curr_is_saved ? saved_annotations[k].ax : 0,
+            ay: curr_is_saved ? saved_annotations[k].ay : 0,
+            visible: curr_is_saved ? saved_annotations[k].visible : true,
+            clicktoshow: 'onoff',
+            font: {
+                family: config.labelsFontFamily,
+                color: config.labelsFontColor !== null 
+                    ? config.labelsFontColor
+                    : colors[Array.isArray(config.group) ? config.group[i] : 0],
+                size: config.labelsFontSize
+            },
+            x: config.X[i],
+            y: config.Y[i],
+            xref: 'x' + getPanelXAxisSuffix(config.panels[i], config),
+            yref: 'y' + getPanelYAxisSuffix(config.panels[i], config)
+        })
+        if (curr_is_saved) k++
+        j++
+    }
+    return annotations
+}
+
 module.exports = {
     createPlotlyData,
-    createPlotlyLayout
+    createPlotlyLayout,
+    addPanelLabels
 }

@@ -1,7 +1,7 @@
 import d3 from 'd3'
 import _ from 'lodash'
 import { buildConfig } from './buildConfig'
-import { createPlotlyData, createPlotlyLayout } from './PlotlyChartElements'
+import { createPlotlyData, createPlotlyLayout, addPanelLabels } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
   LEGEND_POINTS_PADDING_TOP,
@@ -81,26 +81,53 @@ class LabeledScatter {
     try {
       const plot_data = createPlotlyData(config)
       const plot_layout = createPlotlyLayout(config, this.marginRight(config))
-      const plot_config = { displayModeBar: false, editable: false }
+      const plot_config = { displayModeBar: false, editable: false, 
+        edits: { annotationTail: true, legendPosition: true }
+      }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
-      const tmp_layout = {}
-      const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
-      if (is_extra_margin_needed_for_legend) {
-        tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
+      if (Array.isArray(config.panels)) {
+        const saved_annotations = this.stateObj.isStoredInState('plotlyAnnotations') 
+          ? this.stateObj['plotlyAnnotations']
+          : null
+        const panel_labels = addPanelLabels(plotlyChart._fullLayout, config, saved_annotations)
+        plotlyChart = await Plotly.relayout(plotlyChart, { annotations: panel_labels })
+        
+        plotlyChart.on('plotly_afterplot', () => {
+          
+          // Save annotation state after every edit
+          this.stateObj.saveToState( { 'plotlyAnnotations': plotlyChart._fullLayout.annotations
+          .filter(a => a.showarrow && !(a.ax == 0 && a.ay == 0 && a.visible))
+          .map((a) => { return {
+            index: a._index,
+            text: a.text, 
+            visible: a.visible, 
+            xoffset: a.ax, 
+            yoffset: a.ay}})})
+
+          console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
+        })
+
+        // Need to redraw after group toggle
+
+      } else {
+        const tmp_layout = {}
+        const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
+        if (is_extra_margin_needed_for_legend) {
+          tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
+        }
+        if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
+        await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
+
+        if (FitLine.isFitDataAvailable(config)) {
+          FitLine.draw(this.rootElement, config)
+        }
+
+        plotlyChart.on('plotly_afterplot', () => {
+          this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
+        })
+        this.addMarkerClickHandler()
       }
-      if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-      await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
-
-      if (FitLine.isFitDataAvailable(config)) {
-        FitLine.draw(this.rootElement, config)
-      }
-
-      plotlyChart.on('plotly_afterplot', () => {
-        this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
-      })
-
-      this.addMarkerClickHandler()
     } catch (err) {
       if (
         err.type === InsufficientHeightError.type ||
