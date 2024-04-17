@@ -336,7 +336,6 @@ function createPlotlyLayout (config, margin_right) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
-        tracegroupgap: 0,
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: {
             font: {
@@ -348,6 +347,7 @@ function createPlotlyLayout (config, margin_right) {
             yref: 'paper',
             y: 1,
             yanchor: 'top',
+            tracegroupgap: 0,
         },
         margin: {
             t: config.marginTop,
