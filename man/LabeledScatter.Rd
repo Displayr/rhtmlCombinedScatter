@@ -96,6 +96,7 @@ LabeledScatter(
   margin.bottom = NULL,
   margin.left = NULL,
   margin.right = NULL,
+  margin.autoexpand = TRUE,
   origin = TRUE,
   origin.align = FALSE,
   plot.border.color = "Black",
@@ -430,6 +431,16 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
+
+\item{marginTop}{The top margin in pixels}
+
+\item{marginBottom}{The bottom margin in pixels}
+
+\item{marginLeft}{The left margin in pixels}
+
+\item{marginRight}{The right margin in pixels}
+
+\item{marginAutoexpand}{Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

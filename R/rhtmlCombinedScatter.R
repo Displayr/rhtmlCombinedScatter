@@ -61,6 +61,11 @@
 #' @param legend.y The y position of the legend, relative to the plot area
 #' @param legend.x.anchor Either NULL, "left", "center" or "right"
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
+#' @param marginTop The top margin in pixels
+#' @param marginBottom The bottom margin in pixels
+#' @param marginLeft The left margin in pixels
+#' @param marginRight The right margin in pixels
+#' @param marginAutoexpand Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -237,6 +242,7 @@ LabeledScatter <- function(
     margin.bottom = NULL,
     margin.left = NULL,
     margin.right = NULL,
+    margin.autoexpand = TRUE,
     origin = TRUE,
     origin.align = FALSE,
     plot.border.color = 'Black',
@@ -497,6 +503,7 @@ LabeledScatter <- function(
              marginBottom = margin.bottom,
              marginLeft = margin.left,
              marginRight = margin.right,
+             marginAutoexpand = margin.autoexpand,
              backgroundColor = background.color,
              plotAreaBackgroundColor = plot.background.color,
              plotBorderColor = plot.border.color,

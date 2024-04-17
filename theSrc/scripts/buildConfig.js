@@ -103,7 +103,7 @@ const defaultConfig = {
   marginBottom: null,
   marginRight: null,
   marginLeft: null,
-  marginAutoExpand: true,
+  marginAutoexpand: true,
   origin: true,
   originAlign: false,
   backgroundColor: 'transparent',

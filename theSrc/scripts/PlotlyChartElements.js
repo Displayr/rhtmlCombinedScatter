@@ -291,7 +291,7 @@ function createPlotlyLayout (config, margin_right) {
             b: config.marginBottom,
             r: config.marginRight !== null ? config.marginRight : margin_right,
             l: config.marginLeft,
-            automargin: true
+            autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
             namelength: -1, // prevents trace name truncating
