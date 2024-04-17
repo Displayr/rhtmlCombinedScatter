@@ -494,6 +494,39 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     let j = 0
     let k = 0
     let annotations = []
+
+    // Add marker labels
+    // Do this first so the indices line up with config.group
+    const n = config.X.length
+    for (let i = 0; i < n; i++) {
+        const curr_is_saved = saved_annotations !== null &&
+            k < saved_annotations.length &&
+            j === saved_annotations[k].index
+        annotations.push({
+            text: config.label[i],
+            arrowhead: 0,
+            arrowwidth: 0.5,
+            arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
+            ax: curr_is_saved ? saved_annotations[k].ax : 0,
+            ay: curr_is_saved ? saved_annotations[k].ay : 0,
+            visible: curr_is_saved ? saved_annotations[k].visible : true,
+            clicktoshow: 'onoff',
+            captureevents: false,
+            font: {
+                family: config.labelsFontFamily,
+                color: config.labelsFontColor !== null
+                    ? config.labelsFontColor
+                    : colors[Array.isArray(config.group) ? config.group[i] : 0],
+                size: config.labelsFontSize
+            },
+            x: config.X[i],
+            y: config.Y[i],
+            xref: 'x' + getPanelXAxisSuffix(config.panels[i], config),
+            yref: 'y' + getPanelYAxisSuffix(config.panels[i], config)
+        })
+        if (curr_is_saved) k++
+        j++
+    }
     for (let p = 0; p < npanels; p++) {
         annotations.push({
             text: config.panelLabels[p],
@@ -513,36 +546,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         j++
     }
 
-    // Add marker labels
-    const n = config.X.length
-    for (let i = 0; i < n; i++) {
-        const curr_is_saved = saved_annotations !== null &&
-            k < saved_annotations.length &&
-            j === saved_annotations[k].index
-        annotations.push({
-            text: config.label[i],
-            arrowhead: 0,
-            arrowwidth: 0.5,
-            arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].ax : 0,
-            ay: curr_is_saved ? saved_annotations[k].ay : 0,
-            visible: curr_is_saved ? saved_annotations[k].visible : true,
-            clicktoshow: 'onoff',
-            font: {
-                family: config.labelsFontFamily,
-                color: config.labelsFontColor !== null
-                    ? config.labelsFontColor
-                    : colors[Array.isArray(config.group) ? config.group[i] : 0],
-                size: config.labelsFontSize
-            },
-            x: config.X[i],
-            y: config.Y[i],
-            xref: 'x' + getPanelXAxisSuffix(config.panels[i], config),
-            yref: 'y' + getPanelYAxisSuffix(config.panels[i], config)
-        })
-        if (curr_is_saved) k++
-        j++
-    }
     const settings = { annotations: annotations }
     if (npanels > 1 && config.panelShareAxes) {
         annotations.push({
@@ -591,6 +594,24 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             }
         }
     }
+    // Always have the reset button as the last entry
+    annotations.push({
+        text: 'Reset',
+        showarrow: false,
+        captureevents: true,
+        font: {
+            color: '#5B9BD5',
+            size: 10
+        },
+        x: 1.0,
+        xref: 'paper',
+        xanchor: 'right',
+        xshift: 1.0 * plotly_layout.margin.r,
+        y: 0.0,
+        yref: 'paper',
+        yanchor: 'bottom',
+        yshift: -1.0 * plotly_layout.margin.b
+    })
     return settings
 }
 

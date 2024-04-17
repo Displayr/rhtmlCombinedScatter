@@ -89,26 +89,47 @@ class LabeledScatter {
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
-        const saved_annotations = this.stateObj.isStoredInState('plotlyAnnotations')
-          ? this.stateObj['plotlyAnnotations']
-          : null
-        const small_multiple_settings = addSmallMultipleSettings(plotlyChart._fullLayout, config, saved_annotations)
-        plotlyChart = await Plotly.relayout(plotlyChart, small_multiple_settings)
+        await this.drawSmallMultipleLabels(plotlyChart, config)
+        // this.drawResetButton(plotlyChart, config)
 
+        // Event handler for legendtoggle
+        let lastevent = ''
+        plotlyChart.on('plotly_legendclick', async (data) => {
+          lastevent = 'legendclick'
+          const annotations = plotlyChart._fullLayout.annotations
+          await Plotly.relayout(plotlyChart, { annotations: this.applyLegendClick(annotations, data, config) })
+          lastevent = 'legendclick'
+        })
+
+        // Event handler for Reset button
+        plotlyChart.on('plotly_clickannotation', async (data) => {
+          const num_annot = plotlyChart._fullLayout.annotations.length
+          if (data.index === num_annot - 1) {
+            this.stateObj.resetState()
+            await this.drawSmallMultipleLabels(plotlyChart, config)
+            lastevent = 'clickreset'
+          }
+        })
+
+        // Event handler for dragging and toggling scatter labels
+        // But do not save legend toggle
         plotlyChart.on('plotly_afterplot', () => {
-          // Save annotation state after every edit
-          this.stateObj.saveToState({ 'plotlyAnnotations': plotlyChart._fullLayout.annotations
-          .filter(a => a.showarrow && !(a.ax === 0 && a.ay === 0 && a.visible))
-          .map((a) => {
-            return {
-              index: a._index,
-              text: a.text,
-              visible: a.visible,
-              xoffset: a.ax,
-              yoffset: a.ay
-            }
-          }) })
-          console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
+          console.log('last event: ' + lastevent)
+          if (lastevent === '') {
+            this.stateObj.saveToState({ 'plotlyAnnotations': plotlyChart._fullLayout.annotations
+            .filter(a => a.showarrow && !(a.ax === 0 && a.ay === 0 && a.visible))
+            .map((a) => {
+              return {
+                index: a._index,
+                text: a.text,
+                visible: a.visible,
+                xoffset: a.ax,
+                yoffset: a.ay
+              }
+            }) })
+            console.log('saved plotly annotations:') // + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
+          }
+          lastevent = ''
         })
       } else {
         const tmp_layout = {}
@@ -352,6 +373,56 @@ class LabeledScatter {
 
   hasBubbleLegend (config) {
     return config.legendBubblesShow && config.Z && !_.isEmpty(config.Z)
+  }
+
+  async drawSmallMultipleLabels (plotly_chart, config) {
+      const saved_annotations = this.stateObj.isStoredInState('plotlyAnnotations')
+        ? this.stateObj['plotlyAnnotations']
+        : null
+      const small_multiple_settings = addSmallMultipleSettings(plotly_chart._fullLayout, config, saved_annotations)
+      await Plotly.restyle(plotly_chart, { visible: true })
+      await Plotly.relayout(plotly_chart, small_multiple_settings)
+  }
+
+  // This is only used with Small Multiples
+  // In other cases, the reset button is drawn by RectPlot
+  /* drawResetButton(plotly_chart, config) {
+    console.log('drawResetButton')
+    d3.select(this.rootElement).selectAll('.plot-reset-button').remove()
+
+    const svgResetButton = d3.select(this.rootElement)
+      .select('.main-svg')
+      .append('g')
+      .append('text')
+      .attr('class', 'plot-reset-button')
+      .attr('fill', '#5B9BD5')
+      .attr('font-size', 10)
+      .attr('font-weight', 'normal')
+      .style('opacity', 0.5)
+      .style('cursor', 'pointer')
+      .text('Reset')
+      .on('click', () => {
+        console.log('Reset button clicked!')
+        this.stateObj.resetStateLegendPtsAndPositionedLabs()
+        this.drawSmallMultipleLabels(plotly_chart, config)
+      })
+
+    svgResetButton.on('mouseover', () => {
+      if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
+      .on('mouseout', () => svgResetButton.style('opacity', 0.5))
+
+    const svgResetButtonBB = svgResetButton[0][0].getBoundingClientRect()
+    const xAxisPadding = 5
+    svgResetButton.attr('x', this.width - svgResetButtonBB.width - xAxisPadding)
+                  .attr('y', this.height - svgResetButtonBB.height)
+  } */
+
+  applyLegendClick (annotations, eventdata, config) {
+    const changed = eventdata.data[eventdata.curveNumber].name
+    for (let i = 0; i < config.group.length; i++) {
+        if (config.group[i] === changed) annotations[i].visible = !annotations[i].visible
+    }
+    return annotations
   }
 }
 
