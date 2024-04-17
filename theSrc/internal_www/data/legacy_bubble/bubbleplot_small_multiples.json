@@ -214,7 +214,7 @@
     0
   ],
   "panelNumRows": 1,
-  "panelShareAxes": false,
+  "panelShareAxes": true,
   "xTitle": "Mens life expectancy",
   "yTitle": "Womens life expectancy",
   "zTitle": "Population",

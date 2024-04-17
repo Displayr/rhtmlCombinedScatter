@@ -42,15 +42,14 @@ function createPlotlyData (config) {
 
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
-        console.log('No groups!')
         for (let p = 0; p < n_panels; p++) {
             const p_index = indices_by_panel[panel_nm[p]]
             plot_data.push(createScatterTrace(
-                n_panels > 1 ? _.at(config.X, p_index) : config.X, 
-                n_panels > 1 ? _.at(config.Y, p_index) : config.Y, 
-                n_panels > 1 ? _.at(tooltips, p_index) : tooltips, 
-                ' ', marker_size, config.colors[0], marker_opacity, 
-                config.pointBorderColor, config.pointBorderWidth, 
+                n_panels > 1 ? _.at(config.X, p_index) : config.X,
+                n_panels > 1 ? _.at(config.Y, p_index) : config.Y,
+                n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
+                ' ', marker_size, config.colors[0], marker_opacity,
+                config.pointBorderColor, config.pointBorderWidth,
                 0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
@@ -63,11 +62,11 @@ function createPlotlyData (config) {
         for (let p = 0; p < n_panels; p++) {
             const p_index = indices_by_panel[panel_nm[p]]
             let trace = createScatterTrace(
-                n_panels > 1 ? _.at(config.X, p_index) : config.X, 
-                n_panels > 1 ? _.at(config.Y, p_index) : config.Y, 
-                n_panels > 1 ? _.at(tooltips, p_index) : tooltips, 
+                n_panels > 1 ? _.at(config.X, p_index) : config.X,
+                n_panels > 1 ? _.at(config.Y, p_index) : config.Y,
+                n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
                 ' ', marker_size,
-                config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth, 
+                config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
                 0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
             addColorScale(trace, config)
             plot_data.push(trace)
@@ -77,7 +76,6 @@ function createPlotlyData (config) {
         const group_names = Object.keys(indices_by_group)
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
-                console.log('g=' + g + '; p=' + p)
                 const p_index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : indices
                 const g_name = group_names[g]
                 const g_index = indices_by_group[g_name]
@@ -85,7 +83,7 @@ function createPlotlyData (config) {
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
                     _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
-                    marker_opacity, config.pointBorderColor, config.pointBorderWidth, 
+                    marker_opacity, config.pointBorderColor, config.pointBorderWidth,
                     g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), p === 0))
             }
         }
@@ -93,7 +91,7 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group, xaxis = "", yaxis = "", showlegend = true) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group, xaxis = '', yaxis = '', showlegend = true) {
     return {
         x: X,
         y: Y,
@@ -230,22 +228,12 @@ function getDefaultDateFormat (dates) {
 
 function getPanelXAxisSuffix (panel, config) {
     if (panel === 0 || !Array.isArray(config.panelLabels)) return ''
-    if (!config.panelShareAxes) return '' + (panel + 1)
-    const num_panels = config.panelLabels.length
-    const num_columns = Math.ceil(num_panels / config.panelNumRows)
-    const column = panel % num_columns
-    if (column === 0) return ''
-    return '' + (column + 1)
+    return '' + (panel + 1)
 }
 
 function getPanelYAxisSuffix (panel, config) {
     if (panel === 0 || !Array.isArray(config.panelLabels)) return ''
-    if (!config.panelShareAxes) return '' + (panel + 1)
-    const num_panels = config.panelLabels.length
-    const num_columns = Math.ceil(num_panels / config.panelNumRows)
-    const row = Math.floor(panel / num_columns)
-    if (row === 0) return ''
-    return '' + (row + 1)
+    return '' + (panel + 1)
 }
 
 function createPlotlyLayout (config, margin_right) {
@@ -253,13 +241,13 @@ function createPlotlyLayout (config, margin_right) {
     let grid = null
     if (npanel > 1) {
         grid = {}
-        grid.pattern = 'independent', //config.panelShareAxis ? 'coupled' : 'independent'
+        grid.pattern = 'independent'
         grid.rows = config.panelNumRows
         grid.columns = Math.ceil(npanel / grid.rows)
     }
 
     const x_axis = {
-        title: {
+        title: (npanel > 1 && config.panelShareAxes) ? null : {
             text: config.xTitle,
             font: {
                 family: config.xTitleFontFamily,
@@ -297,7 +285,7 @@ function createPlotlyLayout (config, margin_right) {
         layer: 'below traces'
     }
     const y_axis = {
-        title: {
+        title: (npanel > 1 && config.panelShareAxes) ? null : {
             text: config.yTitle,
             font: {
                 family: config.yTitleFontFamily,
@@ -348,6 +336,7 @@ function createPlotlyLayout (config, margin_right) {
             xref: 'paper',
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
+        tracegroupgap: 0,
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: {
             font: {
@@ -375,7 +364,7 @@ function createPlotlyLayout (config, margin_right) {
                 size: config.tooltipFontSize
             }
         },
-        // shapes: addLines(config),
+        shapes: addLines(config),
         paper_bgcolor: config.backgroundColor,
         plot_bgcolor: config.plotAreaBackgroundColor,
     }
@@ -413,63 +402,68 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth)
 
 function addLines (config) {
     const lines = []
-    if (config.origin && (!config.xLevels || !config.xLevels.length)) {
-        lines.push({
-            type: 'line',
-            layer: 'above',
-            line: {
-                color: config.xAxisZeroLineColor,
-                dash: config.xAxisZeroLineDash,
-                width: config.xAxisZeroLineWidth
-            },
-            x0: 0,
-            x1: 0,
-            xref: 'x',
-            y0: 0,
-            y1: 1,
-            yref: 'paper'
-        })
-    }
-    if (config.origin && (!config.yLevels || !config.yLevels.length)) {
-        lines.push({
-            type: 'line',
-            layer: 'above',
-            line: {
-                color: config.yAxisZeroLineColor,
-                dash: config.yAxisZeroLineDash,
-                width: config.yAxisZeroLineWidth
-            },
-            y0: 0,
-            y1: 0,
-            yref: 'y',
-            x0: 0,
-            x1: 1,
-            xref: 'paper'
-        })
-    }
-    if (config.plotBorderShow) {
-        lines.push({
-            type: 'line',
-            layer: 'below',
-            line: { color: config.xAxisLineColor, width: config.xAxisLineWidth },
-            y0: 1,
-            y1: 1,
-            yref: 'paper',
-            x0: 0,
-            x1: 1,
-            xref: 'paper'
-        })
-        lines.push({
-            type: 'line',
-            layer: 'below',
-            line: { color: config.yAxisLineColor, width: config.yAxisLineWidth },
-            y0: 0,
-            y1: 1,
-            yref: 'paper',
-            x0: 1,
-            x1: 1,
-            xref: 'paper'
-        })
+    const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
+    for (let p = 0; p < npanel; p++) {
+        const x = 'x' + getPanelXAxisSuffix(p, config)
+        const y = 'y' + getPanelYAxisSuffix(p, config)
+        if (config.origin && (!config.xLevels || !config.xLevels.length)) {
+            lines.push({
+                type: 'line',
+                layer: 'above',
+                line: {
+                    color: config.xAxisZeroLineColor,
+                    dash: config.xAxisZeroLineDash,
+                    width: config.xAxisZeroLineWidth
+                },
+                x0: 0,
+                x1: 0,
+                xref: x,
+                y0: 0,
+                y1: 1,
+                yref: y + ' domain'
+            })
+        }
+        if (config.origin && (!config.yLevels || !config.yLevels.length)) {
+            lines.push({
+                type: 'line',
+                layer: 'above',
+                line: {
+                    color: config.yAxisZeroLineColor,
+                    dash: config.yAxisZeroLineDash,
+                    width: config.yAxisZeroLineWidth
+                },
+                y0: 0,
+                y1: 0,
+                yref: y,
+                x0: 0,
+                x1: 1,
+                xref: x + ' domain'
+            })
+        }
+        if (config.plotBorderShow) {
+            lines.push({
+                type: 'line',
+                layer: 'below',
+                line: { color: config.xAxisLineColor, width: config.xAxisLineWidth },
+                y0: 1,
+                y1: 1,
+                yref: y + ' domain',
+                x0: 0,
+                x1: 1,
+                xref: x + ' domain',
+            })
+            lines.push({
+                type: 'line',
+                layer: 'below',
+                line: { color: config.yAxisLineColor, width: config.yAxisLineWidth },
+                y0: 0,
+                y1: 1,
+                yref: y + ' domain',
+                x0: 1,
+                x1: 1,
+                xref: x + ' domain'
+            })
+        }
     }
     return lines
 }
@@ -487,14 +481,13 @@ function plotlyNumberType (type) {
     }
 }
 
-function addPanelLabels (plotly_layout, config, saved_annotations) {
+function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const npanels = config.panelLabels.length
     let colors = config.colors
     if (Array.isArray(config.group)) {
         const gnames = _.uniq(config.group)
         colors = {}
-        for (let i = 0; i < gnames.length; i++)
-            colors[gnames[i]] = config.colors[i]
+        for (let i = 0; i < gnames.length; i++) colors[gnames[i]] = config.colors[i]
     }
 
     // Add panel titles
@@ -502,14 +495,10 @@ function addPanelLabels (plotly_layout, config, saved_annotations) {
     let k = 0
     let annotations = []
     for (let p = 0; p < npanels; p++) {
-        const x_ax = 'xaxis' + getPanelXAxisSuffix(p, config)
-        const y_ax = 'yaxis' + getPanelYAxisSuffix(p, config)
-        const x_range = plotly_layout[x_ax].range
-        const y_range = plotly_layout[y_ax].range
         annotations.push({
             text: config.panelLabels[p],
-            x: (x_range[0] + x_range[1]) * 0.5,
-            y: y_range[1],
+            x: 0.5,
+            y: 1,
             font: {
                 family: config.panelTitleFontFamily,
                 color: config.panelTitleFontColor,
@@ -518,8 +507,8 @@ function addPanelLabels (plotly_layout, config, saved_annotations) {
             showarrow: false,
             xanchor: 'center',
             yanchor: 'bottom',
-            xref: 'x' + getPanelXAxisSuffix(p, config),
-            yref: 'y' + getPanelYAxisSuffix(p, config)
+            xref: 'x' + getPanelXAxisSuffix(p, config) + ' domain',
+            yref: 'y' + getPanelYAxisSuffix(p, config) + ' domain'
         })
         j++
     }
@@ -527,9 +516,9 @@ function addPanelLabels (plotly_layout, config, saved_annotations) {
     // Add marker labels
     const n = config.X.length
     for (let i = 0; i < n; i++) {
-        const curr_is_saved = saved_annotations !== null
-            && k < saved_annotations.length 
-            && j === saved_annotations[k].index 
+        const curr_is_saved = saved_annotations !== null &&
+            k < saved_annotations.length &&
+            j === saved_annotations[k].index
         annotations.push({
             text: config.label[i],
             arrowhead: 0,
@@ -541,7 +530,7 @@ function addPanelLabels (plotly_layout, config, saved_annotations) {
             clicktoshow: 'onoff',
             font: {
                 family: config.labelsFontFamily,
-                color: config.labelsFontColor !== null 
+                color: config.labelsFontColor !== null
                     ? config.labelsFontColor
                     : colors[Array.isArray(config.group) ? config.group[i] : 0],
                 size: config.labelsFontSize
@@ -554,11 +543,59 @@ function addPanelLabels (plotly_layout, config, saved_annotations) {
         if (curr_is_saved) k++
         j++
     }
-    return annotations
+    const settings = { annotations: annotations }
+    if (npanels > 1 && config.panelShareAxes) {
+        annotations.push({
+            text: config.yTitle,
+            textangle: 270,
+            showarrow: false,
+            font: {
+                family: config.yTitleFontFamily,
+                color: config.yTitleFontColor,
+                size: config.yTitleFontSize
+            },
+            xref: 'paper',
+            x: 0,
+            xanchor: 'right',
+            yref: 'paper',
+            y: 0.5,
+            yanchor: 'middle',
+            xshift: -0.5 * plotly_layout.margin.l
+        })
+        annotations.push({
+            text: config.xTitle,
+            showarrow: false,
+            font: {
+                family: config.xTitleFontFamily,
+                color: config.xTitleFontColor,
+                size: config.xTitleFontSize
+            },
+            xref: 'paper',
+            x: 0.5,
+            xanchor: 'center',
+            yref: 'paper',
+            y: 0,
+            yanchor: 'top',
+            yshift: -0.5 * plotly_layout.margin.b
+        })
+        for (let side of ['x', 'y']) {
+            let new_range = plotly_layout[side + 'axis'].range
+            for (let p = 2; p <= npanels; p++) {
+                const tmp_range = plotly_layout[side + 'axis' + p].range
+                if (tmp_range[0] < new_range[0]) new_range[0] = tmp_range[0]
+                if (tmp_range[1] > new_range[1]) new_range[1] = tmp_range[1]
+            }
+            settings[side + 'axis.range'] = new_range
+            for (let p = 2; p <= npanels; p++) {
+                plotly_layout[side + 'axis' + p + '.range'] = new_range
+            }
+        }
+    }
+    return settings
 }
 
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
-    addPanelLabels
+    addSmallMultipleSettings
 }

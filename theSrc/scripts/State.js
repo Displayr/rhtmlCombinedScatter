@@ -142,7 +142,7 @@ class State {
   hasStateBeenAlteredByUser () {
     if (this.legendPts.length > 0) return true
     if (this.userPositionedLabs.length > 0) return true
-    if (this.plotlyAnnotations.length > 0) return true
+    if (this.plotlyAnnotations && this.plotlyAnnotations.length > 0) return true
     if (!_.isEqual(this.hiddenLabelPts, this.initialHiddenLabelPts())) return true
     return false
   }
