@@ -199,12 +199,18 @@ class PlotData {
 
   isXOutsideBounds (i) {
     const x = this.xDataType === DataTypeEnum.ordinal ? this.ordinalXToNumeric(this.X[i]) : this.X[i]
-    return (x < this.minX) || (x > this.maxX)
+    // We do this to support reversed bounds where minX > maxX
+    const min = Math.min(this.minX, this.maxX)
+    const max = Math.max(this.minX, this.maxX)
+    return (x < min) || (x > max)
   }
 
   isYOutsideBounds (i) {
     const y = this.yDataType === DataTypeEnum.ordinal ? this.ordinalYToNumeric(this.Y[i]) : this.Y[i]
-    return (y < this.minY) || (y > this.maxY)
+    // We do this to support reversed bounds where minY > maxY
+    const min = Math.min(this.minY, this.maxY)
+    const max = Math.max(this.minY, this.maxY)
+    return (y < min) || (y > max)
   }
 
   normalizeZData () {
