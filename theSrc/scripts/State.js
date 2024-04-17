@@ -164,27 +164,27 @@ class State {
     }
   }
 
-  pushUserPositionedLabel (id, labx, laby, vb) {
+  pushUserPositionedLabel (id, labx, laby, vb, bounds) {
     // _.remove(this.algoPositionedLabs, e => e.id === id)
     _.remove(this.userPositionedLabs, e => e.id === id)
 
     this.userPositionedLabs.push({
       id,
-      x: (labx - vb.x) / vb.width,
-      y: (laby - vb.y) / vb.height,
+      x: bounds.xmin + (bounds.xmax - bounds.xmin) * (labx - vb.x) / vb.width,
+      y: bounds.ymin + (bounds.ymax - bounds.ymin) * (1 - (laby - vb.y) / vb.height),
     })
     this.updateViewBox(vb)
     this.saveToState({ 'vb': this.vb, 'userPositionedLabs': this.userPositionedLabs })
   }
 
-  updateLabelsWithPositionedData (labels, vb) {
+  updateLabelsWithPositionedData (labels, vb, bounds) {
     const combinedLabs = this.userPositionedLabs // .concat(this.algoPositionedLabs)
     if (!_.isEmpty(combinedLabs)) {
       _(labels).each((label) => {
         const matchingLabel = _.find(combinedLabs, e => e.id === label.id)
         if (matchingLabel != null) {
-          label.x = (matchingLabel.x * vb.width) + vb.x
-          label.y = (matchingLabel.y * vb.height) + vb.y
+          label.x = (matchingLabel.x - bounds.xmin) / (bounds.xmax - bounds.xmin) * vb.width + vb.x
+          label.y = (1 - (matchingLabel.y - bounds.ymin) / (bounds.ymax - bounds.ymin)) * vb.height + vb.y
         }
       })
     }
