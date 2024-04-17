@@ -90,7 +90,6 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
         await this.drawSmallMultipleLabels(plotlyChart, config)
-        // this.drawResetButton(plotlyChart, config)
 
         // Event handler for legendtoggle
         let lastevent = ''
@@ -383,39 +382,6 @@ class LabeledScatter {
       await Plotly.restyle(plotly_chart, { visible: true })
       await Plotly.relayout(plotly_chart, small_multiple_settings)
   }
-
-  // This is only used with Small Multiples
-  // In other cases, the reset button is drawn by RectPlot
-  /* drawResetButton(plotly_chart, config) {
-    console.log('drawResetButton')
-    d3.select(this.rootElement).selectAll('.plot-reset-button').remove()
-
-    const svgResetButton = d3.select(this.rootElement)
-      .select('.main-svg')
-      .append('g')
-      .append('text')
-      .attr('class', 'plot-reset-button')
-      .attr('fill', '#5B9BD5')
-      .attr('font-size', 10)
-      .attr('font-weight', 'normal')
-      .style('opacity', 0.5)
-      .style('cursor', 'pointer')
-      .text('Reset')
-      .on('click', () => {
-        console.log('Reset button clicked!')
-        this.stateObj.resetStateLegendPtsAndPositionedLabs()
-        this.drawSmallMultipleLabels(plotly_chart, config)
-      })
-
-    svgResetButton.on('mouseover', () => {
-      if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
-      .on('mouseout', () => svgResetButton.style('opacity', 0.5))
-
-    const svgResetButtonBB = svgResetButton[0][0].getBoundingClientRect()
-    const xAxisPadding = 5
-    svgResetButton.attr('x', this.width - svgResetButtonBB.width - xAxisPadding)
-                  .attr('y', this.height - svgResetButtonBB.height)
-  } */
 
   applyLegendClick (annotations, eventdata, config) {
     const changed = eventdata.data[eventdata.curveNumber].name
