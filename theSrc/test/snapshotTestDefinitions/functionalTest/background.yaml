@@ -1,0 +1,8 @@
+type: multi_widget_single_page
+title: "background"
+width: 576
+height:  512
+rowSize: 2
+widgets:
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":1,"legendY":0}|{"backgroundColor":"rgba(0,255,0,0.5)"}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":1,"legendY":0}|{"plotAreaBackgroundColor":"rgba(0,255,0,0.5)"}

@@ -17,6 +17,8 @@
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
+#' @param background.color The color of the entire background
+#' @param plot.background.color The color of the plot area background
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
@@ -54,6 +56,16 @@
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
 #' @param legend.bubble.title.font.size is the font size of the legend bubble title
 #' @param legend.bubble.title.font.family is the font family of the legend bubble title
+#' @param legend.orientation Either "Vertical" or "Horizontal"
+#' @param legend.x The x position of the legend, relative to the plot area
+#' @param legend.y The y position of the legend, relative to the plot area
+#' @param legend.x.anchor Either NULL, "left", "center" or "right"
+#' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
+#' @param marginTop The top margin in pixels
+#' @param marginBottom The bottom margin in pixels
+#' @param marginLeft The left margin in pixels
+#' @param marginRight The right margin in pixels
+#' @param marginAutoexpand Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -221,10 +233,16 @@ LabeledScatter <- function(
     legend.font.family = "Arial",
     legend.font.size = 12,
     legend.show = TRUE,
+    legend.orientation = "Vertical",
+    legend.x = NULL,
+    legend.y = NULL,
+    legend.x.anchor = NULL,
+    legend.y.anchor = NULL,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
     margin.right = NULL,
+    margin.autoexpand = TRUE,
     origin = TRUE,
     origin.align = FALSE,
     plot.border.color = 'Black',
@@ -397,6 +415,11 @@ LabeledScatter <- function(
              legendBubbleTitleFontColor = legend.bubble.title.font.color,
              legendBubbleTitleFontFamily = legend.bubble.title.font.family,
              legendBubbleTitleFontSize = legend.bubble.title.font.size,
+             legendOrientation = legend.orientation,
+             legendX = legend.x,
+             legendY = legend.y,
+             legendXAnchor = legend.x.anchor,
+             legendYAnchor = legend.y.anchor,
              yTitleFontColor = y.title.font.color,
              yTitleFontFamily = y.title.font.family,
              yTitleFontSize = y.title.font.size,
@@ -480,6 +503,7 @@ LabeledScatter <- function(
              marginBottom = margin.bottom,
              marginLeft = margin.left,
              marginRight = margin.right,
+             marginAutoexpand = margin.autoexpand,
              backgroundColor = background.color,
              plotAreaBackgroundColor = plot.background.color,
              plotBorderColor = plot.border.color,

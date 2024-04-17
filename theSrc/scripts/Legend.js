@@ -16,10 +16,10 @@ const LEGEND_BUBBLE_PADDING_TOP = 10
 const LEGEND_BUBBLE_TITLE_HEIGHT = 1.5
 
 class Legend {
-  constructor (legendSettings, axisSettings, legendPointsRect) {
+  constructor (legendSettings, axisSettings, legendElementsRect) {
     autoBind(this)
     this.legendSettings = legendSettings
-    this.legendPointsRect = legendPointsRect
+    this.legendElementsRect = legendElementsRect
     this.decimals = {
       x: axisSettings.x.decimals,
       y: axisSettings.y.decimals,
@@ -35,9 +35,9 @@ class Legend {
       y: axisSettings.y.suffix,
       z: axisSettings.z.suffix,
     }
-    this.width = legendPointsRect.width
-    this.maxWidth = legendPointsRect.width
-    this.setHeight(legendPointsRect.height)
+    this.width = legendElementsRect.width
+    this.maxWidth = legendElementsRect.width
+    this.setHeight(legendElementsRect.height)
     this.heightOfRow = legendSettings.getFontSize() + LEGEND_POINTS_ROW_PADDING
     this.padding = {
       right: legendSettings.getFontSize() / 1.6,
@@ -55,7 +55,7 @@ class Legend {
       charWidth: 4,
     }
 
-    this.x = legendPointsRect.x
+    this.x = legendElementsRect.x
     this.pts = []
     this.groups = []
     this.setColSpace(20)
@@ -103,10 +103,10 @@ class Legend {
 
     if (legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
       const legendUtils = LegendUtils
-      legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius, this.legendPointsRect)
+      legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius, this.legendElementsRect)
     }
 
-    const legendStartY = this.legendPointsRect.y
+    const legendStartY = this.legendElementsRect.y
 
     // TODO: figure out why the number of cols is wrong!!! see bubbleplot_overlap example and drag labels across
     this.setCols(Math.ceil(numItems / (Math.ceil((this.height) / this.heightOfRow))))

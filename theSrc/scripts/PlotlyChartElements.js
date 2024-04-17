@@ -285,24 +285,13 @@ function createPlotlyLayout (config, margin_right) {
             automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
         },
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
-        legend: {
-            font: {
-                family: config.legendFontFamily,
-                color: config.legendFontColor,
-                size: config.legendFontSize
-            },
-            itemsizing: 'constant',
-            yref: 'paper',
-            y: 1,
-            yanchor: 'top',
-            tracegroupgap: 0,
-        },
+        legend: createLegendSettings(config),
         margin: {
             t: config.marginTop,
             b: config.marginBottom,
-            r: !isNaN(margin_right) ? margin_right : config.marginRight,
+            r: config.marginRight !== null ? config.marginRight : margin_right,
             l: config.marginLeft,
-            automargin: true
+            autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
             namelength: -1, // prevents trace name truncating
@@ -340,6 +329,69 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth)
         bounds[1] += bubble_offset
     }
     return bounds
+}
+
+function createLegendSettings (config) {
+    const settings = {
+        font: {
+            family: config.legendFontFamily,
+            color: config.legendFontColor,
+            size: config.legendFontSize
+        },
+        itemsizing: 'constant',
+        tracegroupgap: 0,
+        orientation: config.legendOrientation === 'Horizontal' ? 'h' : 'v',
+        bgcolor: 'rgba(0,0,0,0)'
+    }
+    if (config.legendX !== null) {
+        settings.x = Math.max(-2, Math.min(3, config.legendX))
+        if (config.legendXAnchor) {
+            settings.xanchor = config.legendXAnchor
+        } else {
+            if (config.legendOrientation === 'Vertical') {
+                if (config.legendX <= 0) {
+                    settings.xanchor = 'right'
+                } else if (config.legendX >= 1) {
+                    settings.xanchor = 'left'
+                } else {
+                    settings.xanchor = 'left'
+                }
+            } else {
+                if (config.legendX <= 0) {
+                    settings.xanchor = 'left'
+                } else if (config.legendX >= 1) {
+                    settings.xanchor = 'right'
+                } else {
+                    settings.xanchor = 'center'
+                }
+            }
+        }
+    }
+    if (config.legendY !== null) {
+        settings.y = Math.max(-2, Math.min(3, config.legendY))
+        if (config.legendYAnchor) {
+            settings.yanchor = config.legendYAnchor
+        } else {
+            if (config.legendOrientation === 'Horizontal') {
+                if (config.legendY <= 0) {
+                    settings.yanchor = 'top'
+                } else if (config.legendY >= 1) {
+                    settings.yanchor = 'bottom'
+                } else {
+                    settings.yanchor = 'top'
+                }
+            } else {
+                if (config.legendY <= 0) {
+                    settings.yanchor = 'bottom'
+                } else if (config.legendY >= 1) {
+                    settings.yanchor = 'top'
+                } else {
+                    settings.yanchor = 'center'
+                }
+            }
+        }
+    }
+    return settings
 }
 
 function addLines (config) {

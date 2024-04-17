@@ -87,10 +87,16 @@ LabeledScatter(
   legend.font.family = "Arial",
   legend.font.size = 12,
   legend.show = TRUE,
+  legend.orientation = "Vertical",
+  legend.x = NULL,
+  legend.y = NULL,
+  legend.x.anchor = NULL,
+  legend.y.anchor = NULL,
   margin.top = NULL,
   margin.bottom = NULL,
   margin.left = NULL,
   margin.right = NULL,
+  margin.autoexpand = TRUE,
   origin = TRUE,
   origin.align = FALSE,
   plot.border.color = "Black",
@@ -186,6 +192,8 @@ LabeledScatter(
 
 \item{y.axis.font.size}{Font size of the y axis labels}
 
+\item{background.color}{The color of the entire background}
+
 \item{color.transparency}{Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z}
 
 \item{colors}{is the color wheel to be used when plotting the data points. Defaults to Q color wheel.
@@ -280,6 +288,16 @@ on the marker.}
 
 \item{legend.show}{is the toggle to show the legend. Defaults to TRUE}
 
+\item{legend.orientation}{Either "Vertical" or "Horizontal"}
+
+\item{legend.x}{The x position of the legend, relative to the plot area}
+
+\item{legend.y}{The y position of the legend, relative to the plot area}
+
+\item{legend.x.anchor}{Either NULL, "left", "center" or "right"}
+
+\item{legend.y.anchor}{Either NULL, "top", "center" or "bottom"}
+
 \item{origin}{Defaults to FALSE. Shows the origin lines as dotted if not along axis.}
 
 \item{origin.align}{Defaults to FALSE. Aligns the origin lines as closely to axis as possible.}
@@ -289,6 +307,8 @@ on the marker.}
 \item{plot.border.show}{Boolean toggle to show border around plot area (Default is TRUE).}
 
 \item{plot.border.width}{Width of border around plot area in px (Default is 1).}
+
+\item{plot.background.color}{The color of the plot area background}
 
 \item{point.radius}{Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
@@ -411,6 +431,16 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
+
+\item{marginTop}{The top margin in pixels}
+
+\item{marginBottom}{The bottom margin in pixels}
+
+\item{marginLeft}{The left margin in pixels}
+
+\item{marginRight}{The right margin in pixels}
+
+\item{marginAutoexpand}{Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
