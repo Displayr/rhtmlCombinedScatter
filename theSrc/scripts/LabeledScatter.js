@@ -153,7 +153,8 @@ class LabeledScatter {
           })
 
           this.addMarkerClickHandler()
-    } catch (err) {
+    }
+   } catch (err) {
       if (
         err.type === InsufficientHeightError.type ||
         err.type === InsufficientWidthError.type
