@@ -594,24 +594,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             }
         }
     }
-    // Always have the reset button as the last entry
-    annotations.push({
-        text: 'Reset',
-        showarrow: false,
-        captureevents: true,
-        font: {
-            color: '#5B9BD5',
-            size: 10
-        },
-        x: 1.0,
-        xref: 'paper',
-        xanchor: 'right',
-        xshift: 1.0 * plotly_layout.margin.r,
-        y: 0.0,
-        yref: 'paper',
-        yanchor: 'bottom',
-        yshift: -1.0 * plotly_layout.margin.b
-    })
     return settings
 }
 

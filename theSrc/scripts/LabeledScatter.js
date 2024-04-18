@@ -84,7 +84,7 @@ class LabeledScatter {
       const plot_config = {
         displayModeBar: false,
         editable: false,
-        edits: { annotationTail: true, legendPosition: true }
+        edits: { annotationTail: true, legendPosition: false }
       }
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
@@ -102,8 +102,8 @@ class LabeledScatter {
 
         // Event handler for Reset button
         plotlyChart.on('plotly_clickannotation', async (data) => {
-          const num_annot = plotlyChart._fullLayout.annotations.length
-          if (data.index === num_annot - 1) {
+          console.log(data)
+          if (data.annotation.text === 'Reset') {
             this.stateObj.resetState()
             await this.drawSmallMultipleLabels(plotlyChart, config)
             lastevent = 'clickreset'
@@ -126,7 +126,7 @@ class LabeledScatter {
                 yoffset: a.ay
               }
             }) })
-            console.log('saved plotly annotations:') // + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
+            console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
           }
           lastevent = ''
         })
