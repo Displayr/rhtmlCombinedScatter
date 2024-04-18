@@ -1,0 +1,13 @@
+type: multi_widget_single_page
+title: "margin"
+width: 576
+height:  512
+rowSize: 2
+widgets:
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":0,"marginBottom":0,"marginLeft":0,"marginRight":0}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginRight":300}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":250}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":100,"marginBottom":100,"marginLeft":200}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":0}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":0,"marginAutoexpand":false}
+  - config: data.legacy_bubble.bubbleplot_colas|{"marginTop":200,"marginBottom":200,"marginLeft":200,"marginRight":150,"marginAutoexpand":false}

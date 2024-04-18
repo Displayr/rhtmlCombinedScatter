@@ -80,7 +80,9 @@ class LabeledScatter {
     const config = buildConfig(this.data, this.width, this.height)
     try {
       const plot_data = createPlotlyData(config)
-      const plot_layout = createPlotlyLayout(config, this.marginRight(config))
+      const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
+      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : null
+      const plot_layout = createPlotlyLayout(config, margin_right)
       const plot_config = {
         displayModeBar: false,
         editable: false,
@@ -131,23 +133,26 @@ class LabeledScatter {
           lastevent = ''
         })
       } else {
-        const tmp_layout = {}
-        const is_extra_margin_needed_for_legend = this.isExtraMarginNeededForLegend(plotlyChart._fullLayout, config)
-        if (is_extra_margin_needed_for_legend) {
-          tmp_layout['margin.r'] = this.plotlyLegendOrColorBarWidth() + LEGEND_POINTS_MARGIN_RIGHT
-        }
-        if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-        await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
+          const tmp_layout = {}
+          const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
+          if (is_legend_elements_to_right_of_plotly_legend && config.marginAutoexpand) {
+            const nsewdrag_rect = this.nsewdragRect()
+            const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
+            const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
+            tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
+          }
+          if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
+          await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
 
-        if (FitLine.isFitDataAvailable(config)) {
-          FitLine.draw(this.rootElement, config)
-        }
+          if (FitLine.isFitDataAvailable(config)) {
+            FitLine.draw(this.rootElement, config)
+          }
 
-        plotlyChart.on('plotly_afterplot', () => {
-          this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_extra_margin_needed_for_legend)
-        })
-        this.addMarkerClickHandler()
-      }
+          plotlyChart.on('plotly_afterplot', () => {
+            this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
+          })
+
+          this.addMarkerClickHandler()
     } catch (err) {
       if (
         err.type === InsufficientHeightError.type ||
@@ -164,7 +169,7 @@ class LabeledScatter {
     }
   }
 
-  async drawScatterLabelLayer (plotly_chart_layout, plotly_chart_data, config, is_legend_points_to_right_of_plotly_legend) {
+  async drawScatterLabelLayer (plotly_chart_layout, plotly_chart_data, config, is_legend_elements_to_right_of_plotly_legend) {
     d3.select(this.rootElement).select('.scatterlabellayer').remove()
 
     // The scatter labels need to be in the drag layer so that mouse events
@@ -191,7 +196,7 @@ class LabeledScatter {
     config.width = plot_width
     config.height = plot_height
 
-    const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config)
+    const legend_elements_rect = this.getLegendElementsRect(plotly_chart_layout, is_legend_elements_to_right_of_plotly_legend, nsewdrag_rect, config)
 
     config.hiddenSeries = plotly_chart_data.filter(d => d.visible === 'legendonly').map(d => d.name)
 
@@ -201,7 +206,7 @@ class LabeledScatter {
       svg,
       rootElement: d3.select(this.rootElement),
       reset: () => this.draw(),
-      legendPointsRect: legend_points_rect
+      legendElementsRect: legend_elements_rect
     })
     await this.plot.draw()
   }
@@ -267,55 +272,62 @@ class LabeledScatter {
     }
   }
 
-  getLegendPointsRect (plotly_chart_layout, is_legend_points_to_right_of_plotly_legend, nsewdrag_rect, config) {
-    if (is_legend_points_to_right_of_plotly_legend) {
+  /**
+   * Returns a rectangle of the legend elements (legend points and bubble legend) in coordinates relative to the scatterlabellayer svg
+   */
+  getLegendElementsRect (plotly_chart_layout, is_legend_elements_to_right_of_plotly_legend, nsewdrag_rect, config) {
+    if (is_legend_elements_to_right_of_plotly_legend) {
+      const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
       return {
-        x: nsewdrag_rect.width + this.plotlyLegendOrColorBarWidth(),
+        x: legend_right - nsewdrag_rect.x,
         y: LEGEND_POINTS_PADDING_TOP,
-        width: LEGEND_POINTS_MARGIN_RIGHT,
+        width: this.legendPointsAndBubbleLegendWidth(config),
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
      }
-    } else if (plotly_chart_layout.legend) {
-      const legend_rect = this.legendRect()
+    } else if (plotly_chart_layout.legend && this.isPlotlyLegendOnRight(plotly_chart_layout)) {
+      const plotly_legend_rect = this.plotlyLegendRect()
       return {
         x: nsewdrag_rect.width,
-        y: legend_rect.height + LEGEND_POINTS_PADDING_TOP,
-        width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
-        height: Math.max(nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
+        y: plotly_legend_rect.height + LEGEND_POINTS_PADDING_TOP,
+        width: this.width - nsewdrag_rect.right,
+        height: Math.max(nsewdrag_rect.y + nsewdrag_rect.height - (plotly_legend_rect.y + plotly_legend_rect.height) - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
       }
     } else {
       return {
         x: nsewdrag_rect.width,
         y: LEGEND_POINTS_PADDING_TOP,
-        width: this.width - nsewdrag_rect.x - nsewdrag_rect.width,
+        width: this.width - nsewdrag_rect.right,
         height: Math.max(nsewdrag_rect.height - LEGEND_POINTS_PADDING_TOP - this.legendBubbleHeight(config), LEGEND_POINTS_MINIMUM_HEIGHT)
       }
     }
   }
 
-  marginRight (config) {
-    let margin = 0
+  legendPointsAndBubbleLegendWidth (config) {
+    let width = 0
     if (this.stateObj.legendPts.length > 0) {
-      margin = Math.max(LEGEND_POINTS_MARGIN_RIGHT, margin)
+      width = Math.max(LEGEND_POINTS_MARGIN_RIGHT, width)
     }
     if (this.hasBubbleLegend(config)) {
       const bubble_radius = LegendUtils.normalizedZtoRadius(config.pointRadius, 1)
-      margin = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), margin)
+      width = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), width)
     }
-    return margin > 0 ? margin : null
+    return width
   }
 
-  isExtraMarginNeededForLegend (plotly_chart_layout, config) {
+  /**
+   * Whether legend elements (legend points or bubble legend) are to be shown to the right of the plotly legend
+   */
+  isLegendElementsToRightOfPlotlyLegend (plotly_chart_layout, config) {
     if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
       return true
     }
-    if (!plotly_chart_layout.legend) {
+    if (!plotly_chart_layout.legend || !this.isPlotlyLegendOnRight(plotly_chart_layout)) {
       return false
     }
 
     const nsewdrag_rect = this.nsewdragRect()
-    const legend_rect = this.legendRect()
-    const height_under_legend = nsewdrag_rect.height - legend_rect.height - LEGEND_POINTS_PADDING_TOP
+    const plotly_legend_rect = this.plotlyLegendRect()
+    const height_under_legend = nsewdrag_rect.y + nsewdrag_rect.height - (plotly_legend_rect.y + plotly_legend_rect.height) - LEGEND_POINTS_PADDING_TOP
 
     let required_height = 0
     if (this.stateObj.legendPts.length > 0) {
@@ -342,13 +354,6 @@ class LabeledScatter {
     return height
   }
 
-  plotlyLegendOrColorBarWidth () {
-    let el = d3.select(this.rootElement).select('.legend')
-    if (el === undefined || el.empty()) el = d3.select(this.rootElement).select('.colorbar')
-    if (el === undefined || el.empty()) return null
-    return el[0][0].getBBox().width
-  }
-
   /**
    * Move drag layer so that the labels drawn inside it appear after other elements
    * such as markers and gridlines
@@ -362,12 +367,32 @@ class LabeledScatter {
 
   nsewdragRect () {
     const nsewdrag = d3.select(this.rootElement).select('.nsewdrag')
-    return nsewdrag[0][0].getBBox()
+    const rect = nsewdrag[0][0].getBBox()
+    return Utils.addTopBottomLeftRight(rect)
   }
 
-  legendRect () {
+  plotlyLegendRect () {
     const legend_bg = d3.select(this.rootElement).select('.legend rect.bg')
-    return legend_bg[0][0].getBBox()
+    const rect = legend_bg[0][0].getBBox()
+    const ctm = legend_bg[0][0].getCTM()
+    rect.x = ctm.e
+    rect.y = ctm.f
+    return Utils.addTopBottomLeftRight(rect)
+  }
+
+  isPlotlyLegendOnRight (plotly_chart_layout) {
+    const nsew_drag_rect = this.nsewdragRect()
+    const plotly_legend_rect = this.plotlyLegendRect()
+    return plotly_chart_layout.legend.orientation === 'v' && plotly_legend_rect.right > nsew_drag_rect.right
+  }
+
+  plotlyColorbarRect () {
+    const colorbar = d3.select(this.rootElement).select('.colorbar')
+    const rect = colorbar[0][0].getBBox()
+    const ctm = colorbar[0][0].getCTM()
+    rect.x += ctm.e
+    rect.y += ctm.f
+    return Utils.addTopBottomLeftRight(rect)
   }
 
   hasBubbleLegend (config) {

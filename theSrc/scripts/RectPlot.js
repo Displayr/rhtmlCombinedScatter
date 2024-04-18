@@ -18,7 +18,7 @@ import ResetButton from './ResetButton'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg, rootElement, reset, legendPointsRect } = {}) {
+  constructor ({ config, stateObj, svg, rootElement, reset, legendElementsRect } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -38,7 +38,7 @@ class RectPlot {
     this.svg = svg
     this.rootElement = rootElement
     this.reset = reset
-    this.legendPointsRect = legendPointsRect
+    this.legendElementsRect = legendElementsRect
     this.zTitle = config.zTitle
     this.colors = config.colors
     this.transparency = config.transparency
@@ -180,7 +180,7 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendPointsRect)
+    this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendElementsRect)
 
     this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
 
@@ -268,7 +268,7 @@ class RectPlot {
       try {
         this.drawResetButton()
 
-        this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb)
+        this.state.updateLabelsWithPositionedData(this.data.lab, this.data.vb, this.bounds)
         if (this.trendLines.show) {
           this.tl = new TrendLine(this.data.pts, this.data.lab)
         }
