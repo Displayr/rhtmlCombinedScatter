@@ -560,7 +560,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
             ax: curr_is_saved ? saved_annotations[k].ax : 0,
-            ay: curr_is_saved ? saved_annotations[k].ay : 0,
+            ay: curr_is_saved ? saved_annotations[k].ay : -10,
             visible: curr_is_saved ? saved_annotations[k].visible : true,
             clicktoshow: 'onoff',
             captureevents: false,

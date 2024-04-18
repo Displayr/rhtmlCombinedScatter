@@ -118,7 +118,10 @@ class LabeledScatter {
           console.log('last event: ' + lastevent)
           if (lastevent === '') {
             this.stateObj.saveToState({ 'plotlyAnnotations': plotlyChart._fullLayout.annotations
-            .filter(a => a.showarrow && !(a.ax === 0 && a.ay === 0 && a.visible))
+            .filter(
+                a => a.showarrow &&                         // these are the scatter marker labels
+                !(a.ax === 0 && a.ay === -10 && a.visible   // not in the default state
+              ))
             .map((a) => {
               return {
                 index: a._index,
