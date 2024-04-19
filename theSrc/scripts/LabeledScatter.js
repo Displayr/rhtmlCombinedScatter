@@ -405,7 +405,7 @@ class LabeledScatter {
 
   async drawSmallMultipleLabels (plotly_chart, config) {
       const saved_annotations = this.stateObj.isStoredInState('plotlyAnnotations')
-        ? this.stateObj['plotlyAnnotations']
+        ? this.stateObj.getStored('plotlyAnnotations')
         : null
       const small_multiple_settings = addSmallMultipleSettings(plotly_chart._fullLayout, config, saved_annotations)
       await Plotly.restyle(plotly_chart, { visible: true })

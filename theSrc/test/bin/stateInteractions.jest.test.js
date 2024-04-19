@@ -369,5 +369,6 @@ describe('state interactions', () => {
         height: 512
       })
       await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
+      await page.close()
     })
 })
