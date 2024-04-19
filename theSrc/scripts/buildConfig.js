@@ -114,6 +114,8 @@ const defaultConfig = {
   panelTitleFontSize: 12,
   panelNumRows: 2,
   panelShareAxes: true,
+  panelXGap: 0.2,
+  panelYGap: 0.3,
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)

@@ -244,6 +244,8 @@ function createPlotlyLayout (config, margin_right) {
         grid.pattern = 'independent'
         grid.rows = config.panelNumRows
         grid.columns = Math.ceil(npanel / grid.rows)
+        grid.xgap = config.panelXGap
+        grid.ygap = config.panelYGap
     }
 
     const x_axis = {
