@@ -74,17 +74,20 @@ function createPlotlyData (config) {
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
+        const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
                 const p_index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : indices
                 const g_name = group_names[g]
+                const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
                     _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
                     marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                    g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), p === 0))
+                    g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), g_add))
+                if (g_add) group_added.push(g_name)
             }
         }
     }
