@@ -342,4 +342,32 @@ describe('state interactions', () => {
 
     await page.close()
   })
+
+  test(`${++testId}: Move and hide labels in smallmultiples and save`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples',
+      width: 576,
+      height: 512
+    })
+    await scatterPlot.clickPlotlyAnnotation()
+    await page.mouse.down()
+    await page.mouse.move(200, 200)
+    await page.mouse.up()
+
+    await testState({ page, stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag', tolerance: 0 })
+    await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
+    await page.close()
+  })
+
+    test(`${++testId}: Load smallmultiples with saved state `, async function () {
+      const { page, scatterPlot } = await loadWidget({
+        browser,
+        configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples',
+        stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag',
+        width: 576,
+        height: 512
+      })
+      await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
+    })
 })

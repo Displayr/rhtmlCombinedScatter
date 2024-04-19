@@ -263,7 +263,7 @@
   "title": "Life expectancy plot",
   "yTitleFontFamily": "Verdana",
   "labelsFontSize": 16,
-  "labelsFontColor": "#000000",
+  "labelsFontColor": null,
   "colors": [
     "#5B9BD5",
     "#ED7D31",

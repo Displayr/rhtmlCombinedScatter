@@ -80,6 +80,10 @@ class ScatterPlotPage {
     return this.page.click('.plot-reset-button')
   }
 
+  async clickPlotlyAnnotation () {
+    return this.page.click('.annotation-text')
+  }
+
   async plotLabel ({ id }) {
     return this.page.$(`[id="${id}"]`)
   }
