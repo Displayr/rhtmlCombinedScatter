@@ -107,6 +107,13 @@ const defaultConfig = {
   origin: true,
   originAlign: false,
   backgroundColor: 'transparent',
+  panels: null,
+  panelLabels: null,
+  panelTitleFontColor: '#2C2C2C',
+  panelTitleFontFamily: 'Arial',
+  panelTitleFontSize: 12,
+  panelNumRows: 2,
+  panelShareAxes: true,
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)

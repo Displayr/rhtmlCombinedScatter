@@ -23,3 +23,4 @@ configs:
   - config: data.displayr_regression.set9.colorscale_bubble_numeric
   - config: data.displayr_regression.set9.colorscale_date
   - config: data.displayr_regression.set9.colorscale_categoric
+  - config: data.displayr_regression.set9.colorscale_numeric_smallmultiples
