@@ -537,18 +537,16 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const npanels = config.panelLabels.length
     let colors = config.colors
     if (Array.isArray(config.group)) {
-        const gnames = _.uniq(config.group)
         colors = {}
+        const gnames = _.uniq(config.group)
         for (let i = 0; i < gnames.length; i++) colors[gnames[i]] = config.colors[i]
     }
 
-    // Add panel titles
+    // Add marker labels
+    // Do this first so the indices line up with config.group
     let j = 0
     let k = 0
     let annotations = []
-
-    // Add marker labels
-    // Do this first so the indices line up with config.group
     const n = config.X.length
     for (let i = 0; i < n; i++) {
         const curr_is_saved = saved_annotations !== null &&
@@ -563,8 +561,8 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
             ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
-            axref: xaxis,
             ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
+            axref: xaxis,
             ayref: yaxis,
             visible: curr_is_saved ? saved_annotations[k].visible : true,
             clicktoshow: 'onoff',
@@ -584,6 +582,8 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         if (curr_is_saved) k++
         j++
     }
+
+    // Add panel titles
     for (let p = 0; p < npanels; p++) {
         annotations.push({
             text: config.panelLabels[p],
@@ -651,7 +651,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             }
         }
     }
-    console.log('annotations[12]:' + JSON.stringify(annotations[12]))
     return settings
 }
 
