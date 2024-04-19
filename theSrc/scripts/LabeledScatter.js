@@ -119,16 +119,16 @@ class LabeledScatter {
           if (lastevent === '') {
             this.stateObj.saveToState({ 'userPositionedSmallMultipleLabels': plotlyChart._fullLayout.annotations
             .filter(
-                a => a.showarrow &&                                   // these are the scatter marker labels
-                !(a.ax === a.x && a.ay === a.y * 1.1 && a.visible     // not in the default state
+                a => a.showarrow &&                             // these are the scatter marker labels
+                !(a.ax === a.x && a.ay === a.y && a.visible     // not in the default state
               ))
             .map((a) => {
               return {
                 index: a._index,
                 text: a.text,
                 visible: a.visible,
-                xoffset: a.ax,
-                yoffset: a.ay
+                xpos: a.ax,
+                ypos: a.ay
               }
             }) })
             console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('userPositionedSmallMultipleLabels')))

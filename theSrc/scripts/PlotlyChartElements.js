@@ -68,7 +68,7 @@ function createPlotlyData (config) {
                 ' ', marker_size,
                 config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
                 0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
-            addColorScale(trace, config)
+            if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
         }
     } else {
@@ -562,9 +562,9 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             arrowhead: 0,
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].xoffset : config.X[i],
+            ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
             axref: xaxis,
-            ay: curr_is_saved ? saved_annotations[k].yoffset : config.Y[i] * 1.1,
+            ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
             ayref: yaxis,
             visible: curr_is_saved ? saved_annotations[k].visible : true,
             clicktoshow: 'onoff',
