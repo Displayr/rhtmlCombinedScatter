@@ -88,7 +88,7 @@ class State {
       delete this.stateObj['userPositionedLabs']
       delete this.stateObj['vb']
       delete this.stateObj['legend.pts']
-      delete this.stateObj['plotlyAnnotations']
+      delete this.stateObj['userPositionedSmallMultipleLabels']
       this.stateObj['hiddenlabel.pts'] = this.initialHiddenLabelPts()
       this.stateChangedCallback(this.stateObj)
     }
@@ -142,7 +142,7 @@ class State {
   hasStateBeenAlteredByUser () {
     if (this.legendPts.length > 0) return true
     if (this.userPositionedLabs.length > 0) return true
-    if (this.plotlyAnnotations && this.plotlyAnnotations.length > 0) return true
+    if (this.userPositionedSmallMultipleLabels && this.userPositionedSmallMultipleLabels.length > 0) return true
     if (!_.isEqual(this.hiddenLabelPts, this.initialHiddenLabelPts())) return true
     return false
   }

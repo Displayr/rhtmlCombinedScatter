@@ -361,7 +361,7 @@ describe('state interactions', () => {
   })
 
     test(`${++testId}: Load smallmultiples with saved state `, async function () {
-      const { page, scatterPlot } = await loadWidget({
+      const { page } = await loadWidget({
         browser,
         configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples',
         stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag',

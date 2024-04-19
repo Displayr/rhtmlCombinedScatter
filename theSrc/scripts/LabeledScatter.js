@@ -117,10 +117,10 @@ class LabeledScatter {
         plotlyChart.on('plotly_afterplot', () => {
           console.log('last event: ' + lastevent)
           if (lastevent === '') {
-            this.stateObj.saveToState({ 'plotlyAnnotations': plotlyChart._fullLayout.annotations
+            this.stateObj.saveToState({ 'userPositionedSmallMultipleLabels': plotlyChart._fullLayout.annotations
             .filter(
-                a => a.showarrow &&                         // these are the scatter marker labels
-                !(a.ax === 0 && a.ay === -10 && a.visible   // not in the default state
+                a => a.showarrow &&                                   // these are the scatter marker labels
+                !(a.ax === a.x && a.ay === a.y * 1.1 && a.visible     // not in the default state
               ))
             .map((a) => {
               return {
@@ -131,7 +131,7 @@ class LabeledScatter {
                 yoffset: a.ay
               }
             }) })
-            console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('plotlyAnnotations')))
+            console.log('saved plotly annotations:' + JSON.stringify(this.stateObj.getStored('userPositionedSmallMultipleLabels')))
           }
           lastevent = ''
         })
@@ -404,8 +404,8 @@ class LabeledScatter {
   }
 
   async drawSmallMultipleLabels (plotly_chart, config) {
-      const saved_annotations = this.stateObj.isStoredInState('plotlyAnnotations')
-        ? this.stateObj.getStored('plotlyAnnotations')
+      const saved_annotations = this.stateObj.isStoredInState('userPositionedSmallMultipleLabels')
+        ? this.stateObj.getStored('userPositionedSmallMultipleLabels')
         : null
       const small_multiple_settings = addSmallMultipleSettings(plotly_chart._fullLayout, config, saved_annotations)
       await Plotly.restyle(plotly_chart, { visible: true })

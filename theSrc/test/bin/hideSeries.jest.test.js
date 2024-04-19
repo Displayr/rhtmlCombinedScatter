@@ -48,5 +48,4 @@ describe('hide series', () => {
     await testSnapshots({ page, testName: 'hide_series_with_small_multiples' })
     await page.close()
   })
-
 })

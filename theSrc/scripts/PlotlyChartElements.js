@@ -554,13 +554,17 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         const curr_is_saved = saved_annotations !== null &&
             k < saved_annotations.length &&
             j === saved_annotations[k].index
+        const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
+        const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
         annotations.push({
             text: config.label[i],
             arrowhead: 0,
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].xoffset : 0,
-            ay: curr_is_saved ? saved_annotations[k].yoffset : -10,
+            ax: curr_is_saved ? saved_annotations[k].xoffset : config.X[i],
+            axref: xaxis,
+            ay: curr_is_saved ? saved_annotations[k].yoffset : config.Y[i] * 1.1,
+            ayref: yaxis,
             visible: curr_is_saved ? saved_annotations[k].visible : true,
             clicktoshow: 'onoff',
             captureevents: false,
@@ -573,8 +577,8 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             },
             x: config.X[i],
             y: config.Y[i],
-            xref: 'x' + getPanelXAxisSuffix(config.panels[i], config),
-            yref: 'y' + getPanelYAxisSuffix(config.panels[i], config)
+            xref: xaxis,
+            yref: yaxis
         })
         if (curr_is_saved) k++
         j++
@@ -646,6 +650,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             }
         }
     }
+    console.log('annotations[12]:' + JSON.stringify(annotations[12]))
     return settings
 }
 
