@@ -551,7 +551,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     // Do this first so the indices line up with config.group
     const n = config.X.length
     for (let i = 0; i < n; i++) {
-        const curr_is_saved = saved_annotations &&
+        const curr_is_saved = saved_annotations !== null &&
             k < saved_annotations.length &&
             j === saved_annotations[k].index
         annotations.push({
@@ -559,8 +559,8 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             arrowhead: 0,
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].ax : 0,
-            ay: curr_is_saved ? saved_annotations[k].ay : -10,
+            ax: curr_is_saved ? saved_annotations[k].xoffset : 0,
+            ay: curr_is_saved ? saved_annotations[k].yoffset : -10,
             visible: curr_is_saved ? saved_annotations[k].visible : true,
             clicktoshow: 'onoff',
             captureevents: false,
