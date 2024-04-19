@@ -45,13 +45,13 @@
       "3150"
     ],
     "hiddenlabel.pts": [],
-    "plotlyAnnotations": [
+    "userPositionedSmallMultipleLabels": [
       {
         "index": 0,
         "text": "63",
         "visible": true,
-        "xoffset": 92,
-        "yoffset": -51
+        "xoffset": 12.200907576386717,
+        "yoffset": 4.562456086757293
       }
     ]
 }

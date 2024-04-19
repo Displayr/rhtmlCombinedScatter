@@ -558,6 +558,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
         annotations.push({
             text: config.label[i],
+            yanchor: 'bottom',
             arrowhead: 0,
             arrowwidth: 0.5,
             arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
