@@ -59,4 +59,24 @@ describe('zoom', () => {
     await testSnapshots({ page, testName: 'drag_and_zoom' })
     await page.close()
   })
+
+  test('Zoom with small multiples', async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.legacy_bubble.bubbleplot_small_multiples_with_groups',
+      width: 800,
+      height: 500,
+    })
+    await scatterPlot.clickFirstLegendItem()
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    await scatterPlot.clickPlotlyAnnotation()
+    await page.mouse.down()
+    await page.mouse.move(600, 300)
+    await page.mouse.up()
+    await testSnapshots({ page, testName: 'small_multiples_before_zoom' })
+    
+    await scatterPlot.drag({ from: { x: 500, y: 200 }, to: { x: 800, y: 400 } })
+    await testSnapshots({ page, testName: 'small_multiples_after_zoom' })
+    await page.close()
+  })
 })
