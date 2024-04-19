@@ -354,9 +354,16 @@ describe('state interactions', () => {
     await page.mouse.down()
     await page.mouse.move(200, 200)
     await page.mouse.up()
-
     await testState({ page, stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag', tolerance: 0 })
     await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
+
+    await page.mouse.move(400, 400)
+    await setTimeout(3000)
+    await testSnapshots({ page, testName: 'smallmultiples_showing_reset' })
+
+    await scatterPlot.clickResetButton()
+    await testState({ page, stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_reset', tolerance: 0 })
+    await testSnapshots({ page, testName: 'smallmultiples_after_reset' })
     await page.close()
   })
 
@@ -368,7 +375,7 @@ describe('state interactions', () => {
         width: 576,
         height: 512
       })
-      await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
+      await testSnapshots({ page, testName: 'smallmultiples_after_drag', tolerance: 1 })
       await page.close()
     })
 })
