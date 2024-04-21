@@ -47,6 +47,8 @@ const defaultConfig = {
   debugMode: false,
   fitX: null,
   fitY: null,
+  fitGroup: null,
+  fitPanel: null,
   fitLowerBound: null,
   fitUpperBound: null,
   fitLineColors: null,
@@ -225,6 +227,12 @@ function buildConfig (userConfig, width, height) {
     if (config.pointBorderWidth === null) config.pointBorderWidth = 1
   } else {
     if (config.pointBorderWidth === null) config.pointBorderWidth = 0
+  }
+
+  if (config.fitX && config.fitY) {
+    if (config.fitLineNames === null) config.fitLineNames = ['']
+    if (config.fitGroup === null) config.fitGroup = config.fitLineNames
+    if (config.fitPanel === null) config.fitPanel = Array(config.fitGroup.length).fill(0)
   }
   return config
 }

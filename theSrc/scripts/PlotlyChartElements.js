@@ -50,7 +50,7 @@ function createPlotlyData (config) {
                 n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
                 ' ', marker_size, config.colors[0], marker_opacity,
                 config.pointBorderColor, config.pointBorderWidth,
-                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
+                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
@@ -67,7 +67,7 @@ function createPlotlyData (config) {
                 n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
                 ' ', marker_size,
                 config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
+                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
         }
@@ -82,11 +82,12 @@ function createPlotlyData (config) {
                 const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
+                if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
                     _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
                     marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                    g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), g_add))
+                    getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), g_add))
                 if (g_add) group_added.push(g_name)
             }
         }
@@ -94,7 +95,7 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group, xaxis = '', yaxis = '', showlegend = true) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, xaxis = '', yaxis = '', showlegend = true) {
     return {
         x: X,
         y: Y,
@@ -114,7 +115,7 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
                 width: outlinewidth
             }
         },
-        legendgroup: group,
+        legendgroup: name,
         showlegend: showlegend,
         cliponaxis: false,
         xaxis: 'x' + xaxis,
@@ -553,6 +554,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     let k = 0
     let annotations = []
     const n = config.X.length
+    if (config.label)
     for (let i = 0; i < n; i++) {
         const curr_is_saved = saved_annotations !== null &&
             k < saved_annotations.length &&
@@ -662,5 +664,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
-    addSmallMultipleSettings
+    addSmallMultipleSettings,
+    getPanelXAxisSuffix,
+    getPanelYAxisSuffix
 }

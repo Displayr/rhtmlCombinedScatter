@@ -1,0 +1,8 @@
+type: multi_widget_single_page
+title: "fit trendline"
+width: 600
+height: 600
+rowSize: 2
+widgets:
+  - config: data.functionalTest.fit
+  - config: data.functionalTest.fit|{"fitLineType":"dot","fitLineOpacity":0.5,"fitLineWidth":5}

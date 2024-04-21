@@ -93,13 +93,17 @@ class LabeledScatter {
       if (Array.isArray(config.panels)) {
         await this.drawSmallMultipleLabels(plotlyChart, config)
         this.drawResetButton(plotlyChart, config)
+        if (FitLine.isFitDataAvailable(config)) {
+          FitLine.draw(this.rootElement, config)
+        }
 
         // Event handler for legendtoggle
         let lastevent = ''
         plotlyChart.on('plotly_legendclick', async (data) => {
           lastevent = 'legendclick'
           const annotations = plotlyChart._fullLayout.annotations
-          await Plotly.relayout(plotlyChart, { annotations: this.applyLegendClick(annotations, data, config) })
+          if (config.label)
+            await Plotly.relayout(plotlyChart, { annotations: this.applyLegendClick(annotations, data, config) })
           lastevent = 'legendclick'
         })
 
