@@ -36,7 +36,8 @@ const config = {
       failureThreshold: 0.0001,
       failureThresholdType: 'percent', // pixel or percent
     },
-    assertNoLogError: false
+    assertNoLogError: false,
+    snapshotDelay: 1000
   },
 }
 
