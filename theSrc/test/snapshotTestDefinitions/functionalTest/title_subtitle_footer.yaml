@@ -17,3 +17,4 @@ widgets:
   - config: data.functionalTest.scatterplot_simple|config.title_enabled|config.subtitle_multiline|config.footer_multiline
   - config: data.functionalTest.scatterplot_simple|config.title_enabled|config.title_font_32_red_serif|config.subtitle_multiline|config.subtitle_font_32_red_serif|config.footer_multiline|config.footer_font_32_red_serif
   - config: data.functionalTest.scatterplot_simple|config.title_multiline|config.subtitle_multiline|config.footer_multiline
+  - config: data.functionalTest.scatterplot_simple|config.subtitle_multiline|config.footer_multiline
