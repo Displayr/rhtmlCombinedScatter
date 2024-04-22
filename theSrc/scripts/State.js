@@ -142,7 +142,8 @@ class State {
   hasStateBeenAlteredByUser () {
     if (this.legendPts.length > 0) return true
     if (this.userPositionedLabs.length > 0) return true
-    if (this.userPositionedSmallMultipleLabels && this.userPositionedSmallMultipleLabels.length > 0) return true
+    if (this.isStoredInState('userPositionedSmallMultipleLabels') &&
+        this.stateObj['userPositionedSmallMultipleLabels'].length > 0) return true
     if (!_.isEqual(this.hiddenLabelPts, this.initialHiddenLabelPts())) return true
     return false
   }
