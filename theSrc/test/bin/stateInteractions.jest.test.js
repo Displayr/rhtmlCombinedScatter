@@ -362,7 +362,7 @@ describe('state interactions', () => {
     await testSnapshots({ page, testName: 'smallmultiples_showing_reset' })
 
     await scatterPlot.clickResetButton()
-    await setTimeout(3000)
+    await setTimeout(6000)
     await testState({ page, stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_reset', tolerance: 0 })
     await testSnapshots({ page, testName: 'smallmultiples_after_reset' })
     await page.close()
