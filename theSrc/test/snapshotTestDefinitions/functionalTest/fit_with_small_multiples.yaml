@@ -4,5 +4,5 @@ width: 600
 height: 600
 rowSize: 2
 widgets:
-  - config: data.functionalTest.fit
-  - config: data.functionalTest.fit|{"fitLineType":"dot","fitLineOpacity":0.5,"fitLineWidth":5}
+  - config: data.functionalTest.fit_with_small_multiples
+  - config: data.functionalTest.fit_with_small_multiples|{"fitLineType":"dot","fitLineOpacity":0.5,"fitLineWidth":5}
