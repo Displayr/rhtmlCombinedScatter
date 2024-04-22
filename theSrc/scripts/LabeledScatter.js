@@ -81,7 +81,7 @@ class LabeledScatter {
     try {
       const plot_data = createPlotlyData(config)
       const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
-      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : null
+      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : 20
       const plot_layout = createPlotlyLayout(config, margin_right)
       const plot_config = {
         displayModeBar: false,
@@ -119,8 +119,8 @@ class LabeledScatter {
           if (lastevent === '') {
             this.stateObj.saveToState({ 'userPositionedSmallMultipleLabels': plotlyChart._fullLayout.annotations
             .filter(
-                a => a.showarrow &&                             // these are the scatter marker labels
-                !(a.ax === a.x && a.ay === a.y && a.visible     // not in the default state
+                a => a.showarrow && // these are the scatter marker labels
+                !(a.ax === a.x && a.ay === a.y && a.visible // not in the default state
               ))
             .map((a) => {
               return {
@@ -144,7 +144,13 @@ class LabeledScatter {
             const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
             tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
           }
+          this.adjustTitleAndSubtitle()
+          const margin_top_for_title = this.subtitleBottom() // TODO: also consider legend when shown at top!!!
+          if (margin_top_for_title > 20) {
+            tmp_layout['margin.t'] = margin_top_for_title
+          }
           if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
+          this.adjustTitleAndSubtitle()
           await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
 
           if (FitLine.isFitDataAvailable(config)) {
@@ -152,6 +158,7 @@ class LabeledScatter {
           }
 
           plotlyChart.on('plotly_afterplot', () => {
+            this.adjustTitleAndSubtitle()
             this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
           })
 
@@ -418,6 +425,68 @@ class LabeledScatter {
         if (config.group[i] === changed) annotations[i].visible = !annotations[i].visible
     }
     return annotations
+  }
+
+  adjustTitleAndSubtitle () {
+    const title_element = d3.select(this.rootElement).select('.gtitle')
+    title_element
+      .attr('x', 0.5 * this.width)
+      .attr('dy', 0)
+      .style('alignment-baseline', 'text-before-edge')
+
+    title_element
+      .selectAll('tspan')
+      .attr('x', 0.5 * this.width)
+      .style('alignment-baseline', 'text-before-edge')
+
+    const subtitle_element = d3.select(this.rootElement).select('.cursor-pointer')
+    if (subtitle_element[0][0] !== null) {
+      subtitle_element
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('transform', `translate(${0.5 * this.width},${this.titleBottom()})`)
+      subtitle_element.select('.annotation-text')
+        .attr('x', 0)
+        .attr('y', 0)
+        .style('alignment-baseline', 'text-before-edge')
+      subtitle_element.selectAll('.annotation-text tspan').attr('x', 0)
+    }
+  }
+
+  titleBottom () {
+    const title_element = d3.select(this.rootElement).select('.gtitle')
+    if (title_element[0][0] === null) {
+      return 0
+    }
+    const rect = Utils.addTopBottomLeftRight(title_element[0][0].getBBox())
+    const tspans = title_element.selectAll('tspan')
+    // Include 30% line spacing
+    if (tspans[0][0]) {
+      const tspan_rect = tspans[0][0].getBBox()
+      return rect.bottom + tspan_rect.height * 0.3
+    } else {
+      return rect.bottom * 1.3
+    }
+  }
+
+  subtitleBottom () {
+    const subtitle_element = d3.select(this.rootElement).select('.cursor-pointer')
+    if (subtitle_element[0][0] === null) {
+      return this.titleBottom()
+    }
+    let rect = subtitle_element[0][0].getBBox()
+    const ctm = subtitle_element[0][0].getCTM()
+    rect.x = ctm.e
+    rect.y = ctm.f
+    rect = Utils.addTopBottomLeftRight(rect)
+    const tspans = subtitle_element.selectAll('tspan')
+    // Include 30% line spacing
+    if (tspans[0][0]) {
+      const tspan_rect = tspans[0][0].getBBox()
+      return rect.bottom + tspan_rect.height * 0.3
+    } else {
+      return rect.bottom + rect.height * 0.3
+    }
   }
 }
 

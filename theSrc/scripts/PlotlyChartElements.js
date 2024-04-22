@@ -333,16 +333,15 @@ function createPlotlyLayout (config, margin_right) {
                 color: config.titleFontColor,
                 size: config.titleFontSize
             },
-            xref: 'paper',
-            automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
+            automargin: true
         },
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: createLegendSettings(config),
         margin: {
-            t: config.marginTop,
-            b: config.marginBottom,
+            t: config.marginTop !== null ? config.marginTop : 20,
+            b: config.marginBottom !== null ? config.marginBottom : 20,
             r: config.marginRight !== null ? config.marginRight : margin_right,
-            l: config.marginLeft,
+            l: config.marginLeft !== null ? config.marginLeft : 20,
             autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
@@ -362,6 +361,24 @@ function createPlotlyLayout (config, margin_right) {
             plot_layout['xaxis' + p] = x_axis
             plot_layout['yaxis' + p] = y_axis
         }
+    }
+    if (config.subtitle.length > 0) {
+        plot_layout.annotations = [{
+            text: config.subtitle,
+            font: {
+                family: config.subtitleFontFamily,
+                color: config.subtitleFontColor,
+                size: config.subtitleFontSize
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 1,
+            yanchor: 'bottom',
+            showarrow: false,
+            name: 'templateitemname'
+            // yshift: 10
+        }]
     }
     return plot_layout
 }
@@ -606,6 +623,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const settings = { annotations: annotations }
     if (npanels > 1 && config.panelShareAxes) {
         annotations.push({
+            name: 'ytitle',
             text: config.yTitle,
             textangle: 270,
             showarrow: false,
@@ -623,6 +641,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             xshift: -0.5 * plotly_layout.margin.l
         })
         annotations.push({
+            name: 'xtitle',
             text: config.xTitle,
             showarrow: false,
             font: {
