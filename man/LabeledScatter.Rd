@@ -110,10 +110,12 @@ LabeledScatter(
   subtitle.font.color = rgb(44, 44, 44, maxColorValue = 255),
   subtitle.font.family = "Arial",
   subtitle.font.size = 12,
+  subtitle.alignment = "Center",
   title = "",
   title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   title.font.family = "Arial",
   title.font.size = 16,
+  title.alignment = "Center",
   tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
   tooltip.font.family = "Arial",
   tooltip.font.size = 10,
@@ -322,6 +324,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{subtitle.font.size}{is the font size of the subtitle text}
 
+\item{subtitle.alignment}{One of "Left", "Center", "Right"}
+
 \item{title}{is the title text given to the plot}
 
 \item{title.font.color}{is the font color of the plot title}
@@ -329,6 +333,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{title.font.family}{is the font family of the plot title}
 
 \item{title.font.size}{is the font size of the plot title}
+
+\item{title.alignment}{One of "Left", "Center", "Right"}
 
 \item{tooltip.font.color}{is the font color of the tooltips}
 

@@ -95,7 +95,7 @@ class LabeledScatter {
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
         }
-        this.adjustTitles(plotlyChart._fullLayout)
+        this.adjustTitles(plotlyChart._fullLayout, config)
         const tmp_layout = {}
         const margin_top = this.marginTop(plotlyChart._fullLayout)
         if (margin_top > 20 && config.marginAutoexpand) {
@@ -109,7 +109,7 @@ class LabeledScatter {
         }
         if (Object.keys(tmp_layout).length > 0) {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-          this.adjustTitles(plotlyChart._fullLayout)
+          this.adjustTitles(plotlyChart._fullLayout, config)
         }
         this.drawResetButton(plotlyChart, config)
 
@@ -127,7 +127,7 @@ class LabeledScatter {
         // Event handler for dragging and toggling scatter labels
         // But do not save legend toggle
         plotlyChart.on('plotly_afterplot', () => {
-          this.adjustTitles(plotlyChart._fullLayout)
+          this.adjustTitles(plotlyChart._fullLayout, config)
           if (lastevent === '') {
             this.stateObj.saveToState({ 'userPositionedSmallMultipleLabels': plotlyChart._fullLayout.annotations
             .filter(
@@ -150,7 +150,7 @@ class LabeledScatter {
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
         }
-        this.adjustTitles(plotlyChart._fullLayout)
+        this.adjustTitles(plotlyChart._fullLayout, config)
         const tmp_layout = {}
         const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
         if (is_legend_elements_to_right_of_plotly_legend && config.marginAutoexpand) {
@@ -165,13 +165,13 @@ class LabeledScatter {
         }
         if (Object.keys(tmp_layout).length > 0) {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-          this.adjustTitles(plotlyChart._fullLayout)
+          this.adjustTitles(plotlyChart._fullLayout, config)
         }
 
         await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
 
         plotlyChart.on('plotly_afterplot', () => {
-          this.adjustTitles(plotlyChart._fullLayout)
+          this.adjustTitles(plotlyChart._fullLayout, config)
           this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
         })
 
@@ -455,30 +455,37 @@ class LabeledScatter {
     return annotations
   }
 
-  adjustTitles (plotly_chart_layout) {
+  adjustTitles (plotly_chart_layout, config) {
     const title_element = d3.select(this.rootElement).select('.gtitle')
+    const x = config.titleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
+    const text_anchor = config.titleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
     title_element
-      .attr('x', 0.5 * this.width)
+      .attr('x', x)
       .attr('dy', 0)
       .style('alignment-baseline', 'text-before-edge')
+      .style('text-anchor', text_anchor)
 
     title_element
       .selectAll('tspan')
-      .attr('x', 0.5 * this.width)
+      .attr('x', x)
       .style('alignment-baseline', 'text-before-edge')
+      .style('text-anchor', text_anchor)
 
     const subtitle_element = this.getAnnotationElement('subtitle', plotly_chart_layout)
     if (subtitle_element !== null) {
+      const subtitle_x = config.subtitleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
+      const subtitle_text_anchor = config.subtitleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
       subtitle_element
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${0.5 * this.width},${this.titleBottom()})`)
+        .attr('transform', `translate(${subtitle_x},${this.titleBottom()})`)
       subtitle_element
         .select('.annotation-text')
         .attr('x', 0)
         .attr('y', 0)
         .style('alignment-baseline', 'text-before-edge')
+        .style('text-anchor', subtitle_text_anchor)
       subtitle_element.selectAll('.annotation-text tspan').attr('x', 0)
     }
 
