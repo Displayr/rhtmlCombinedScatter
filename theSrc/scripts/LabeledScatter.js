@@ -99,13 +99,14 @@ class LabeledScatter {
 
         // Event handler for legendtoggle
         let lastevent = ''
-        plotlyChart.on('plotly_legendclick', async (data) => {
-          lastevent = 'legendclick'
-          const annotations = plotlyChart._fullLayout.annotations
-          if (config.label)
+        if (config.label) {
+          plotlyChart.on('plotly_legendclick', async (data) => {
+            lastevent = 'legendclick'
+            const annotations = plotlyChart._fullLayout.annotations
             await Plotly.relayout(plotlyChart, { annotations: this.applyLegendClick(annotations, data, config) })
-          lastevent = 'legendclick'
-        })
+            lastevent = 'legendclick'
+          })
+        }
 
         // Event handler for dragging and toggling scatter labels
         // But do not save legend toggle

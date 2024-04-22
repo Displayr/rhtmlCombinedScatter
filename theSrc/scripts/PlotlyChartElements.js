@@ -554,40 +554,41 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     let k = 0
     let annotations = []
     const n = config.X.length
-    if (config.label)
-    for (let i = 0; i < n; i++) {
-        const curr_is_saved = saved_annotations !== null &&
-            k < saved_annotations.length &&
-            j === saved_annotations[k].index
-        const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
-        const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
-        annotations.push({
-            text: config.label[i],
-            yanchor: 'bottom',
-            arrowhead: 0,
-            arrowwidth: 0.5,
-            arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
-            ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
-            axref: xaxis,
-            ayref: yaxis,
-            visible: curr_is_saved ? saved_annotations[k].visible : true,
-            clicktoshow: 'onoff',
-            captureevents: false,
-            font: {
-                family: config.labelsFontFamily,
-                color: config.labelsFontColor !== null
-                    ? config.labelsFontColor
-                    : colors[Array.isArray(config.group) ? config.group[i] : 0],
-                size: config.labelsFontSize
-            },
-            x: config.X[i],
-            y: config.Y[i],
-            xref: xaxis,
-            yref: yaxis
-        })
-        if (curr_is_saved) k++
-        j++
+    if (config.label) {
+        for (let i = 0; i < n; i++) {
+            const curr_is_saved = saved_annotations !== null &&
+                k < saved_annotations.length &&
+                j === saved_annotations[k].index
+            const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
+            const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
+            annotations.push({
+                text: config.label[i],
+                yanchor: 'bottom',
+                arrowhead: 0,
+                arrowwidth: 0.5,
+                arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
+                ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
+                ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
+                axref: xaxis,
+                ayref: yaxis,
+                visible: curr_is_saved ? saved_annotations[k].visible : true,
+                clicktoshow: 'onoff',
+                captureevents: false,
+                font: {
+                    family: config.labelsFontFamily,
+                    color: config.labelsFontColor !== null
+                        ? config.labelsFontColor
+                        : colors[Array.isArray(config.group) ? config.group[i] : 0],
+                    size: config.labelsFontSize
+                },
+                x: config.X[i],
+                y: config.Y[i],
+                xref: xaxis,
+                yref: yaxis
+            })
+            if (curr_is_saved) k++
+            j++
+        }
     }
 
     // Add panel titles
