@@ -50,7 +50,7 @@ function createPlotlyData (config) {
                 n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
                 ' ', marker_size, config.colors[0], marker_opacity,
                 config.pointBorderColor, config.pointBorderWidth,
-                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
+                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
@@ -67,31 +67,35 @@ function createPlotlyData (config) {
                 n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
                 ' ', marker_size,
                 config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                0, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
+                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
         }
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = Object.keys(indices_by_group)
+        const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
                 const p_index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : indices
                 const g_name = group_names[g]
+                const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
+                if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
                     _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
                     marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                    g, getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), p === 0))
+                    getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), g_add))
+                if (g_add) group_added.push(g_name)
             }
         }
     }
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, group, xaxis = '', yaxis = '', showlegend = true) {
+function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, xaxis = '', yaxis = '', showlegend = true) {
     return {
         x: X,
         y: Y,
@@ -111,7 +115,7 @@ function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outline
                 width: outlinewidth
             }
         },
-        legendgroup: group,
+        legendgroup: name,
         showlegend: showlegend,
         cliponaxis: false,
         xaxis: 'x' + xaxis,
@@ -244,6 +248,8 @@ function createPlotlyLayout (config, margin_right) {
         grid.pattern = 'independent'
         grid.rows = config.panelNumRows
         grid.columns = Math.ceil(npanel / grid.rows)
+        grid.xgap = config.panelXGap
+        grid.ygap = config.panelYGap
     }
 
     const x_axis = {
@@ -537,53 +543,55 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const npanels = config.panelLabels.length
     let colors = config.colors
     if (Array.isArray(config.group)) {
-        const gnames = _.uniq(config.group)
         colors = {}
+        const gnames = _.uniq(config.group)
         for (let i = 0; i < gnames.length; i++) colors[gnames[i]] = config.colors[i]
     }
 
-    // Add panel titles
+    // Add marker labels
+    // Do this first so the indices line up with config.group
     let j = 0
     let k = 0
     let annotations = []
-
-    // Add marker labels
-    // Do this first so the indices line up with config.group
     const n = config.X.length
-    for (let i = 0; i < n; i++) {
-        const curr_is_saved = saved_annotations !== null &&
-            k < saved_annotations.length &&
-            j === saved_annotations[k].index
-        const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
-        const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
-        annotations.push({
-            text: config.label[i],
-            yanchor: 'bottom',
-            arrowhead: 0,
-            arrowwidth: 0.5,
-            arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
-            ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
-            axref: xaxis,
-            ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
-            ayref: yaxis,
-            visible: curr_is_saved ? saved_annotations[k].visible : true,
-            clicktoshow: 'onoff',
-            captureevents: false,
-            font: {
-                family: config.labelsFontFamily,
-                color: config.labelsFontColor !== null
-                    ? config.labelsFontColor
-                    : colors[Array.isArray(config.group) ? config.group[i] : 0],
-                size: config.labelsFontSize
-            },
-            x: config.X[i],
-            y: config.Y[i],
-            xref: xaxis,
-            yref: yaxis
-        })
-        if (curr_is_saved) k++
-        j++
+    if (config.label) {
+        for (let i = 0; i < n; i++) {
+            const curr_is_saved = saved_annotations !== null &&
+                k < saved_annotations.length &&
+                j === saved_annotations[k].index
+            const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
+            const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
+            annotations.push({
+                text: config.label[i],
+                yanchor: 'bottom',
+                arrowhead: 0,
+                arrowwidth: 0.5,
+                arrowcolor: colors[Array.isArray(config.group) ? config.group[i] : 0],
+                ax: curr_is_saved ? saved_annotations[k].xpos : config.X[i],
+                ay: curr_is_saved ? saved_annotations[k].ypos : config.Y[i],
+                axref: xaxis,
+                ayref: yaxis,
+                visible: curr_is_saved ? saved_annotations[k].visible : true,
+                clicktoshow: 'onoff',
+                captureevents: false,
+                font: {
+                    family: config.labelsFontFamily,
+                    color: config.labelsFontColor !== null
+                        ? config.labelsFontColor
+                        : colors[Array.isArray(config.group) ? config.group[i] : 0],
+                    size: config.labelsFontSize
+                },
+                x: config.X[i],
+                y: config.Y[i],
+                xref: xaxis,
+                yref: yaxis
+            })
+            if (curr_is_saved) k++
+            j++
+        }
     }
+
+    // Add panel titles
     for (let p = 0; p < npanels; p++) {
         annotations.push({
             text: config.panelLabels[p],
@@ -651,12 +659,13 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             }
         }
     }
-    console.log('annotations[12]:' + JSON.stringify(annotations[12]))
     return settings
 }
 
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
-    addSmallMultipleSettings
+    addSmallMultipleSettings,
+    getPanelXAxisSuffix,
+    getPanelYAxisSuffix
 }

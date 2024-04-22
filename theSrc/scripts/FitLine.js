@@ -1,11 +1,15 @@
 import Plotly from 'plotly.js-basic-dist-min'
 import TooltipUtils from './utils/TooltipUtils'
+import { getPanelXAxisSuffix, getPanelYAxisSuffix } from './PlotlyChartElements'
 
 class FitLine {
     static draw (element, config) {
-        const n_groups = config.fitX.length
+        const n_groups = config.fitGroup.length
         const trace_data = []
         for (let i = 0; i < n_groups; i++) {
+            const group = config.fitGroup[i]
+            const xaxis = 'x' + getPanelXAxisSuffix(config.fitPanel[i], config)
+            const yaxis = 'y' + getPanelYAxisSuffix(config.fitPanel[i], config)
             trace_data.push({
                 name: config.fitLineNames[i],
                 x: config.fitX[i],
@@ -13,7 +17,9 @@ class FitLine {
                 type: 'scatter',
                 mode: 'lines',
                 showlegend: false,
-                legendgroup: i,
+                legendgroup: group,
+                xaxis: xaxis,
+                yaxis: yaxis,
                 hoverlabel: {
                     font: {
                         color: TooltipUtils.blackOrWhite(config.fitLineColors[i]),
@@ -38,7 +44,9 @@ class FitLine {
                     type: 'scatter',
                     mode: 'lines',
                     showlegend: false,
-                    legendgroup: i,
+                    legendgroup: group,
+                    xaxis: xaxis,
+                    yaxis: yaxis,
                     hoverlabel: {
                         font: {
                             color: TooltipUtils.blackOrWhite(config.fitCIColors[i]),
@@ -59,7 +67,9 @@ class FitLine {
                     type: 'scatter',
                     mode: 'lines',
                     showlegend: false,
-                    legendgroup: i,
+                    legendgroup: group,
+                    xaxis: xaxis,
+                    yaxis: yaxis,
                     hoverlabel: {
                         font: {
                             color: TooltipUtils.blackOrWhite(config.fitCILabelColors[i]),
