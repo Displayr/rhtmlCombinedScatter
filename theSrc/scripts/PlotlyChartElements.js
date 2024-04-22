@@ -364,6 +364,7 @@ function createPlotlyLayout (config, margin_right) {
     }
     if (config.subtitle.length > 0) {
         plot_layout.annotations = [{
+            name: 'subtitle',
             text: config.subtitle,
             font: {
                 family: config.subtitleFontFamily,
@@ -376,8 +377,6 @@ function createPlotlyLayout (config, margin_right) {
             y: 1,
             yanchor: 'bottom',
             showarrow: false,
-            name: 'templateitemname'
-            // yshift: 10
         }]
     }
     return plot_layout
@@ -603,6 +602,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     }
     for (let p = 0; p < npanels; p++) {
         annotations.push({
+            name: 'panellabel',
             text: config.panelLabels[p],
             x: 0.5,
             y: 1,
@@ -638,7 +638,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             yref: 'paper',
             y: 0.5,
             yanchor: 'middle',
-            xshift: -0.5 * plotly_layout.margin.l
         })
         annotations.push({
             name: 'xtitle',
@@ -655,7 +654,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             yref: 'paper',
             y: 0,
             yanchor: 'top',
-            yshift: -0.5 * plotly_layout.margin.b
         })
         for (let side of ['x', 'y']) {
             let new_range = plotly_layout[side + 'axis'].range
