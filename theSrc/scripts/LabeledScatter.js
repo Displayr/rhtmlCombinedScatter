@@ -97,10 +97,6 @@ class LabeledScatter {
         }
         this.adjustTitles(plotlyChart._fullLayout, config)
         const tmp_layout = {}
-        const margin_top = this.marginTop(plotlyChart._fullLayout)
-        if (margin_top > 20 && config.marginAutoexpand) {
-          tmp_layout['margin.t'] = margin_top
-        }
         if (this.hasXTitleAnnotation(plotlyChart._fullLayout) && config.marginAutoexpand) {
           tmp_layout['margin.b'] = this.marginBottomWithXTitleAnnotation(plotlyChart._fullLayout)
         }
@@ -158,10 +154,6 @@ class LabeledScatter {
           const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
           const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
           tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
-        }
-        const margin_top = this.marginTop(plotlyChart._fullLayout)
-        if (margin_top > 20 && config.marginAutoexpand) {
-          tmp_layout['margin.t'] = margin_top
         }
         if (Object.keys(tmp_layout).length > 0) {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
@@ -540,17 +532,6 @@ class LabeledScatter {
     return indices.map(i => annotations[0][i])
   }
 
-  marginTop (plotly_chart_layout) {
-    const title_bottom = this.titleAndSubtitleBottom(plotly_chart_layout)
-    const panel_label = this.getAnnotationElement('panellabel', plotly_chart_layout)
-    const panel_label_height = panel_label !== null ? panel_label[0][0].getBBox().height : 0
-    let legend_height = 0
-    if (plotly_chart_layout.legend && plotly_chart_layout.legend.y >= 1) {
-      legend_height = this.nsewdragRect().top - this.plotlyLegendRect().top
-    }
-    return title_bottom + panel_label_height + legend_height
-  }
-
   titleBottom () {
     const title_element = d3.select(this.rootElement).select('.gtitle')
     if (title_element[0][0] === null) {
@@ -558,29 +539,12 @@ class LabeledScatter {
     }
     const rect = Utils.addTopBottomLeftRight(title_element[0][0].getBBox())
     const tspans = title_element.selectAll('tspan')
-    // Include 30% line spacing
+    // Include 10% line spacing
     if (tspans[0][0]) {
       const tspan_rect = tspans[0][0].getBBox()
-      return rect.bottom + tspan_rect.height * 0.3
+      return rect.bottom + tspan_rect.height * 0.1
     } else {
-      return rect.bottom * 1.3
-    }
-  }
-
-  titleAndSubtitleBottom (plotly_chart_layout) {
-    const subtitle_element = this.getAnnotationElement('subtitle', plotly_chart_layout)
-    if (subtitle_element === null) {
-      return this.titleBottom()
-    }
-    let rect = subtitle_element[0][0].getBBox()
-    rect = Utils.addTopBottomLeftRight(rect)
-    const tspans = subtitle_element.selectAll('tspan')
-    // Include 30% line spacing
-    if (tspans[0][0]) {
-      const tspan_rect = tspans[0][0].getBBox()
-      return rect.bottom + tspan_rect.height * 0.3
-    } else {
-      return rect.bottom + rect.height * 0.3
+      return rect.bottom * 1.1
     }
   }
 

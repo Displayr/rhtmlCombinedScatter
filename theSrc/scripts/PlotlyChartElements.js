@@ -341,10 +341,10 @@ function createPlotlyLayout (config, margin_right) {
             },
             automargin: true
         },
-        showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
+        showlegend: showLegend(config),
         legend: createLegendSettings(config),
         margin: {
-            t: config.marginTop !== null ? config.marginTop : 20,
+            t: config.marginTop !== null ? config.marginTop : marginTopForTitles(config),
             b: config.marginBottom !== null ? config.marginBottom : 20,
             r: config.marginRight !== null ? config.marginRight : margin_right,
             l: config.marginLeft !== null ? config.marginLeft : 20,
@@ -386,6 +386,10 @@ function createPlotlyLayout (config, margin_right) {
         }]
     }
     return plot_layout
+}
+
+function showLegend(config) {
+    return config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0
 }
 
 function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth) {
@@ -677,6 +681,20 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         }
     }
     return settings
+}
+
+function marginTopForTitles (config) {
+    let margin_top = 0
+    if (config.title && config.title.length > 0) {
+        margin_top += config.title.split('<br>').length * config.titleFontSize * 1.3 + config.titleFontSize * 0.1
+    }
+    if (config.subtitle && config.subtitle.length > 0) {
+        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * 1.3 + config.titleFontSize * 0.1
+    }
+    if (config.panelLabels && config.panelLabels.length > 0) {
+        margin_top += config.xTitleFontSize * 1.3
+    }
+    return margin_top
 }
 
 module.exports = {
