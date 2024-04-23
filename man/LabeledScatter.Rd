@@ -99,6 +99,14 @@ LabeledScatter(
   margin.autoexpand = TRUE,
   origin = TRUE,
   origin.align = FALSE,
+  panels = NULL,
+  panel.num.rows = 2,
+  panel.share.axes = TRUE,
+  panel.x.gap = 0.2,
+  panel.y.gap = 0.3,
+  panel.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  panel.font.family = "Arial",
+  panel.font.size = 12,
   plot.border.color = "Black",
   plot.border.show = TRUE,
   plot.border.width = 1,
@@ -123,6 +131,8 @@ LabeledScatter(
   trend.lines.show = FALSE,
   fit.x = NULL,
   fit.y = NULL,
+  fit.group = NULL,
+  fit.panel = NULL,
   fit.lower.bound = NULL,
   fit.upper.bound = NULL,
   fit.line.colors = NULL,
@@ -186,11 +196,55 @@ LabeledScatter(
 
 \item{x.axis.font.size}{Font size of the x axis labels}
 
+\item{x.axis.grid.color}{Line color of the x axis grid lines.}
+
+\item{x.axis.grid.dash}{Line type of the x axis grid lines. Can be one of 'solid', 'dot', 'dash'.}
+
+\item{x.axis.grid.width}{Width of the x axis grid lines in pixels.}
+
+\item{x.axis.line.color}{Line color of the x axis line. This is shown at both the top and bottom
+of the plot area when `plot.border.show = TRUE`.}
+
+\item{x.axis.line.width}{Width of the x axis line in pixels.}
+
+\item{x.axis.tick.color}{Color of tick lines on the x axis.}
+
+\item{x.axis.tick.length}{Length of tick lines on the x axis. This also adjust how close
+the tick labels are to the axis/grid lines.#'}
+
+\item{x.axis.zero.line.color}{Line color of the zero line on the x-axis. Shown when `origin` is TRUE.}
+
+\item{x.axis.zero.line.dash}{Line type of zero line. Can be one of 'solid', 'dot', 'dash'.}
+
+\item{x.axis.zero.line.width}{Line width in pixels of the zero line.}
+
 \item{y.axis.font.color}{Font color of the y axis labels}
 
 \item{y.axis.font.family}{Font Family of the y axis labels}
 
 \item{y.axis.font.size}{Font size of the y axis labels}
+
+\item{y.axis.grid.color}{Line color of the y axis grid lines.}
+
+\item{y.axis.grid.dash}{Line type of the y axis grid lines. Can be one of 'solid', 'dot', 'dash'.}
+
+\item{y.axis.grid.width}{Width of the y axis grid lines in pixels.}
+
+\item{y.axis.line.color}{Line color of the y axis line. This is shown at both the left and right
+of the plot area when `plot.border.show = TRUE`.}
+
+\item{y.axis.line.width}{Width of the y axis line in pixels.}
+
+\item{y.axis.tick.color}{Color of tick lines on the y axis.}
+
+\item{y.axis.tick.length}{Length of tick lines on the y axis. This also adjust how close
+the tick labels are to the axis/grid lines.}
+
+\item{y.axis.zero.line.color}{Line color of the zero line on the y-axis. Shown when `origin` is TRUE.}
+
+\item{y.axis.zero.line.dash}{Line type of zero line. Can be one of 'solid', 'dot', 'dash'.}
+
+\item{y.axis.zero.line.width}{Line width in pixels of the zero line.}
 
 \item{background.color}{The color of the entire background}
 
@@ -298,9 +352,35 @@ on the marker.}
 
 \item{legend.y.anchor}{Either NULL, "top", "center" or "bottom"}
 
+\item{margin.top}{The top margin in pixels}
+
+\item{margin.bottom}{The bottom margin in pixels}
+
+\item{margin.left}{The left margin in pixels}
+
+\item{margin.right}{The right margin in pixels}
+
+\item{margin.autoexpand}{Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend}
+
 \item{origin}{Defaults to FALSE. Shows the origin lines as dotted if not along axis.}
 
 \item{origin.align}{Defaults to FALSE. Aligns the origin lines as closely to axis as possible.}
+
+\item{panels}{is a categorical array assigning each data point to a panel in small multiples. Arrays will be coerced into factors.}
+
+\item{panel.num.rows}{Controls how many rows small multiples are arranged into}
+
+\item{panel.share.axes}{Defaults to TRUE. Whether or not axis bounds and titles are shared across all panels}
+
+\item{panel.x.gap}{A number between 0 and 1. Controls the horizontal space between panels.}
+
+\item{panel.y.gap}{A number between 0 and 1. Controls the vertical space between panels.}
+
+\item{panel.font.color}{is the font color of the panels}
+
+\item{panel.font.family}{is the font family of the panels}
+
+\item{panel.font.size}{is the font size of the panels}
 
 \item{plot.border.color}{Color of border around plot area (Default is black).}
 
@@ -313,6 +393,11 @@ on the marker.}
 \item{point.radius}{Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
 \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).}
+
+\item{point.border.color}{Color of border around point}
+
+\item{point.border.width}{Width of border around scatter markers in pixels.
+Defaults to 0 for a scatterplot and 1 for a bubbleplot.}
 
 \item{subtitle}{is the subtitle text given to the plot}
 
@@ -347,6 +432,10 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{fit.x}{A list of numeric vectors containing the x values of the fit lines}
 
 \item{fit.y}{A list of numeric vectors containing the y values of the fit lines}
+
+\item{fit.group}{A vector of strings, assigning each fit line to a group. If not supplied will default to fit.line.names}
+
+\item{fit.panel}{A vector of integers, assigning each fit line to a panel when small multiples are used (note that panels are indexed by 1)}
 
 \item{fit.lower.bound}{A list of numeric vectors containing the y values of the lower bounds}
 
@@ -431,16 +520,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
-
-\item{marginTop}{The top margin in pixels}
-
-\item{marginBottom}{The bottom margin in pixels}
-
-\item{marginLeft}{The left margin in pixels}
-
-\item{marginRight}{The right margin in pixels}
-
-\item{marginAutoexpand}{Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

@@ -8,6 +8,7 @@
 #' @param label is the array of text labels for the data set (can supply an url to show logos)
 #' @param label.alt is an optional array of alternate label text when an url was provided as the label. NOTE: must be same length as label
 #' @param group is the array of group name for each data point
+#' @param panels is a categorical array assigning each data point to a panel in small multiples. Arrays will be coerced into factors.
 #' @param x.levels is the levels for the categorical X input array. Default is levels(X)
 #' @param y.levels is the levels for the categorical Y input array. Default is levels(Y)
 #' @param fixed.aspect Default to FALSE. Cannot be guarenteed if any of the axis bounds are set.
@@ -19,9 +20,40 @@
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param background.color The color of the entire background
 #' @param plot.background.color The color of the plot area background
+#' @param panel.num.rows Controls how many rows small multiples are arranged into
+#' @param panel.share.axes Defaults to TRUE. Whether or not axis bounds and titles are shared across all panels
+#' @param panel.x.gap A number between 0 and 1. Controls the horizontal space between panels.
+#' @param panel.y.gap A number between 0 and 1. Controls the vertical space between panels.
+#' @param panel.font.color is the font color of the panels
+#' @param panel.font.family is the font family of the panels
+#' @param panel.font.size is the font size of the panels
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
+#' @param x.axis.zero.line.color Line color of the zero line on the x-axis. Shown when `origin` is TRUE.
+#' @param x.axis.zero.line.dash Line type of zero line. Can be one of 'solid', 'dot', 'dash'.
+#' @param x.axis.zero.line.width Line width in pixels of the zero line.
+#' @param y.axis.zero.line.color Line color of the zero line on the y-axis. Shown when `origin` is TRUE.
+#' @param y.axis.zero.line.dash Line type of zero line. Can be one of 'solid', 'dot', 'dash'.
+#' @param y.axis.zero.line.width Line width in pixels of the zero line.
+#' @param x.axis.line.color Line color of the x axis line. This is shown at both the top and bottom
+#'      of the plot area when `plot.border.show = TRUE`.
+#' @param x.axis.line.width Width of the x axis line in pixels.
+#' @param x.axis.grid.color Line color of the x axis grid lines.
+#' @param x.axis.grid.width Width of the x axis grid lines in pixels.
+#' @param x.axis.grid.dash Line type of the x axis grid lines. Can be one of 'solid', 'dot', 'dash'.
+#' @param x.axis.tick.color Color of tick lines on the x axis.
+#' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
+#'      the tick labels are to the axis/grid lines.#'
+#' @param y.axis.line.color Line color of the y axis line. This is shown at both the left and right
+#'      of the plot area when `plot.border.show = TRUE`.
+#' @param y.axis.line.width Width of the y axis line in pixels.
+#' @param y.axis.grid.color Line color of the y axis grid lines.
+#' @param y.axis.grid.width Width of the y axis grid lines in pixels.
+#' @param y.axis.grid.dash Line type of the y axis grid lines. Can be one of 'solid', 'dot', 'dash'.
+#' @param y.axis.tick.color Color of tick lines on the y axis.
+#' @param y.axis.tick.length Length of tick lines on the y axis. This also adjust how close
+#'      the tick labels are to the axis/grid lines.
 #' @param x.title is the title text given to the x axis
 #' @param y.title is the title text given to the y axis
 #' @param z.title is the title text given to the bubble size
@@ -61,11 +93,11 @@
 #' @param legend.y The y position of the legend, relative to the plot area
 #' @param legend.x.anchor Either NULL, "left", "center" or "right"
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
-#' @param marginTop The top margin in pixels
-#' @param marginBottom The bottom margin in pixels
-#' @param marginLeft The left margin in pixels
-#' @param marginRight The right margin in pixels
-#' @param marginAutoexpand Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend
+#' @param margin.top The top margin in pixels
+#' @param margin.bottom The bottom margin in pixels
+#' @param margin.left The left margin in pixels
+#' @param margin.right The right margin in pixels
+#' @param margin.autoexpand Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -105,6 +137,9 @@
 #' @param point.radius Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 #'     When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
 #'     \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).
+#' @param point.border.color Color of border around point
+#' @param point.border.width Width of border around scatter markers in pixels.
+#'      Defaults to 0 for a scatterplot and 1 for a bubbleplot.
 #' @param x.bounds.minimum Integer or NULL; set minimum of range for plotting on the x axis
 #' @param x.bounds.maximum Integer or NULL; set minimum of range for plotting on the x axis
 #' @param y.bounds.minimum Integer or NULL; set minimum of range for plotting on the y axis
@@ -116,6 +151,8 @@
 #' @param trend.lines.point.size An integer to set the size of the data points when a trendline is drawn. This setting overrides Z sizes.
 #' @param fit.x A list of numeric vectors containing the x values of the fit lines
 #' @param fit.y A list of numeric vectors containing the y values of the fit lines
+#' @param fit.group A vector of strings, assigning each fit line to a group. If not supplied will default to fit.line.names
+#' @param fit.panel A vector of integers, assigning each fit line to a panel when small multiples are used (note that panels are indexed by 1)
 #' @param fit.lower.bound A list of numeric vectors containing the y values of the lower bounds
 #' @param fit.upper.bound A list of numeric vectors containing the y values of the upper bounds
 #' @param fit.line.colors A character vector of the fit line colors
@@ -148,7 +185,7 @@
 #' @source https://github.com/Displayr/rhtmlLabeledScatter
 #'
 #' @import htmlwidgets
-#' @importFrom grDevices rgb
+#' @importFrom grDevices rgb colorRamp
 #' @importFrom jsonlite toJSON
 #'
 #' @export
@@ -245,6 +282,14 @@ LabeledScatter <- function(
     margin.autoexpand = TRUE,
     origin = TRUE,
     origin.align = FALSE,
+    panels = NULL,
+    panel.num.rows = 2,
+    panel.share.axes = TRUE,
+    panel.x.gap = 0.2,
+    panel.y.gap = 0.3,
+    panel.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    panel.font.family = "Arial",
+    panel.font.size = 12,
     plot.border.color = 'Black',
     plot.border.show = TRUE,
     plot.border.width = 1,
@@ -269,6 +314,8 @@ LabeledScatter <- function(
     trend.lines.show = FALSE,
     fit.x = NULL,
     fit.y = NULL,
+    fit.group = NULL,
+    fit.panel = NULL,
     fit.lower.bound = NULL,
     fit.upper.bound = NULL,
     fit.line.colors = NULL,
@@ -350,6 +397,15 @@ LabeledScatter <- function(
         colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
         colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
     }
+    if (!is.null(panels))
+    {
+        panels <- as.factor(panels)
+        panel.labels <- levels(panels)
+        panels <- as.numeric(panels) - 1
+
+    } else
+        panel.labels <- NULL
+
     x = list(X = toJSON(X),
              Y = toJSON(Y),
              Z = toJSON(Z),
@@ -359,6 +415,8 @@ LabeledScatter <- function(
              label = toJSON(as.character(label)),
              labelAlt = toJSON(label.alt),
              group = toJSON(group),
+             panelLabels = toJSON(panel.labels),
+             panels = toJSON(panels),
              xLevels = toJSON(x.levels),
              yLevels = toJSON(y.levels),
              colorLevels = toJSON(color.levels),
@@ -461,6 +519,13 @@ LabeledScatter <- function(
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,
+             panelFontFamily = panel.font.family,
+             panelFontSize = panel.font.size,
+             panelFontColor = panel.font.color,
+             panelNumRows = panel.num.rows,
+             panelShareAxes = panel.share.axes,
+             panelXGap = panel.x.gap,
+             panelYGap = panel.y.gap,
              pointRadius = point.radius,
              pointBorderColor = point.border.color,
              pointBorderWidth = point.border.width,
@@ -475,6 +540,8 @@ LabeledScatter <- function(
              trendLinesPointSize = trend.lines.point.size,
              fitX = toJSON(fit.x),
              fitY = toJSON(fit.y),
+             fitGroup = toJSON(fit.group),
+             fitPanel = toJSON(fit.panel),
              fitLowerBound = toJSON(fit.lower.bound),
              fitUpperBound = toJSON(fit.upper.bound),
              fitLineColors = toJSON(fit.line.colors),
