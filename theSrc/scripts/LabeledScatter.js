@@ -92,7 +92,7 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
         await this.drawSmallMultipleLabels(plotlyChart, config)
-        this.drawResetButton(plotlyChart, config)
+        if (config.showResetButton) this.drawResetButton(plotlyChart, config)
         if (FitLine.isFitDataAvailable(config)) {
           FitLine.draw(this.rootElement, config)
         }

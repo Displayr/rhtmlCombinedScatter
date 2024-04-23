@@ -14,6 +14,8 @@ test_that("Basic working scatterplot", {
         color.scale = col.scale, group = letters[col.ord]), NA)
     expect_error(LabeledScatter(X=1:5, Y=1:5, label = letters[col.ord],
         color.scale = col.scale, group = Sys.Date() + col.ord), NA)
+    expect_error(LabeledScatter(X=iris$Sepal.Length, Y=iris$Sepal.Width,
+        label=paste0('N', 1:nrow(iris)), panels = iris$Species), NA)
 })
 
 test_that("Invalid X error", {
@@ -25,6 +27,8 @@ test_that("Invalid X error", {
                                 label = letters[1:10]), msg)
     expect_error(LabeledScatter(X = data.frame(1:10), Y = 1:10,
                                 label = letters[1:10]), msg)
+    LabeledScatter(X=iris$Sepal.Length, Y=iris$Sepal.Width,
+                   label=paste0('N', 1:nrow(iris)), panels = iris$Species )
 })
 
 test_that("Invalid Y error", {
