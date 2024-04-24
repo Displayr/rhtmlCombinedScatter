@@ -683,7 +683,6 @@ function marginTop (config) {
     if (config.marginTop !== null) {
         return config.marginTop
     }
-
     let margin_top = 0
     if (config.title && config.title.length > 0) {
         margin_top += config.title.split('<br>').length * config.titleFontSize * 1.3 + config.titleFontSize * 0.1

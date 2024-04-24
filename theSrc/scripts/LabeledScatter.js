@@ -462,7 +462,7 @@ class LabeledScatter {
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${subtitle_x},${this.titleBottom()})`)
+        .attr('transform', `translate(${subtitle_x},${this.titleBottom(config)})`)
       subtitle_element
         .select('.annotation-text')
         .attr('x', 0)
@@ -514,19 +514,11 @@ class LabeledScatter {
     return annotations[0][0] ? d3.select(annotations[0][index]) : null
   }
 
-  titleBottom () {
-    const title_element = d3.select(this.rootElement).select('.gtitle')
-    if (title_element[0][0] === null) {
-      return 0
-    }
-    const rect = Utils.addTopBottomLeftRight(title_element[0][0].getBBox())
-    const tspans = title_element.selectAll('tspan')
-    // Include 10% line spacing
-    if (tspans[0][0]) {
-      const tspan_rect = tspans[0][0].getBBox()
-      return rect.bottom + tspan_rect.height * 0.1
+  titleBottom (config) {
+    if (config.title && config.title.length > 0) {
+      return config.title.split('<br>').length * config.titleFontSize * 1.3
     } else {
-      return rect.bottom * 1.1
+      return 0
     }
   }
 
