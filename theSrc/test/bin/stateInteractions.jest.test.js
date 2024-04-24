@@ -346,7 +346,7 @@ describe('state interactions', () => {
   test(`${++testId}: Move and hide labels in smallmultiples and save`, async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
-      configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_no_titles',
+      configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples',
       width: 576,
       height: 512
     })
@@ -371,7 +371,7 @@ describe('state interactions', () => {
     test(`${++testId}: Load smallmultiples with saved state `, async function () {
       const { page } = await loadWidget({
         browser,
-        configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_no_titles',
+        configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples',
         stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag',
         width: 576,
         height: 512
