@@ -3,6 +3,8 @@ import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 import TooltipUtils from './utils/TooltipUtils'
 
+// Plotly uses 1.3 for line spacing but we allocate 0.1 more per line
+// when computing the total height to add extra padding.
 const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
 
 function createPlotlyData (config) {
