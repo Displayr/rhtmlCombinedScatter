@@ -341,7 +341,7 @@ function createPlotlyLayout (config, margin_right) {
             },
             automargin: true
         },
-        showlegend: showLegend(config),
+        showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: createLegendSettings(config),
         margin: {
             t: config.marginTop !== null ? config.marginTop : marginTopForTitles(config),
@@ -386,10 +386,6 @@ function createPlotlyLayout (config, margin_right) {
         }]
     }
     return plot_layout
-}
-
-function showLegend(config) {
-    return config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0
 }
 
 function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth) {
