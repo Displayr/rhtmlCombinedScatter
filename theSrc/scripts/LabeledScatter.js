@@ -99,17 +99,6 @@ class LabeledScatter {
           await FitLine.draw(this.rootElement, config)
         }
         this.adjustTitles(plotlyChart._fullLayout, config)
-        const tmp_layout = {}
-        if (this.hasXTitleAnnotation(plotlyChart._fullLayout) && config.marginAutoexpand) {
-          tmp_layout['margin.b'] = this.marginBottomWithXTitleAnnotation(plotlyChart._fullLayout)
-        }
-        if (this.hasYTitleAnnotation(plotlyChart._fullLayout) && config.marginAutoexpand) {
-          tmp_layout['margin.l'] = this.marginLeftWithYTitleAnnotation(plotlyChart._fullLayout)
-        }
-        if (Object.keys(tmp_layout).length > 0) {
-          plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-          this.adjustTitles(plotlyChart._fullLayout, config)
-        }
 
         // Event handler for legendtoggle
         let lastevent = ''
@@ -525,15 +514,6 @@ class LabeledScatter {
     return annotations[0][0] ? d3.select(annotations[0][index]) : null
   }
 
-  getAnnotationElements (name, plotly_chart_layout) {
-    const indices = plotly_chart_layout.annotations
-      .map((a, i) => { return { name: a, index: i } })
-      .filter(x => x.name === name)
-      .map(x => x.index)
-    const annotations = d3.select(this.rootElement).selectAll('.annotation')
-    return indices.map(i => annotations[0][i])
-  }
-
   titleBottom () {
     const title_element = d3.select(this.rootElement).select('.gtitle')
     if (title_element[0][0] === null) {
@@ -548,36 +528,6 @@ class LabeledScatter {
     } else {
       return rect.bottom * 1.1
     }
-  }
-
-  marginBottomWithXTitleAnnotation (plotly_chart_layout) {
-    const xtitle_element = this.getAnnotationElement('xtitle', plotly_chart_layout)
-    if (xtitle_element === null) {
-      return 0
-    }
-    let xtitle_rect = xtitle_element.select('.annotation-text')[0][0].getBBox()
-    xtitle_rect = Utils.addTopBottomLeftRight(xtitle_rect)
-    const nsew_drag_rect = this.nsewdragRect()
-    return (this.height - nsew_drag_rect.bottom) + xtitle_rect.height
-  }
-
-  marginLeftWithYTitleAnnotation (plotly_chart_layout) {
-    const ytitle_element = this.getAnnotationElement('ytitle', plotly_chart_layout)
-    if (ytitle_element === null) {
-      return 0
-    }
-    let ytitle_rect = ytitle_element.select('.annotation-text')[0][0].getBBox()
-    ytitle_rect = Utils.addTopBottomLeftRight(ytitle_rect)
-    const nsew_drag_rect = this.nsewdragRect()
-    return nsew_drag_rect.left + ytitle_rect.height // height instead of width since the ytitle_rect is measured without rotation
-  }
-
-  hasXTitleAnnotation (plotly_chart_layout) {
-    return plotly_chart_layout.annotations.map(a => a.name).indexOf('xtitle') > -1
-  }
-
-  hasYTitleAnnotation (plotly_chart_layout) {
-    return plotly_chart_layout.annotations.map(a => a.name).indexOf('ytitle') > -1
   }
 
   // This is only used with small multiples

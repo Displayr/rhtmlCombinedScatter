@@ -344,10 +344,10 @@ function createPlotlyLayout (config, margin_right) {
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: createLegendSettings(config),
         margin: {
-            t: config.marginTop !== null ? config.marginTop : marginTopForTitles(config),
-            b: config.marginBottom !== null ? config.marginBottom : 20,
+            t: marginTop(config),
+            b: marginBottom(config),
             r: config.marginRight !== null ? config.marginRight : margin_right,
-            l: config.marginLeft !== null ? config.marginLeft : 20,
+            l: marginLeft(config),
             autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
@@ -679,7 +679,11 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     return settings
 }
 
-function marginTopForTitles (config) {
+function marginTop (config) {
+    if (config.marginTop !== null) {
+        return config.marginTop
+    }
+
     let margin_top = 0
     if (config.title && config.title.length > 0) {
         margin_top += config.title.split('<br>').length * config.titleFontSize * 1.3 + config.titleFontSize * 0.1
@@ -690,7 +694,31 @@ function marginTopForTitles (config) {
     if (config.panelLabels && config.panelLabels.length > 0) {
         margin_top += config.xTitleFontSize * 1.3
     }
-    return margin_top
+    return Math.max(margin_top, 20)
+}
+
+function marginLeft (config) {
+    if (config.marginLeft !== null) {
+        return config.marginLeft
+    }
+
+    let margin_left = 0
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes) {
+        margin_left += config.yTitleFontSize * 1.3
+    }
+    return Math.max(margin_left, 20)
+}
+
+function marginBottom (config) {
+    if (config.marginBottom !== null) {
+        return config.marginBottom
+    }
+
+    let margin_bottom = 0
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes) {
+        margin_bottom += config.xTitleFontSize * 1.3
+    }
+    return Math.max(margin_bottom, 20)
 }
 
 module.exports = {
