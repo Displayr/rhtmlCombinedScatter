@@ -1,7 +1,12 @@
 import d3 from 'd3'
 import _ from 'lodash'
 import { buildConfig } from './buildConfig'
-import { createPlotlyData, createPlotlyLayout, addSmallMultipleSettings } from './PlotlyChartElements'
+import {
+  createPlotlyData,
+  createPlotlyLayout,
+  addSmallMultipleSettings,
+  LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+} from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
   LEGEND_POINTS_PADDING_TOP,
@@ -516,7 +521,7 @@ class LabeledScatter {
 
   titleBottom (config) {
     if (config.title && config.title.length > 0) {
-      return config.title.split('<br>').length * config.titleFontSize * 1.3
+      return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     } else {
       return 0
     }

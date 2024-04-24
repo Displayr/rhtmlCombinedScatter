@@ -3,6 +3,8 @@ import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 import TooltipUtils from './utils/TooltipUtils'
 
+const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
+
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
@@ -685,15 +687,15 @@ function marginTop (config) {
     }
     let margin_top = 0
     if (config.title && config.title.length > 0) {
-        margin_top += config.title.split('<br>').length * config.titleFontSize * 1.3 + config.titleFontSize * 0.1
+        margin_top += config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
     if (config.subtitle && config.subtitle.length > 0) {
-        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * 1.3 + config.subtitleFontSize * 0.1
+        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
     if (config.panelLabels && config.panelLabels.length > 0) {
         const n_columns = Math.ceil(config.panelLabels.length / config.panelNumRows)
         const max_lines = Math.max(...config.panelLabels.filter((_, i) => i < n_columns).map(l => l.split('<br>').length))
-        margin_top += max_lines * config.xTitleFontSize * 1.3
+        margin_top += max_lines * config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
     return Math.max(margin_top, 20)
 }
@@ -705,7 +707,7 @@ function marginLeft (config) {
 
     let margin_left = 0
     if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
-        margin_left += config.yTitleFontSize * 1.3
+        margin_left += config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
     return Math.max(margin_left, 20)
 }
@@ -717,7 +719,7 @@ function marginBottom (config) {
 
     let margin_bottom = 0
     if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
-        margin_bottom += config.xTitleFontSize * 1.3
+        margin_bottom += config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
     return Math.max(margin_bottom, 20)
 }
@@ -727,5 +729,6 @@ module.exports = {
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
-    getPanelYAxisSuffix
+    getPanelYAxisSuffix,
+    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 }
