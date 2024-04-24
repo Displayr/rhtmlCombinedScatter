@@ -92,6 +92,9 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
         await this.drawSmallMultipleLabels(plotlyChart, config)
+
+        if (config.showResetButton) this.drawResetButton(plotlyChart, config)
+
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
         }
@@ -107,7 +110,6 @@ class LabeledScatter {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
           this.adjustTitles(plotlyChart._fullLayout, config)
         }
-        this.drawResetButton(plotlyChart, config)
 
         // Event handler for legendtoggle
         let lastevent = ''

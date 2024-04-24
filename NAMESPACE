@@ -2,5 +2,6 @@
 
 export(LabeledScatter)
 import(htmlwidgets)
+importFrom(grDevices,colorRamp)
 importFrom(grDevices,rgb)
 importFrom(jsonlite,toJSON)

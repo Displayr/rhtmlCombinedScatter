@@ -1,4 +1,4 @@
 library(testthat)
-library(rhtmlLabeledScatter)
+library(rhtmlCombinedScatter)
 
-test_check("rhtmlLabeledScatter")
+test_check("rhtmlCombinedScatter")
