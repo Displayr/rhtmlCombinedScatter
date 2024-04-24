@@ -692,7 +692,9 @@ function marginTop (config) {
         margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * 1.3 + config.titleFontSize * 0.1
     }
     if (config.panelLabels && config.panelLabels.length > 0) {
-        margin_top += config.xTitleFontSize * 1.3
+        const n_columns = Math.ceil(config.panelLabels.length / config.panelNumRows)
+        const max_lines = Math.max(...config.panelLabels.filter((_, i) => i < n_columns).map(l => l.split('<br>').length))
+        margin_top += max_lines * config.xTitleFontSize * 1.3
     }
     return Math.max(margin_top, 20)
 }
