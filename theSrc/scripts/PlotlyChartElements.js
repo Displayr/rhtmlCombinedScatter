@@ -703,7 +703,7 @@ function marginLeft (config) {
     }
 
     let margin_left = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes) {
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
         margin_left += config.yTitleFontSize * 1.3
     }
     return Math.max(margin_left, 20)
@@ -715,7 +715,7 @@ function marginBottom (config) {
     }
 
     let margin_bottom = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes) {
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
         margin_bottom += config.xTitleFontSize * 1.3
     }
     return Math.max(margin_bottom, 20)
