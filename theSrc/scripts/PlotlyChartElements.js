@@ -688,7 +688,7 @@ function marginTop (config) {
         margin_top += config.title.split('<br>').length * config.titleFontSize * 1.3 + config.titleFontSize * 0.1
     }
     if (config.subtitle && config.subtitle.length > 0) {
-        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * 1.3 + config.titleFontSize * 0.1
+        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * 1.3 + config.subtitleFontSize * 0.1
     }
     if (config.panelLabels && config.panelLabels.length > 0) {
         const n_columns = Math.ceil(config.panelLabels.length / config.panelNumRows)
