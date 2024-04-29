@@ -45,6 +45,10 @@ LabeledScatter(
   colors = c("#5B9BD5", "#ED7D31", "#A5A5A5", "#1EC000", "#4472C4", "#70AD47", "#255E91",
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
   color.scale = NULL,
+  color.scale.title = "",
+  colorScaleTitleFontColor = rgb(44, 44, 44, maxColorValue = 255),
+  colorScaleTitleFontFamily = "Arial",
+  colorScaleTitleFontSize = 12,
   color.scale.format = NULL,
   debug.mode = FALSE,
   fixed.aspect = FALSE,
@@ -257,6 +261,14 @@ It should have the same length as the number of levels in `group`}
 
 \item{color.scale}{Default to NULL. It can be set to a vector of hex colors in order to show
 `group` as a continuous color scale. In this case, `color` will be ignored.}
+
+\item{color.scale.title}{Color scale title}
+
+\item{colorScaleTitleFontColor}{Color scale title font color}
+
+\item{colorScaleTitleFontFamily}{Color scale title font family}
+
+\item{colorScaleTitleFontSize}{Color scale title font size}
 
 \item{color.scale.format}{A string that is interpreted for the format of the tick labels along the color scale bar.}
 
