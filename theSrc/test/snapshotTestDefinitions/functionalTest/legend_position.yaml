@@ -13,3 +13,4 @@ widgets:
   - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":1,"legendY":1,"legendXAnchor":"right"}
   - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Vertical","legendX":0.9,"legendY":0}
   - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Horizontal","legendX":1,"legendY":1,"legendYAnchor":"top"}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendOrientation":"Horizontal","legendX":0.5,"legendY":-0.2,"footer":"footer text"}

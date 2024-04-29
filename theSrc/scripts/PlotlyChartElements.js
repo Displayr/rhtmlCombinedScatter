@@ -747,12 +747,29 @@ function marginBottom (config) {
     return Math.max(margin_bottom, 20)
 }
 
+function titleBottom (config) {
+    if (config.title && config.title.length > 0) {
+      return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    } else {
+      return 0
+    }
+  }
+
+  function footerHeight (config) {
+    if (config.footer && config.footer.length > 0) {
+      const n_lines = config.footer.split('<br>').length
+      return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    } else {
+      return 0
+    }
+  }
+
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
     getPanelYAxisSuffix,
-    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
-    PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    titleBottom,
+    footerHeight
 }

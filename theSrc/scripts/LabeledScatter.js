@@ -5,8 +5,8 @@ import {
   createPlotlyData,
   createPlotlyLayout,
   addSmallMultipleSettings,
-  LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
-  PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+  titleBottom,
+  footerHeight
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -153,7 +153,8 @@ class LabeledScatter {
           tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
         }
         if (config.footer && config.footer.length > 0) {
-          tmp_layout['margin.b'] = plotlyChart._fullLayout._pushmargin['x.automargin'].b.size + this.footerHeight(config)
+          // TODO: set height in original layout!!!
+          tmp_layout['height'] = this.height - footerHeight(config)
         }
         if (Object.keys(tmp_layout).length > 0) {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
@@ -470,8 +471,8 @@ class LabeledScatter {
       subtitle_element
         .select('.cursor-pointer')
         .attr('x', subtitle_x)
-        .attr('y', this.titleBottom(config))
-        .attr('transform', `translate(${subtitle_x},${this.titleBottom(config)})`)
+        .attr('y', titleBottom(config))
+        .attr('transform', `translate(${subtitle_x},${titleBottom(config)})`)
       subtitle_element
         .select('.annotation-text')
         .attr('x', 0)
@@ -483,7 +484,7 @@ class LabeledScatter {
 
     const footer_element = this.getAnnotationElement('footer', plotly_chart_layout)
     if (footer_element !== null) {
-      const footer_height = this.footerHeight(config)
+      const footer_height = footerHeight(config)
       footer_element
           .select('.cursor-pointer')
           .attr('x', 0)
@@ -496,15 +497,8 @@ class LabeledScatter {
         .style('alignment-baseline', 'text-before-edge')
       footer_element.selectAll('.annotation-text tspan').attr('x', 0)
 
-      const xtitle_element = d3.select(this.rootElement).selectAll('.g-xtitle')
-      let rect = xtitle_element[0][0].getBBox()
-      const ctm = xtitle_element[0][0].getCTM()
-      rect.x += ctm.e
-      rect.y += ctm.f
-      rect = Utils.addTopBottomLeftRight(rect)
-      if (rect.bottom > this.height - footer_height) {
-        
-      }
+      // We re-enlarge the height after it was shrunk to make way for the footer
+      d3.select(footer_element[0][0].closest('.main-svg')).style('height', this.height)
     }
 
     const xtitle_element = this.getAnnotationElement('xtitle', plotly_chart_layout)
@@ -547,23 +541,6 @@ class LabeledScatter {
     }
     const annotations = d3.select(this.rootElement).selectAll('.annotation')
     return annotations[0][0] ? d3.select(annotations[0][index]) : null
-  }
-
-  titleBottom (config) {
-    if (config.title && config.title.length > 0) {
-      return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    } else {
-      return 0
-    }
-  }
-
-  footerHeight (config) {
-    if (config.footer && config.footer.length > 0) {
-      const n_lines = config.footer.split('<br>').length
-      return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    } else {
-      return 0
-    }
   }
 
   // This is only used with small multiples
