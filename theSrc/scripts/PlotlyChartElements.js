@@ -6,6 +6,7 @@ import TooltipUtils from './utils/TooltipUtils'
 // Plotly uses 1.3 for line spacing but we allocate 0.1 more per line
 // when computing the total height to add extra padding.
 const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
+const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
 
 function createPlotlyData (config) {
     // Create tooltip text
@@ -389,6 +390,28 @@ function createPlotlyLayout (config, margin_right) {
             showarrow: false,
         }]
     }
+    if (config.footer.length > 0) {
+        const footer_annotation = {
+            name: 'footer',
+            text: config.footer,
+            font: {
+                family: config.footerFontFamily,
+                color: config.footerFontColor,
+                size: config.footerFontSize
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 0,
+            yanchor: 'top',
+            showarrow: false,
+        }
+        if (!plot_layout.annotations) {
+            plot_layout.annotations = [footer_annotation]
+        } else {
+            plot_layout.annotations.push(footer_annotation)
+        }
+    }
     return plot_layout
 }
 
@@ -665,7 +688,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             xanchor: 'center',
             yref: 'paper',
             y: 0,
-            yanchor: 'top',
+            yanchor: 'top'
         })
         for (let side of ['x', 'y']) {
             let new_range = plotly_layout[side + 'axis'].range
@@ -706,7 +729,6 @@ function marginLeft (config) {
     if (config.marginLeft !== null) {
         return config.marginLeft
     }
-
     let margin_left = 0
     if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
         margin_left += config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
@@ -718,7 +740,6 @@ function marginBottom (config) {
     if (config.marginBottom !== null) {
         return config.marginBottom
     }
-
     let margin_bottom = 0
     if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
         margin_bottom += config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
@@ -732,5 +753,6 @@ module.exports = {
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
     getPanelYAxisSuffix,
-    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
+    PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 }
