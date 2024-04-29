@@ -767,6 +767,7 @@ function titleHeight (config) {
 
   function chartHeight (config, height) {
     if (config.footer && config.footer.length > 0) {
+        // We shrink the height so that elements are moved up for the footer
         return height - footerHeight(config)
     } else {
         return height
