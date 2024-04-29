@@ -351,9 +351,9 @@ function createPlotlyLayout (config, margin_right, height) {
         legend: createLegendSettings(config),
         margin: {
             t: marginTop(config),
-            b: marginBottom(config),
+            b: config.marginBottom !== null ? config.marginBottom : 20,
             r: config.marginRight !== null ? config.marginRight : margin_right,
-            l: marginLeft(config),
+            l: config.marginLeft !== null ? config.marginLeft : 20,
             autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
@@ -597,7 +597,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     // Do this first so the indices line up with config.group
     let j = 0
     let k = 0
-    let annotations = []
+    let annotations = plotly_layout.annotations ? plotly_layout.annotations : []
     const n = config.X.length
     if (config.label) {
         for (let i = 0; i < n; i++) {
@@ -727,28 +727,6 @@ function marginTop (config) {
     return Math.max(margin_top, 20)
 }
 
-function marginLeft (config) {
-    if (config.marginLeft !== null) {
-        return config.marginLeft
-    }
-    let margin_left = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
-        margin_left += config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    }
-    return Math.max(margin_left, 20)
-}
-
-function marginBottom (config) {
-    if (config.marginBottom !== null) {
-        return config.marginBottom
-    }
-    let margin_bottom = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
-        margin_bottom += config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    }
-    return Math.max(margin_bottom, 20)
-}
-
 function titleHeight (config) {
     if (config.title && config.title.length > 0) {
       return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
@@ -782,5 +760,7 @@ module.exports = {
     getPanelXAxisSuffix,
     getPanelYAxisSuffix,
     titleHeight,
-    footerHeight
+    footerHeight,
+    chartHeight,
+    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 }
