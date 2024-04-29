@@ -1,7 +1,12 @@
 import d3 from 'd3'
 import _ from 'lodash'
 import { buildConfig } from './buildConfig'
-import { createPlotlyData, createPlotlyLayout, addSmallMultipleSettings } from './PlotlyChartElements'
+import {
+  createPlotlyData,
+  createPlotlyLayout,
+  addSmallMultipleSettings,
+  titleHeight
+} from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
   LEGEND_POINTS_PADDING_TOP,
@@ -81,7 +86,7 @@ class LabeledScatter {
     try {
       const plot_data = createPlotlyData(config)
       const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
-      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : null
+      const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : 20
       const plot_layout = createPlotlyLayout(config, margin_right)
       const plot_config = {
         displayModeBar: false,
@@ -92,10 +97,13 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
         await this.drawSmallMultipleLabels(plotlyChart, config)
+
         if (config.showResetButton) this.drawResetButton(plotlyChart, config)
+
         if (FitLine.isFitDataAvailable(config)) {
-          FitLine.draw(this.rootElement, config)
+          await FitLine.draw(this.rootElement, config)
         }
+        this.adjustTitles(plotlyChart._fullLayout, config)
 
         // Event handler for legendtoggle
         let lastevent = ''
@@ -111,11 +119,12 @@ class LabeledScatter {
         // Event handler for dragging and toggling scatter labels
         // But do not save legend toggle
         plotlyChart.on('plotly_afterplot', () => {
+          this.adjustTitles(plotlyChart._fullLayout, config)
           if (lastevent === '') {
             this.stateObj.saveToState({ 'userPositionedSmallMultipleLabels': plotlyChart._fullLayout.annotations
             .filter(
-                a => a.showarrow &&                             // these are the scatter marker labels
-                !(a.ax === a.x && a.ay === a.y && a.visible     // not in the default state
+                a => a.showarrow && // these are the scatter marker labels
+                !(a.ax === a.x && a.ay === a.y && a.visible // not in the default state
               ))
             .map((a) => {
               return {
@@ -130,26 +139,31 @@ class LabeledScatter {
           lastevent = ''
         })
       } else {
-          const tmp_layout = {}
-          const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
-          if (is_legend_elements_to_right_of_plotly_legend && config.marginAutoexpand) {
-            const nsewdrag_rect = this.nsewdragRect()
-            const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
-            const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
-            tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
-          }
-          if (Object.keys(tmp_layout).length > 0) plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
-          await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
+        if (FitLine.isFitDataAvailable(config)) {
+          await FitLine.draw(this.rootElement, config)
+        }
+        this.adjustTitles(plotlyChart._fullLayout, config)
+        const tmp_layout = {}
+        const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)
+        if (is_legend_elements_to_right_of_plotly_legend && config.marginAutoexpand) {
+          const nsewdrag_rect = this.nsewdragRect()
+          const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
+          const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
+          tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
+        }
+        if (Object.keys(tmp_layout).length > 0) {
+          plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
+          this.adjustTitles(plotlyChart._fullLayout, config)
+        }
 
-          if (FitLine.isFitDataAvailable(config)) {
-            FitLine.draw(this.rootElement, config)
-          }
+        await this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
 
-          plotlyChart.on('plotly_afterplot', () => {
-            this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
-          })
+        plotlyChart.on('plotly_afterplot', () => {
+          this.adjustTitles(plotlyChart._fullLayout, config)
+          this.drawScatterLabelLayer(plotlyChart._fullLayout, plotlyChart._fullData, config, is_legend_elements_to_right_of_plotly_legend)
+        })
 
-          this.addMarkerClickHandler()
+        this.addMarkerClickHandler()
     }
    } catch (err) {
       if (
@@ -364,9 +378,24 @@ class LabeledScatter {
   }
 
   nsewdragRect () {
-    const nsewdrag = d3.select(this.rootElement).select('.nsewdrag')
-    const rect = nsewdrag[0][0].getBBox()
-    return Utils.addTopBottomLeftRight(rect)
+    // With small multiples there is a nsewdrag element for each panel.
+    // In that situation we return a rect that covers all the elements.
+    const nsewdrags = d3.select(this.rootElement).selectAll('.nsewdrag')
+    const rects = nsewdrags[0].map(el => Utils.addTopBottomLeftRight(el.getBBox()))
+    const left = Math.min(...rects.map(r => r.left))
+    const right = Math.min(...rects.map(r => r.right))
+    const top = Math.min(...rects.map(r => r.top))
+    const bottom = Math.max(...rects.map(r => r.bottom))
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      x: left,
+      y: top,
+      width: right - left,
+      height: bottom - top
+    }
   }
 
   plotlyLegendRect () {
@@ -412,6 +441,82 @@ class LabeledScatter {
         if (config.group[i] === changed) annotations[i].visible = !annotations[i].visible
     }
     return annotations
+  }
+
+  adjustTitles (plotly_chart_layout, config) {
+    const title_element = d3.select(this.rootElement).select('.gtitle')
+    const x = config.titleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
+    const text_anchor = config.titleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
+    title_element
+      .attr('x', x)
+      .attr('dy', 0)
+      .style('alignment-baseline', 'text-before-edge')
+      .style('text-anchor', text_anchor)
+
+    title_element
+      .selectAll('tspan')
+      .attr('x', x)
+      .style('alignment-baseline', 'text-before-edge')
+      .style('text-anchor', text_anchor)
+
+    const subtitle_element = this.getAnnotationElement('subtitle', plotly_chart_layout)
+    if (subtitle_element !== null) {
+      const subtitle_x = config.subtitleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
+      const subtitle_text_anchor = config.subtitleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
+      subtitle_element
+        .select('.cursor-pointer')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('transform', `translate(${subtitle_x},${titleHeight(config)})`)
+      subtitle_element
+        .select('.annotation-text')
+        .attr('x', 0)
+        .attr('y', 0)
+        .style('alignment-baseline', 'text-before-edge')
+        .style('text-anchor', subtitle_text_anchor)
+      subtitle_element.selectAll('.annotation-text tspan').attr('x', 0)
+    }
+
+    const xtitle_element = this.getAnnotationElement('xtitle', plotly_chart_layout)
+    if (xtitle_element !== null) {
+      xtitle_element
+        .select('.annotation-text-g')
+        .attr('transform', `translate(${0.5 * this.width},${this.height})`)
+
+      xtitle_element
+        .select('.cursor-pointer')
+        .attr('transform', null)
+
+      xtitle_element
+        .select('.annotation-text')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('alignment-baseline', 'text-after-edge')
+    }
+
+    const ytitle_element = this.getAnnotationElement('ytitle', plotly_chart_layout)
+    if (ytitle_element !== null) {
+      ytitle_element
+        .select('.annotation-text-g')
+        .attr('transform', `translate(0,${0.5 * this.height}) rotate(-90)`)
+
+        ytitle_element
+          .select('.cursor-pointer')
+          .attr('transform', null)
+
+        ytitle_element
+          .select('.annotation-text')
+          .attr('x', 0)
+    }
+  }
+
+  getAnnotationElement (name, plotly_chart_layout) {
+    const index = plotly_chart_layout.annotations.map(a => a.name).indexOf(name)
+    if (index === -1) {
+      return null
+    }
+    const annotations = d3.select(this.rootElement).selectAll('.annotation')
+    return annotations[0][0] ? d3.select(annotations[0][index]) : null
   }
 
   // This is only used with small multiples

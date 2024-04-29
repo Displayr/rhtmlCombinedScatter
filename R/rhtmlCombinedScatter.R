@@ -61,10 +61,12 @@
 #' @param title.font.family is the font family of the plot title
 #' @param title.font.color is the font color of the plot title
 #' @param title.font.size is the font size of the plot title
+#' @param title.alignment One of "Left", "Center", "Right"
 #' @param subtitle is the subtitle text given to the plot
 #' @param subtitle.font.family is the font of the subtitle text
 #' @param subtitle.font.color is the font color of the subtitle text
 #' @param subtitle.font.size is the font size of the subtitle text
+#' @param subtitle.alignment One of "Left", "Center", "Right"
 #' @param footer is the footer text given at the bottom at the plot
 #' @param footer.font.family is the font of the footer text
 #' @param footer.font.color is the font color of the footer text
@@ -301,10 +303,12 @@ LabeledScatter <- function(
     subtitle.font.color = rgb(44, 44, 44, maxColorValue = 255),
     subtitle.font.family = "Arial",
     subtitle.font.size = 12,
+    subtitle.alignment = "Center",
     title = "",
     title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     title.font.family = "Arial",
     title.font.size = 16,
+    title.alignment = "Center",
     tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
     tooltip.font.family = "Arial",
     tooltip.font.size = 10,
@@ -448,10 +452,12 @@ LabeledScatter <- function(
              titleFontFamily = title.font.family,
              titleFontColor = title.font.color,
              titleFontSize = title.font.size,
+             titleAlignment = title.alignment,
              subtitle = subtitle,
              subtitleFontFamily = subtitle.font.family,
              subtitleFontSize = subtitle.font.size,
              subtitleFontColor = subtitle.font.color,
+             subtitleAlignment = subtitle.alignment,
              footer = footer,
              footerFontFamily = footer.font.family,
              footerFontSize = footer.font.size,

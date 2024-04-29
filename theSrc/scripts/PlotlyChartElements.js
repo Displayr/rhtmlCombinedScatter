@@ -3,6 +3,10 @@ import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 import TooltipUtils from './utils/TooltipUtils'
 
+// Plotly uses 1.3 for line spacing but we allocate 0.1 more per line
+// when computing the total height to add extra padding.
+const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
+
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
@@ -339,16 +343,15 @@ function createPlotlyLayout (config, margin_right) {
                 color: config.titleFontColor,
                 size: config.titleFontSize
             },
-            xref: 'paper',
-            automargin: false // setting this to true stuffs up alignment with labeledscatterlayer
+            automargin: true
         },
         showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
         legend: createLegendSettings(config),
         margin: {
-            t: config.marginTop,
-            b: config.marginBottom,
+            t: marginTop(config),
+            b: marginBottom(config),
             r: config.marginRight !== null ? config.marginRight : margin_right,
-            l: config.marginLeft,
+            l: marginLeft(config),
             autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
@@ -368,6 +371,23 @@ function createPlotlyLayout (config, margin_right) {
             plot_layout['xaxis' + p] = x_axis
             plot_layout['yaxis' + p] = y_axis
         }
+    }
+    if (config.subtitle.length > 0) {
+        plot_layout.annotations = [{
+            name: 'subtitle',
+            text: config.subtitle,
+            font: {
+                family: config.subtitleFontFamily,
+                color: config.subtitleFontColor,
+                size: config.subtitleFontSize
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 1,
+            yanchor: 'bottom',
+            showarrow: false,
+        }]
     }
     return plot_layout
 }
@@ -594,6 +614,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     // Add panel titles
     for (let p = 0; p < npanels; p++) {
         annotations.push({
+            name: 'panellabel',
             text: config.panelLabels[p],
             x: 0.5,
             y: 1,
@@ -614,6 +635,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const settings = { annotations: annotations }
     if (npanels > 1 && config.panelShareAxes) {
         annotations.push({
+            name: 'ytitle',
             text: config.yTitle,
             textangle: 270,
             showarrow: false,
@@ -628,9 +650,9 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             yref: 'paper',
             y: 0.5,
             yanchor: 'middle',
-            xshift: -0.5 * plotly_layout.margin.l
         })
         annotations.push({
+            name: 'xtitle',
             text: config.xTitle,
             showarrow: false,
             font: {
@@ -644,7 +666,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             yref: 'paper',
             y: 0,
             yanchor: 'top',
-            yshift: -0.5 * plotly_layout.margin.b
         })
         for (let side of ['x', 'y']) {
             let new_range = plotly_layout[side + 'axis'].range
@@ -662,10 +683,62 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     return settings
 }
 
+function marginTop (config) {
+    if (config.marginTop !== null) {
+        return config.marginTop
+    }
+    let margin_top = 0
+    if (config.title && config.title.length > 0) {
+        margin_top += config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    }
+    if (config.subtitle && config.subtitle.length > 0) {
+        margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    }
+    if (config.panelLabels && config.panelLabels.length > 0) {
+        const n_columns = Math.ceil(config.panelLabels.length / config.panelNumRows)
+        const max_lines = Math.max(...config.panelLabels.filter((_, i) => i < n_columns).map(l => l.split('<br>').length))
+        margin_top += max_lines * config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    }
+    return Math.max(margin_top, 20)
+}
+
+function marginLeft (config) {
+    if (config.marginLeft !== null) {
+        return config.marginLeft
+    }
+
+    let margin_left = 0
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
+        margin_left += config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    }
+    return Math.max(margin_left, 20)
+}
+
+function marginBottom (config) {
+    if (config.marginBottom !== null) {
+        return config.marginBottom
+    }
+
+    let margin_bottom = 0
+    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
+        margin_bottom += config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    }
+    return Math.max(margin_bottom, 20)
+}
+
+function titleHeight (config) {
+    if (config.title && config.title.length > 0) {
+      return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    } else {
+      return 0
+    }
+  }
+
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
-    getPanelYAxisSuffix
+    getPanelYAxisSuffix,
+    titleHeight
 }

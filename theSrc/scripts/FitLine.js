@@ -3,7 +3,7 @@ import TooltipUtils from './utils/TooltipUtils'
 import { getPanelXAxisSuffix, getPanelYAxisSuffix } from './PlotlyChartElements'
 
 class FitLine {
-    static draw (element, config) {
+    static async draw (element, config) {
         const n_groups = config.fitGroup.length
         const trace_data = []
         for (let i = 0; i < n_groups; i++) {
@@ -87,7 +87,7 @@ class FitLine {
                 })
             }
         }
-        Plotly.addTraces(element, trace_data)
+        await Plotly.addTraces(element, trace_data)
     }
 
     static isFitDataAvailable (config) {
