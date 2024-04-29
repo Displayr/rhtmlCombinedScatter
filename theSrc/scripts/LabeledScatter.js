@@ -515,7 +515,7 @@ class LabeledScatter {
       footer_element.selectAll('.annotation-text tspan').attr('x', 0)
 
       // We re-enlarge the height after it was shrunk to make way for the footer, otherwise the footer would not be shown
-      d3.select(footer_element[0][0].closest('.main-svg')).style('height', this.height)
+      d3.select(this.rootElement).selectAll('.main-svg').style('height', this.height)
     }
 
     const xtitle_element = this.getAnnotationElement('xtitle', plotly_chart_layout)
