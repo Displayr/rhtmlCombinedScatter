@@ -689,7 +689,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             xanchor: 'center',
             yref: 'paper',
             y: 0,
-            yanchor: 'top'
+            yanchor: 'top',
         })
         for (let side of ['x', 'y']) {
             let new_range = plotly_layout[side + 'axis'].range

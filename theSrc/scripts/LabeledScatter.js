@@ -466,8 +466,8 @@ class LabeledScatter {
       const subtitle_text_anchor = config.subtitleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
       subtitle_element
         .select('.cursor-pointer')
-        .attr('x', subtitle_x)
-        .attr('y', titleHeight(config))
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('transform', `translate(${subtitle_x},${titleHeight(config)})`)
       subtitle_element
         .select('.annotation-text')
