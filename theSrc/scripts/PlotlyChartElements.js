@@ -245,7 +245,7 @@ function getPanelYAxisSuffix (panel, config) {
     return '' + (panel + 1)
 }
 
-function createPlotlyLayout (config, margin_right) {
+function createPlotlyLayout (config, margin_right, height) {
     const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
     let grid = null
     if (npanel > 1) {
@@ -366,6 +366,7 @@ function createPlotlyLayout (config, margin_right) {
         shapes: addLines(config),
         paper_bgcolor: config.backgroundColor,
         plot_bgcolor: config.plotAreaBackgroundColor,
+        height: chartHeight(config, height)
     }
     if (npanel >= 2) {
         for (let p = 2; p <= npanel; p++) {
@@ -761,6 +762,14 @@ function titleHeight (config) {
       return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     } else {
       return 0
+    }
+  }
+
+  function chartHeight (config, height) {
+    if (config.footer && config.footer.length > 0) {
+        return height - footerHeight(config)
+    } else {
+        return height
     }
   }
 

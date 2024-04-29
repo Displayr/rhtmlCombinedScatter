@@ -88,7 +88,7 @@ class LabeledScatter {
       const plot_data = createPlotlyData(config)
       const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
       const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : 20
-      const plot_layout = createPlotlyLayout(config, margin_right)
+      const plot_layout = createPlotlyLayout(config, margin_right, this.height)
       const plot_config = {
         displayModeBar: false,
         editable: false,
@@ -151,10 +151,6 @@ class LabeledScatter {
           const legend_right = config.colorScale !== null ? this.plotlyColorbarRect().right : this.plotlyLegendRect().right
           const required_margin = (legend_right - nsewdrag_rect.right) + legend_points_and_bubble_legend_width
           tmp_layout['margin.r'] = Math.max(required_margin, config.marginRight)
-        }
-        if (config.footer && config.footer.length > 0) {
-          // TODO: set height in original layout!!!
-          tmp_layout['height'] = this.height - footerHeight(config)
         }
         if (Object.keys(tmp_layout).length > 0) {
           plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
