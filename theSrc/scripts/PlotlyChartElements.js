@@ -7,6 +7,7 @@ import TooltipUtils from './utils/TooltipUtils'
 // when computing the total height to add extra padding.
 const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
 const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
+const FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE = 0.5
 
 function createPlotlyData (config) {
     // Create tooltip text
@@ -768,7 +769,7 @@ function titleHeight (config) {
   function chartHeight (config, height) {
     if (config.footer && config.footer.length > 0) {
         // We shrink the height so that elements are moved up for the footer
-        return height - footerHeight(config)
+        return height - footerHeight(config) - config.footerFontSize * FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE
     } else {
         return height
     }
