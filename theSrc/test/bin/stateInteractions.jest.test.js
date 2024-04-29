@@ -376,6 +376,7 @@ describe('state interactions', () => {
         width: 576,
         height: 512
       })
+      await page.mouse.move(200, 200)
       await testSnapshots({ page, testName: 'smallmultiples_after_drag', tolerance: 1 })
       await page.close()
     })
