@@ -5,7 +5,7 @@ import {
   createPlotlyData,
   createPlotlyLayout,
   addSmallMultipleSettings,
-  LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+  titleBottom
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -467,7 +467,7 @@ class LabeledScatter {
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${subtitle_x},${this.titleBottom(config)})`)
+        .attr('transform', `translate(${subtitle_x},${titleBottom(config)})`)
       subtitle_element
         .select('.annotation-text')
         .attr('x', 0)
@@ -517,14 +517,6 @@ class LabeledScatter {
     }
     const annotations = d3.select(this.rootElement).selectAll('.annotation')
     return annotations[0][0] ? d3.select(annotations[0][index]) : null
-  }
-
-  titleBottom (config) {
-    if (config.title && config.title.length > 0) {
-      return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    } else {
-      return 0
-    }
   }
 
   // This is only used with small multiples
