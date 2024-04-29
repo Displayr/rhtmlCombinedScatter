@@ -747,7 +747,7 @@ function marginBottom (config) {
     return Math.max(margin_bottom, 20)
 }
 
-function titleBottom (config) {
+function titleHeight (config) {
     if (config.title && config.title.length > 0) {
       return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     } else {
@@ -770,6 +770,6 @@ module.exports = {
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
     getPanelYAxisSuffix,
-    titleBottom,
+    titleHeight,
     footerHeight
 }

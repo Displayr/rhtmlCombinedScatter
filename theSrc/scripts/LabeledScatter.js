@@ -5,7 +5,7 @@ import {
   createPlotlyData,
   createPlotlyLayout,
   addSmallMultipleSettings,
-  titleBottom,
+  titleHeight,
   footerHeight
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
@@ -471,8 +471,8 @@ class LabeledScatter {
       subtitle_element
         .select('.cursor-pointer')
         .attr('x', subtitle_x)
-        .attr('y', titleBottom(config))
-        .attr('transform', `translate(${subtitle_x},${titleBottom(config)})`)
+        .attr('y', titleHeight(config))
+        .attr('transform', `translate(${subtitle_x},${titleHeight(config)})`)
       subtitle_element
         .select('.annotation-text')
         .attr('x', 0)
