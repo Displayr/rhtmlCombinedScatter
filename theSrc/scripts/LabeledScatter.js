@@ -579,7 +579,7 @@ class LabeledScatter {
         this.stateObj.resetStateLegendPtsAndPositionedLabs()
         this.drawSmallMultipleLabels(plotly_chart, config)
       })
-      d3.select(this.rootElement).on('mouseover', () => { if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
+    d3.select(this.rootElement).on('mouseover', () => { if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
         .on('mouseout', () => svgResetButton.style('opacity', 0.0))
 
     const svgResetButtonBB = svgResetButton.node().getBBox()
