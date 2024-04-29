@@ -597,7 +597,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     // Do this first so the indices line up with config.group
     let j = 0
     let k = 0
-    let annotations = plotly_layout.annotations ? plotly_layout.annotations : []
+    let annotations = plotly_layout.annotations ? removeSmallMultipleAnnotations(plotly_layout.annotations) : []
     const n = config.X.length
     if (config.label) {
         for (let i = 0; i < n; i++) {
@@ -607,6 +607,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
             annotations.push({
+                name: 'markerlabel',
                 text: config.label[i],
                 yanchor: 'bottom',
                 arrowhead: 0,
@@ -706,6 +707,10 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         }
     }
     return settings
+}
+
+function removeSmallMultipleAnnotations (annotations) {
+    return annotations.filter(a => a.name !== 'markerlabel' && a.name !== 'panellabel' && a.name !== 'ytitle' && a.name !== 'xtitle')
 }
 
 function marginTop (config) {
