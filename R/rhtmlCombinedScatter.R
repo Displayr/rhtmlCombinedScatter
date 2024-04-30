@@ -17,6 +17,10 @@
 #' @param color.transparency Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
+#' @param color.scale.title Color scale title
+#' @param colorScaleTitleFontColor Color scale title font color
+#' @param colorScaleTitleFontFamily Color scale title font family
+#' @param colorScaleTitleFontSize Color scale title font size
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param background.color The color of the entire background
 #' @param plot.background.color The color of the plot area background
@@ -230,6 +234,10 @@ LabeledScatter <- function(
     color.transparency = NULL,
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
+    color.scale.title = "",
+    colorScaleTitleFontColor = rgb(44, 44, 44, maxColorValue = 255),
+    colorScaleTitleFontFamily = "Arial",
+    colorScaleTitleFontSize = 12,
     color.scale.format = NULL,
     debug.mode = FALSE,
     fixed.aspect = FALSE,
@@ -427,6 +435,10 @@ LabeledScatter <- function(
              fixedAspectRatio = fixed.aspect,
              colors = toJSON(colors),
              colorScale = toJSON(color.scale),
+             colorScaleTitle = color.scale.title,
+             colorScaleTitleFontColor = color.scale.title.font.color,
+             colorScaleTitleFontFamily = color.scale.title.font.family,
+             colorScaleTitleFontSize = color.scale.title.font.size,
              colorScaleFormat = color.scale.format,
              transparency = color.transparency,
              grid = grid,

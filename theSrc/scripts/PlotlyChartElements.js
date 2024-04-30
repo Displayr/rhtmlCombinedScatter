@@ -175,7 +175,15 @@ function addColorScale (trace, config) {
             color: config.legendFontColor,
             size: config.legendFontSize
         },
-        outlinewidth: 0
+        outlinewidth: 0,
+        title: {
+            font: {
+                family: config.colorScaleTitleFontFamily,
+                color: config.colorScaleTitleFontColor,
+                size: config.colorScaleTitleFontSize
+            },
+            text: config.colorScaleTitle
+        }
     }
     if (config.colorIsDateTime || Array.isArray(config.colorLevels)) {
         color_bar.tickvals = tick_values
