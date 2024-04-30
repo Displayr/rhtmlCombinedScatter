@@ -6,6 +6,8 @@ import TooltipUtils from './utils/TooltipUtils'
 // Plotly uses 1.3 for line spacing but we allocate 0.1 more per line
 // when computing the total height to add extra padding.
 const LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.4
+const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
+const FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE = 0.8
 
 function createPlotlyData (config) {
     // Create tooltip text
@@ -252,7 +254,7 @@ function getPanelYAxisSuffix (panel, config) {
     return '' + (panel + 1)
 }
 
-function createPlotlyLayout (config, margin_right) {
+function createPlotlyLayout (config, margin_right, height) {
     const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
     let grid = null
     if (npanel > 1) {
@@ -357,9 +359,9 @@ function createPlotlyLayout (config, margin_right) {
         legend: createLegendSettings(config),
         margin: {
             t: marginTop(config),
-            b: marginBottom(config),
+            b: config.marginBottom !== null ? config.marginBottom : 20,
             r: config.marginRight !== null ? config.marginRight : margin_right,
-            l: marginLeft(config),
+            l: config.marginLeft !== null ? config.marginLeft : 20,
             autoexpand: config.marginAutoexpand
         },
         hoverlabel: {
@@ -373,6 +375,7 @@ function createPlotlyLayout (config, margin_right) {
         shapes: addLines(config),
         paper_bgcolor: config.backgroundColor,
         plot_bgcolor: config.plotAreaBackgroundColor,
+        height: chartHeight(config, height)
     }
     if (npanel >= 2) {
         for (let p = 2; p <= npanel; p++) {
@@ -396,6 +399,28 @@ function createPlotlyLayout (config, margin_right) {
             yanchor: 'bottom',
             showarrow: false,
         }]
+    }
+    if (config.footer.length > 0) {
+        const footer_annotation = {
+            name: 'footer',
+            text: config.footer,
+            font: {
+                family: config.footerFontFamily,
+                color: config.footerFontColor,
+                size: config.footerFontSize
+            },
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: 0,
+            yanchor: 'top',
+            showarrow: false,
+        }
+        if (!plot_layout.annotations) {
+            plot_layout.annotations = [footer_annotation]
+        } else {
+            plot_layout.annotations.push(footer_annotation)
+        }
     }
     return plot_layout
 }
@@ -580,7 +605,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     // Do this first so the indices line up with config.group
     let j = 0
     let k = 0
-    let annotations = []
+    let annotations = plotly_layout.annotations ? removeSmallMultipleAnnotations(plotly_layout.annotations) : []
     const n = config.X.length
     if (config.label) {
         for (let i = 0; i < n; i++) {
@@ -590,6 +615,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
             annotations.push({
+                name: 'markerlabel',
                 text: config.label[i],
                 yanchor: 'bottom',
                 arrowhead: 0,
@@ -691,6 +717,10 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     return settings
 }
 
+function removeSmallMultipleAnnotations (annotations) {
+    return annotations.filter(a => a.name !== 'markerlabel' && a.name !== 'panellabel' && a.name !== 'ytitle' && a.name !== 'xtitle')
+}
+
 function marginTop (config) {
     if (config.marginTop !== null) {
         return config.marginTop
@@ -710,35 +740,29 @@ function marginTop (config) {
     return Math.max(margin_top, 20)
 }
 
-function marginLeft (config) {
-    if (config.marginLeft !== null) {
-        return config.marginLeft
-    }
-
-    let margin_left = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.yTitle && config.yTitle.length > 0) {
-        margin_left += config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    }
-    return Math.max(margin_left, 20)
-}
-
-function marginBottom (config) {
-    if (config.marginBottom !== null) {
-        return config.marginBottom
-    }
-
-    let margin_bottom = 0
-    if (config.panelLabels && config.panelLabels.length > 0 && config.panelShareAxes && config.xTitle && config.xTitle.length > 0) {
-        margin_bottom += config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
-    }
-    return Math.max(margin_bottom, 20)
-}
-
 function titleHeight (config) {
     if (config.title && config.title.length > 0) {
       return config.title.split('<br>').length * config.titleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     } else {
       return 0
+    }
+  }
+
+  function footerHeight (config) {
+    if (config.footer && config.footer.length > 0) {
+      const n_lines = config.footer.split('<br>').length
+      return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+    } else {
+      return 0
+    }
+  }
+
+  function chartHeight (config, height) {
+    if (config.footer && config.footer.length > 0) {
+        // We shrink the height so that elements are moved up for the footer
+        return height - footerHeight(config) - config.footerFontSize * FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE
+    } else {
+        return height
     }
   }
 
@@ -748,5 +772,8 @@ module.exports = {
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
     getPanelYAxisSuffix,
-    titleHeight
+    titleHeight,
+    footerHeight,
+    chartHeight,
+    LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 }

@@ -5,7 +5,10 @@ import {
   createPlotlyData,
   createPlotlyLayout,
   addSmallMultipleSettings,
-  titleHeight
+  titleHeight,
+  footerHeight,
+  chartHeight,
+  LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -87,7 +90,7 @@ class LabeledScatter {
       const plot_data = createPlotlyData(config)
       const legend_points_and_bubble_legend_width = this.legendPointsAndBubbleLegendWidth(config)
       const margin_right = legend_points_and_bubble_legend_width > 0 && config.marginAutoexpand ? legend_points_and_bubble_legend_width : 20
-      const plot_layout = createPlotlyLayout(config, margin_right)
+      const plot_layout = createPlotlyLayout(config, margin_right, this.height)
       const plot_config = {
         displayModeBar: false,
         editable: false,
@@ -96,6 +99,25 @@ class LabeledScatter {
 
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
+        const tmp_layout = {}
+        if (config.marginAutoexpand && config.panelShareAxes) {
+          if (config.yTitle && config.yTitle.length > 0) {
+            const margin_left = this.marginLeftForYTitleAnnotation(config)
+            if (margin_left > config.marginLeft) {
+              tmp_layout['margin.l'] = margin_left
+            }
+          }
+          if (config.xTitle && config.xTitle.length > 0) {
+            const margin_bottom = this.marginBottomForXTitleAnnotation(config)
+            if (margin_bottom > config.marginBottom) {
+              tmp_layout['margin.b'] = margin_bottom
+            }
+          }
+        }
+        if (Object.keys(tmp_layout).length > 0) {
+          plotlyChart = await Plotly.relayout(plotlyChart, tmp_layout)
+        }
+
         await this.drawSmallMultipleLabels(plotlyChart, config)
 
         if (config.showResetButton) this.drawResetButton(plotlyChart, config)
@@ -477,11 +499,31 @@ class LabeledScatter {
       subtitle_element.selectAll('.annotation-text tspan').attr('x', 0)
     }
 
+    const footer_element = this.getAnnotationElement('footer', plotly_chart_layout)
+    if (footer_element !== null) {
+      const footer_height = footerHeight(config)
+      footer_element
+          .select('.cursor-pointer')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('transform', `translate(${0.5 * this.width},${this.height - footer_height})`)
+      footer_element
+        .select('.annotation-text')
+        .attr('x', 0)
+        .attr('y', 0)
+        .style('alignment-baseline', 'text-before-edge')
+      footer_element.selectAll('.annotation-text tspan').attr('x', 0)
+
+      // We re-enlarge the height after it was shrunk to make way for the footer, otherwise the footer would not be shown
+      d3.select(this.rootElement).selectAll('.main-svg').style('height', this.height)
+    }
+
     const xtitle_element = this.getAnnotationElement('xtitle', plotly_chart_layout)
     if (xtitle_element !== null) {
+      const chart_height = chartHeight(config, this.height)
       xtitle_element
         .select('.annotation-text-g')
-        .attr('transform', `translate(${0.5 * this.width},${this.height})`)
+        .attr('transform', `translate(${0.5 * this.width},${chart_height})`)
 
       xtitle_element
         .select('.cursor-pointer')
@@ -537,13 +579,23 @@ class LabeledScatter {
         this.stateObj.resetStateLegendPtsAndPositionedLabs()
         this.drawSmallMultipleLabels(plotly_chart, config)
       })
-    svg.on('mouseover', () => { if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
-       .on('mouseout', () => svgResetButton.style('opacity', 0.0))
+    d3.select(this.rootElement).on('mouseover', () => { if (this.stateObj.hasStateBeenAlteredByUser()) svgResetButton.style('opacity', 1) })
+        .on('mouseout', () => svgResetButton.style('opacity', 0.0))
 
     const svgResetButtonBB = svgResetButton.node().getBBox()
     const xAxisPadding = 5
     svgResetButton.attr('x', this.width - svgResetButtonBB.width - xAxisPadding)
                   .attr('y', this.height - svgResetButtonBB.height)
+  }
+
+  marginLeftForYTitleAnnotation (config) {
+    const nsew_rect = this.nsewdragRect()
+    return nsew_rect.left + config.yTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+  }
+
+  marginBottomForXTitleAnnotation (config) {
+    const nsew_rect = this.nsewdragRect()
+    return chartHeight(config, this.height) - nsew_rect.bottom + config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
   }
 }
 
