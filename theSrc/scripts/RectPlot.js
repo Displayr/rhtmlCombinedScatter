@@ -14,6 +14,7 @@ import { Legend } from './Legend'
 import DebugMessage from './DebugMessage'
 import ViewBox from './ViewBox'
 import ResetButton from './ResetButton'
+import { BubbleLegend } from './BubbleLegend'
 
 const DEBUG_ADD_BBOX_TO_IMG = false
 
@@ -181,6 +182,7 @@ class RectPlot {
     this.width = width
     this.height = height
     this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendElementsRect)
+    this.bubbleLegend = new BubbleLegend(this.legendSettings, this.legendElementsRect, this.pointRadius)
 
     this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
 
@@ -196,6 +198,7 @@ class RectPlot {
                          this.labelAlt,
                          this.vb,
                          this.legend,
+                         this.bubbleLegend,
                          this.colors,
                          this.originAlign,
                          this.pointRadius,
@@ -303,9 +306,9 @@ class RectPlot {
   drawLegend () {
     return new Promise((resolve) => {
       if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
-        this.legend.drawBubblesWith(this.svg, this.axisSettings)
-        this.legend.drawBubblesLabelsWith(this.svg)
-        this.legend.drawBubblesTitleWith(this.svg)
+        this.bubbleLegend.drawBubblesWith(this.svg, this.axisSettings)
+        this.bubbleLegend.drawBubblesLabelsWith(this.svg)
+        this.bubbleLegend.drawBubblesTitleWith(this.svg)
       }
 
       const drag = DragUtils.getLegendLabelDragAndDrop(this, this.data)

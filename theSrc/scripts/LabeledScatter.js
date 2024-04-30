@@ -14,12 +14,14 @@ import DisplayError from './DisplayError'
 import {
   LEGEND_POINTS_PADDING_TOP,
   LEGEND_POINTS_ROW_PADDING,
-  LEGEND_BUBBLE_TITLE_HEIGHT,
   LEGEND_POINTS_MARGIN_RIGHT,
   LEGEND_POINTS_MINIMUM_HEIGHT,
+} from './Legend'
+import {
+  LEGEND_BUBBLE_TITLE_HEIGHT,
   LEGEND_BUBBLE_PADDING_SIDE,
   LEGEND_BUBBLE_PADDING_TOP
-} from './Legend'
+} from './BubbleLegend'
 import Plotly from 'plotly.js-basic-dist-min'
 import RectPlot from './RectPlot'
 import State from './State'

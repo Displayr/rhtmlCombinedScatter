@@ -22,13 +22,14 @@ class PlotData {
     labelAlt,
     vb,
     legend,
+    bubbleLegend,
     colorWheel,
     originAlign,
     pointRadius,
     bounds,
     transparency,
     legendSettings,
-    hiddenSeries
+    hiddenSeries,
   ) {
     autoBind(this)
     this.X = X
@@ -45,6 +46,7 @@ class PlotData {
     this.labelAlt = labelAlt
     this.vb = vb
     this.legend = legend
+    this.bubbleLegend = bubbleLegend
     this.colorWheel = colorWheel
     this.originAlign = originAlign
     this.pointRadius = pointRadius
@@ -304,7 +306,10 @@ class PlotData {
   }
 
   setLegend () {
-    this.legend.setLegendGroupsAndPts(this.vb, this.legendBubbles, this.pointRadius)
+    this.legend.setLegendGroupsAndPts(this.vb)
+    if (this.legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
+      this.bubbleLegend.setupBubbles(this.vb, this.legendBubbles)
+    }
   }
 
   isOutsideViewBox (lab) {

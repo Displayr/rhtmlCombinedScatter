@@ -1,19 +1,13 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
-import LegendUtils from './utils/LegendUtils'
 import SvgUtils from './utils/SvgUtils'
 import Utils from './utils/Utils'
+import { BubbleLegend } from './BubbleLegend'
 
 const LEGEND_POINTS_PADDING_TOP = 10
 const LEGEND_POINTS_ROW_PADDING = 9
 const LEGEND_POINTS_MARGIN_RIGHT = 100
 const LEGEND_POINTS_MINIMUM_HEIGHT = 50
-
-const LEGEND_BUBBLE_PADDING_SIDE = 10
-const LEGEND_BUBBLE_PADDING_TOP = 10
-
-/** Legend bubble title height as a multiple of font size */
-const LEGEND_BUBBLE_TITLE_HEIGHT = 1.5
 
 class Legend {
   constructor (legendSettings, axisSettings, legendElementsRect) {
@@ -36,7 +30,6 @@ class Legend {
       z: axisSettings.z.suffix,
     }
     this.width = legendElementsRect.width
-    this.maxWidth = legendElementsRect.width
     this.setHeight(legendElementsRect.height)
     this.heightOfRow = legendSettings.getFontSize() + LEGEND_POINTS_ROW_PADDING
     this.padding = {
@@ -59,14 +52,7 @@ class Legend {
     this.pts = []
     this.groups = []
     this.setColSpace(20)
-  }
-
-  setMaxWidth (w) {
-    this.maxWidth = w
-  }
-
-  setWidth (w) {
-    this.width = _.min([w, this.maxWidth])
+    this.bubbleLegend = new BubbleLegend(this.legendSettings, this.width)
   }
 
   setHeight (h) {
@@ -78,37 +64,16 @@ class Legend {
     }
   }
 
-  getSpacingAroundMaxTextWidth () {
-    return this.getPaddingLeft() +
-      (this.getPtRadius() * 2) +
-      this.getPaddingRight() +
-      this.getPtToTextSpace()
-  }
-
-  getBubbleLeftRightPadding () {
-    return this.getPaddingLeft() + this.getPaddingRight()
-  }
-
-  getBubbleTitleWidth () {
-    return (this.getBubblesTitle() !== null) ? this.getBubblesTitle()[0].width : undefined
-  }
-
-  setLegendGroupsAndPts (vb, legendBubbles, pointRadius) {
+  setLegendGroupsAndPts (vb) {
     const pts = this.pts
-    this.pts = this.getLegendItemsPositions(vb, legendBubbles, pts, pointRadius)
+    this.pts = this.getLegendItemsPositions(vb, pts)
   }
 
-  getLegendItemsPositions (vb, legendBubbles, itemsArray, pointRadius) {
+  getLegendItemsPositions (vb, itemsArray) {
     const numItems = itemsArray.length
-
-    if (legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
-      const legendUtils = LegendUtils
-      legendUtils.setupBubbles(vb, legendBubbles, this, pointRadius, this.legendElementsRect)
-    }
 
     const legendStartY = this.legendElementsRect.y
 
-    // TODO: figure out why the number of cols is wrong!!! see bubbleplot_overlap example and drag labels across
     this.setCols(Math.ceil(numItems / (Math.ceil((this.height) / this.heightOfRow))))
 
     let colSpacing = 0
@@ -174,14 +139,9 @@ class Legend {
   }
 
   getMaxTextWidth () {
-    return (this.maxWidth - (this.getPaddingLeft() + this.getPaddingRight() + this.getPaddingMid() * (this.getCols() - 1))) / this.getCols()
+    return (this.width - (this.getPaddingLeft() + this.getPaddingRight() + this.getPaddingMid() * (this.getCols() - 1))) / this.getCols()
   }
 
-  getMaxGroupTextWidth () {
-    return (this.maxWidth - (this.getPaddingLeft() + this.getPaddingRight() + this.getPtRadius() + this.getPaddingMid() * this.getCols())) / this.getCols()
-  }
-
-  getWidth () { return this.width }
   getHeightOfRow () { return this.heightOfRow }
   getMarkerLen () { return this.marker.len }
   getMarkerWidth () { return this.marker.width }
@@ -196,69 +156,7 @@ class Legend {
   getVertPtPadding () { return this.vertPtPadding }
   getCols () { return this.cols }
   getX () { return this.x }
-  getBubblesMaxWidth () { return this.bubblesMaxWidth }
-  getBubbles () { return this.bubbles }
-  getBubblesTitle () { return _.isEmpty(this.bubblesTitle) ? null : this.bubblesTitle }
-  getNumGroups () { return this.groups.length }
-  getNumPts () { return this.pts.length }
-  setX (x) { this.x = x }
   setColSpace (cs) { this.colSpace = cs }
-  setBubblesMaxWidth (bubblesMaxWidth) { this.bubblesMaxWidth = bubblesMaxWidth }
-  setBubbles (bubbles) { this.bubbles = bubbles }
-  setBubblesTitle (title) { this.bubblesTitle = title }
-
-  drawBubblesTitleWith (svg) {
-    if (this.legendSettings.hasTitleText()) {
-      svg.selectAll('.legend-bubbles-title').remove()
-      let legendBubbleTitleFontSize = this.legendSettings.getBubbleTitleFontSize()
-      const legendBubbleTitleSvg = svg.selectAll('.legend-bubbles-title')
-         .data(this.getBubblesTitle())
-         .enter()
-         .append('text')
-         .attr('class', 'legend-bubbles-title')
-         .attr('x', d => d.x)
-         .attr('y', d => d.y - (legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT))
-         .attr('text-anchor', 'middle')
-         .attr('font-weight', 'normal')
-         .attr('font-size', this.legendSettings.getBubbleTitleFontSize())
-         .attr('font-family', this.legendSettings.getBubbleTitleFontFamily())
-         .attr('fill', this.legendSettings.getBubbleTitleFontColor())
-         .text(this.legendSettings.getTitle())
-
-      SvgUtils.setSvgBBoxWidthAndHeight(this.getBubblesTitle(), legendBubbleTitleSvg)
-    }
-  }
-
-  drawBubblesWith (svg) {
-    svg.selectAll('.legend-bubbles').remove()
-    svg.selectAll('.legend-bubbles')
-       .data(this.getBubbles())
-       .enter()
-       .append('circle')
-       .attr('class', 'legend-bubbles')
-       .attr('cx', d => d.cx)
-       .attr('cy', d => d.cy)
-       .attr('r', d => d.r)
-       .attr('fill', 'none')
-       .attr('stroke', this.legendSettings.getBubbleFontColor())
-       .attr('stroke-opacity', 0.5)
-  }
-
-  drawBubblesLabelsWith (svg) {
-    svg.selectAll('.legend-bubbles-labels').remove()
-    svg.selectAll('.legend-bubbles-labels')
-       .data(this.getBubbles())
-       .enter()
-       .append('text')
-       .attr('class', 'legend-bubbles-labels')
-       .attr('x', d => d.x)
-       .attr('y', d => d.y)
-       .attr('text-anchor', 'middle')
-       .attr('font-size', this.legendSettings.getBubbleFontSize())
-       .attr('font-family', this.legendSettings.getBubbleFontFamily())
-       .attr('fill', this.legendSettings.getBubbleFontColor())
-       .text(d => d.text)
-  }
 
   drawDraggedPtsTextWith (svg, drag) {
     svg.selectAll('.legend-dragged-pts-text').remove()
@@ -287,10 +185,7 @@ class Legend {
 module.exports = {
   Legend,
   LEGEND_POINTS_ROW_PADDING,
-  LEGEND_BUBBLE_TITLE_HEIGHT,
   LEGEND_POINTS_PADDING_TOP,
   LEGEND_POINTS_MARGIN_RIGHT,
   LEGEND_POINTS_MINIMUM_HEIGHT,
-  LEGEND_BUBBLE_PADDING_SIDE,
-  LEGEND_BUBBLE_PADDING_TOP
 }
