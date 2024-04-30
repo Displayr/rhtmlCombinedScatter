@@ -40,6 +40,10 @@ const defaultConfig = {
   // We expect that R wrapper function will ensure the colorScale
   // matches the colors (which is still used for the labels)
   colorScale: null,
+  colorScaleTitle: null,
+  colorScaleTitleFontColor: '#2C2C2C',
+  colorScaleTitleFontFamily: 'Arial',
+  colorScaleTitleFontSize: 12,
   colorLevels: null,
   colorIsDateTime: false,
   colorScaleFormat: null,
