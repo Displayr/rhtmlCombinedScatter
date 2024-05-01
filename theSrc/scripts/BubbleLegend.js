@@ -24,34 +24,34 @@ class BubbleLegend {
         const bubbleTextPadding = 2
         this.bubbles = [
             {
-            cx,
-            cy: legend_bottom - rTop,
-            r: rTop,
-            x: cx,
-            y: legend_bottom - (2 * rTop) - bubbleTextPadding,
-            text: legendBubbles.large.label,
+                cx,
+                cy: legend_bottom - rTop,
+                r: rTop,
+                x: cx,
+                y: legend_bottom - (2 * rTop) - bubbleTextPadding,
+                text: legendBubbles.large.label,
             },
             {
-            cx,
-            cy: legend_bottom - rMid,
-            r: rMid,
-            x: cx,
-            y: legend_bottom - (2 * rMid) - bubbleTextPadding,
-            text: legendBubbles.medium.label,
+                cx,
+                cy: legend_bottom - rMid,
+                r: rMid,
+                x: cx,
+                y: legend_bottom - (2 * rMid) - bubbleTextPadding,
+                text: legendBubbles.medium.label,
             },
             {
-            cx,
-            cy: legend_bottom - rBot,
-            r: rBot,
-            x: cx,
-            y: legend_bottom - (2 * rBot) - bubbleTextPadding,
-            text: legendBubbles.small.label,
+                cx,
+                cy: legend_bottom - rBot,
+                r: rBot,
+                x: cx,
+                y: legend_bottom - (2 * rBot) - bubbleTextPadding,
+                text: legendBubbles.small.label,
             },
         ]
         this.setBubblesTitle([
             {
-            x: cx,
-            y: legend_bottom - (2 * rTop) - bubbleTextPadding,
+                x: cx,
+                y: legend_bottom - (2 * rTop) - bubbleTextPadding,
             },
         ])
     }
