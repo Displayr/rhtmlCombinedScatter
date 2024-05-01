@@ -308,7 +308,7 @@ class PlotData {
   setLegend () {
     this.legend.setLegendGroupsAndPts(this.vb)
     if (this.legendBubbles != null && this.legendSettings.showBubblesInLegend()) {
-      this.bubbleLegend.setupBubbles(this.vb, this.legendBubbles)
+      this.bubbleLegend.setup(this.legendBubbles)
     }
   }
 

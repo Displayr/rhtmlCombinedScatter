@@ -2,33 +2,30 @@ import autoBind from 'es6-autobind'
 import _ from 'lodash'
 
 class LegendSettings {
-  constructor (show, showBubbles,
-               fontFamily, fontSize, fontColor,
-               bubbleFontFamily, bubbleFontSize, bubbleFontColor,
-               bubbleTitleFontFamily, bubbleTitleFontSize, bubbleTitleFontColor, zTitle, zPrefix, zSuffix) {
+  constructor (config) {
     autoBind(this)
-    this.show = show
-    this.showBubbles = showBubbles
+    this.show = config.legendShow
+    this.showBubbles = config.legendBubblesShow
     this.font = {
-      family: fontFamily,
-      size: fontSize,
-      color: fontColor,
+      family: config.legendFontFamily,
+      size: config.legendFontSize,
+      color: config.legendFontColor,
     }
     this.bubble = {
       font: {
-        family: _.isString(bubbleFontFamily) ? bubbleFontFamily : fontFamily,
-        size: _.isNumber(bubbleFontSize) ? bubbleFontSize : fontSize,
-        color: _.isString(bubbleFontColor) ? bubbleFontColor : fontColor,
+        family: _.isString(config.legendBubbleFontFamily) ? config.legendBubbleFontFamily : config.legendFontFamily,
+        size: _.isNumber(config.legendBubbleFontSize) ? config.legendBubbleFontSize : config.legendFontSize,
+        color: _.isString(config.legendBubbleFontColor) ? config.legendBubbleFontColor : config.legendFontColor,
       },
       titleFont: {
-        family: _.isString(bubbleTitleFontFamily) ? bubbleTitleFontFamily : fontFamily,
-        size: _.isNumber(bubbleTitleFontSize) ? bubbleTitleFontSize : fontSize,
-        color: _.isString(bubbleTitleFontColor) ? bubbleTitleFontColor : fontColor,
+        family: _.isString(config.legendBubbleTitleFontFamily) ? config.legendBubbleTitleFontFamily : config.legendFontFamily,
+        size: _.isNumber(config.legendBubbleTitleFontSize) ? config.legendBubbleTitleFontSize : config.legendFontSize,
+        color: _.isString(config.legendBubbleTitleFontColor) ? config.legendBubbleTitleFontColor : config.legendFontColor,
       },
     }
-    this.title = zTitle
-    this.zPrefix = zPrefix
-    this.zSuffix = zSuffix
+    this.title = config.zTitle
+    this.zPrefix = config.zPrefix
+    this.zSuffix = config.zSuffix
   }
 
   showLegend () { return this.show }

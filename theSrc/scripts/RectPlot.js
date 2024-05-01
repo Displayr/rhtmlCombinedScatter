@@ -19,7 +19,7 @@ import { BubbleLegend } from './BubbleLegend'
 const DEBUG_ADD_BBOX_TO_IMG = false
 
 class RectPlot {
-  constructor ({ config, stateObj, svg, rootElement, reset, legendElementsRect } = {}) {
+  constructor ({ config, stateObj, svg, rootElement, reset, legendPointsRect, bubbleLegendRect } = {}) {
     autoBind(this)
     this.pltUniqueId = md5((new Date()).getTime())
     this.state = stateObj
@@ -39,7 +39,8 @@ class RectPlot {
     this.svg = svg
     this.rootElement = rootElement
     this.reset = reset
-    this.legendElementsRect = legendElementsRect
+    this.legendPointsRect = legendPointsRect
+    this.bubbleLegendRect = bubbleLegendRect
     this.zTitle = config.zTitle
     this.colors = config.colors
     this.transparency = config.transparency
@@ -100,23 +101,7 @@ class RectPlot {
       logoScale: config.labelsLogoScale,
     }
 
-    // TODO convert to object signature
-    this.legendSettings = new LegendSettings(
-      config.legendShow,
-      config.legendBubblesShow,
-      config.legendFontFamily,
-      config.legendFontSize,
-      config.legendFontColor,
-      config.legendBubbleFontFamily,
-      config.legendBubbleFontSize,
-      config.legendBubbleFontColor,
-      config.legendBubbleTitleFontFamily,
-      config.legendBubbleTitleFontSize,
-      config.legendBubbleTitleFontColor,
-      this.zTitle,
-      config.zPrefix,
-      config.zSuffix
-    )
+    this.legendSettings = new LegendSettings(config)
 
     this.trendLines = {
       show: config.trendLines,
@@ -181,8 +166,8 @@ class RectPlot {
     this.svg = svg
     this.width = width
     this.height = height
-    this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendElementsRect)
-    this.bubbleLegend = new BubbleLegend(this.legendSettings, this.legendElementsRect, this.pointRadius)
+    this.legend = new Legend(this.legendSettings, this.axisSettings, this.legendPointsRect)
+    this.bubbleLegend = new BubbleLegend(this.legendSettings, this.bubbleLegendRect, this.pointRadius)
 
     this.vb = new ViewBox(width, height, this.legend, this.labelsFont)
 

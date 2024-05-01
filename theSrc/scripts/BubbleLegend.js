@@ -9,49 +9,49 @@ const LEGEND_BUBBLE_PADDING_TOP = 10
 const LEGEND_BUBBLE_TITLE_HEIGHT = 1.5
 
 class BubbleLegend {
-    constructor (legendSettings, legendElementsRect, pointRadius) {
+    constructor (legendSettings, bubbleLegendRect, pointRadius) {
         this.legendSettings = legendSettings
-        this.legendElementsRect = legendElementsRect
+        this.bubbleLegendRect = bubbleLegendRect
         this.pointRadius = pointRadius
     }
 
-    setupBubbles (vb, legendBubbles) {
+    setup (legendBubbles) {
         const rTop = LegendUtils.normalizedZtoRadius(this.pointRadius, legendBubbles.large.size / legendBubbles.maxSize)
         const rMid = LegendUtils.normalizedZtoRadius(this.pointRadius, legendBubbles.medium.size / legendBubbles.maxSize)
         const rBot = LegendUtils.normalizedZtoRadius(this.pointRadius, legendBubbles.small.size / legendBubbles.maxSize)
-        const cx = this.legendElementsRect.x + (this.legendElementsRect.width / 2)
-        const viewBoxYBottom = vb.y + vb.height
+        const cx = this.bubbleLegendRect.x + (this.bubbleLegendRect.width / 2)
+        const legend_bottom = this.bubbleLegendRect.bottom
         const bubbleTextPadding = 2
         this.bubbles = [
             {
             cx,
-            cy: viewBoxYBottom - rTop,
+            cy: legend_bottom - rTop,
             r: rTop,
             x: cx,
-            y: viewBoxYBottom - (2 * rTop) - bubbleTextPadding,
+            y: legend_bottom - (2 * rTop) - bubbleTextPadding,
             text: legendBubbles.large.label,
             },
             {
             cx,
-            cy: viewBoxYBottom - rMid,
+            cy: legend_bottom - rMid,
             r: rMid,
             x: cx,
-            y: viewBoxYBottom - (2 * rMid) - bubbleTextPadding,
+            y: legend_bottom - (2 * rMid) - bubbleTextPadding,
             text: legendBubbles.medium.label,
             },
             {
             cx,
-            cy: viewBoxYBottom - rBot,
+            cy: legend_bottom - rBot,
             r: rBot,
             x: cx,
-            y: viewBoxYBottom - (2 * rBot) - bubbleTextPadding,
+            y: legend_bottom - (2 * rBot) - bubbleTextPadding,
             text: legendBubbles.small.label,
             },
         ]
         this.setBubblesTitle([
             {
             x: cx,
-            y: viewBoxYBottom - (2 * rTop) - bubbleTextPadding,
+            y: legend_bottom - (2 * rTop) - bubbleTextPadding,
             },
         ])
     }
