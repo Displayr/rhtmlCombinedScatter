@@ -121,48 +121,6 @@ class LegendUtils {
       return z / maxZ
     })
   }
-
-  static setupBubbles (vb, legendBubbles, legend, pointRadius, legendPointsRect) {
-    const rTop = this.normalizedZtoRadius(pointRadius, legendBubbles.large.size / legendBubbles.maxSize)
-    const rMid = this.normalizedZtoRadius(pointRadius, legendBubbles.medium.size / legendBubbles.maxSize)
-    const rBot = this.normalizedZtoRadius(pointRadius, legendBubbles.small.size / legendBubbles.maxSize)
-    const cx = legendPointsRect.x + (legend.getWidth() / 2)
-    const viewBoxYBottom = vb.y + vb.height
-    const bubbleTextPadding = 2
-    legend.setBubblesMaxWidth(rTop * 2)
-    legend.setBubbles([
-      {
-        cx,
-        cy: viewBoxYBottom - rTop,
-        r: rTop,
-        x: cx,
-        y: viewBoxYBottom - (2 * rTop) - bubbleTextPadding,
-        text: legendBubbles.large.label,
-      },
-      {
-        cx,
-        cy: viewBoxYBottom - rMid,
-        r: rMid,
-        x: cx,
-        y: viewBoxYBottom - (2 * rMid) - bubbleTextPadding,
-        text: legendBubbles.medium.label,
-      },
-      {
-        cx,
-        cy: viewBoxYBottom - rBot,
-        r: rBot,
-        x: cx,
-        y: viewBoxYBottom - (2 * rBot) - bubbleTextPadding,
-        text: legendBubbles.small.label,
-      },
-    ])
-    legend.setBubblesTitle([
-      {
-        x: cx,
-        y: viewBoxYBottom - (2 * rTop) - bubbleTextPadding,
-      },
-    ])
-  }
 }
 
 module.exports = LegendUtils
