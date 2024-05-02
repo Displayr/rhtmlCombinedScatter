@@ -254,6 +254,9 @@ class LabeledScatter {
   }
 
   drawBubbleLegendForSmallMultiples (plotly_layout, config) {
+    if (!this.hasBubbleLegend(config)) {
+      return
+    }
     const legend_settings = new LegendSettings(config)
     const is_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotly_layout, config)
     const bubble_legend_rect = this.getBubbleLegendRect(is_to_right_of_plotly_legend, config)
