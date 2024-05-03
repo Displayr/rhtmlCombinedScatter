@@ -50,7 +50,10 @@ function createPlotlyData (config) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            plot_data.push(createScatterTrace(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index))
+            plot_data.push(createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index))
+            if (hasMarkerBorder(config)) {
+                plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+            }
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
@@ -61,9 +64,12 @@ function createPlotlyData (config) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            const trace = createScatterTrace(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
+            const trace = createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
+            if (hasMarkerBorder(config)) {
+                plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+            }
         }
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
@@ -78,7 +84,10 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
-                plot_data.push(createScatterTrace(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
+                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
+                if (hasMarkerBorder(config)) {
+                    plot_data.push(createScatterTraceForMarkerBorder(config, g_name, marker_size, p, gp_index))
+                }
                 if (g_add) group_added.push(g_name)
             }
         }
@@ -86,19 +95,17 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTrace (config, tooltips, name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true) {
     const X = data_index ? _.at(config.X, data_index) : config.X
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index]
-    const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
-    const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
     return {
         x: X,
         y: Y,
-        name: name,
+        name: group_name,
         text: indexed_tooltips,
         hoverinfo: 'name+text',
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
@@ -109,17 +116,49 @@ function createScatterTrace (config, tooltips, name, marker_size, marker_opacity
             size: marker_size,
             sizemode: 'diameter',
             opacity: marker_opacity,
-            line: {
-                color: border_color,
-                width: border_width
-            }
         },
-        legendgroup: name,
+        legendgroup: group_name,
         showlegend: showlegend,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
         yaxis: 'y' + y_axis
     }
+}
+
+function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index) {
+    // We draw the marker border separately from the marker otherwise the legend symbols will also have borders
+    // with a colors taken from the border colors
+    const X = data_index ? _.at(config.X, data_index) : config.X
+    const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
+    const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
+    const x_axis = getPanelXAxisSuffix(panel_index, config)
+    const y_axis = getPanelYAxisSuffix(panel_index, config)
+    return {
+        x: X,
+        y: Y,
+        hoverinfo: 'skip',
+        type: 'scatter',
+        mode: 'markers',
+        marker: {
+            color: 'transparent',
+            size: marker_size,
+            sizemode: 'diameter',
+            line: {
+                color: border_color,
+                width: border_width
+            }
+        },
+        legendgroup: group_name,
+        showlegend: false,
+        cliponaxis: false,
+        xaxis: 'x' + x_axis,
+        yaxis: 'y' + y_axis
+    }
+}
+
+function hasMarkerBorder (config) {
+    return config.pointBorderColor && config.pointBorderWidth
 }
 
 // Creates the first trace to ensure categorical data is ordered properly
@@ -741,23 +780,23 @@ function titleHeight (config) {
     }
   }
 
-  function footerHeight (config) {
+function footerHeight (config) {
     if (config.footer && config.footer.length > 0) {
-      const n_lines = config.footer.split('<br>').length
-      return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+        const n_lines = config.footer.split('<br>').length
+        return n_lines * config.footerFontSize * PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     } else {
-      return 0
+        return 0
     }
-  }
+}
 
-  function chartHeight (config, height) {
+function chartHeight (config, height) {
     if (config.footer && config.footer.length > 0) {
         // We shrink the height so that elements are moved up for the footer
         return height - footerHeight(config) - config.footerFontSize * FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE
     } else {
         return height
     }
-  }
+}
 
 module.exports = {
     createPlotlyData,
