@@ -49,14 +49,8 @@ function createPlotlyData (config) {
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
-            const p_index = indices_by_panel[panel_nm[p]]
-            plot_data.push(createScatterTrace(
-                n_panels > 1 ? _.at(config.X, p_index) : config.X,
-                n_panels > 1 ? _.at(config.Y, p_index) : config.Y,
-                n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
-                ' ', marker_size, config.colors[0], marker_opacity,
-                config.pointBorderColor, config.pointBorderWidth,
-                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config)))
+            const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
+            plot_data.push(createScatterTrace(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index))
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
@@ -66,14 +60,8 @@ function createPlotlyData (config) {
         }`)
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
-            const p_index = indices_by_panel[panel_nm[p]]
-            let trace = createScatterTrace(
-                n_panels > 1 ? _.at(config.X, p_index) : config.X,
-                n_panels > 1 ? _.at(config.Y, p_index) : config.Y,
-                n_panels > 1 ? _.at(tooltips, p_index) : tooltips,
-                ' ', marker_size,
-                config.colors[0], marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config))
+            const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
+            const trace = createScatterTrace(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
         }
@@ -90,10 +78,7 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
-                plot_data.push(createScatterTrace(_.at(config.X, gp_index), _.at(config.Y, gp_index),
-                    _.at(tooltips, gp_index), g_name, marker_size, config.colors[g],
-                    marker_opacity, config.pointBorderColor, config.pointBorderWidth,
-                    getPanelXAxisSuffix(p, config), getPanelYAxisSuffix(p, config), g_add))
+                plot_data.push(createScatterTrace(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
                 if (g_add) group_added.push(g_name)
             }
         }
@@ -101,31 +86,39 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTrace (X, Y, tooltips, name, size, color, opacity, outlinecolor, outlinewidth, xaxis = '', yaxis = '', showlegend = true) {
+function createScatterTrace (config, tooltips, name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true) {
+    const X = data_index ? _.at(config.X, data_index) : config.X
+    const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
+    const marker_color = config.colors[group_index]
+    const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
+    const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
+    const x_axis = getPanelXAxisSuffix(panel_index, config)
+    const y_axis = getPanelYAxisSuffix(panel_index, config)
     return {
         x: X,
         y: Y,
         name: name,
-        text: tooltips,
+        text: indexed_tooltips,
         hoverinfo: 'name+text',
-        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(color) } },
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',
         marker: {
-            color: color,
-            size: size,
+            color: marker_color,
+            size: marker_size,
             sizemode: 'diameter',
-            opacity: opacity,
+            opacity: marker_opacity,
             line: {
-                color: outlinecolor,
-                width: outlinewidth
+                color: border_color,
+                width: border_width
             }
         },
         legendgroup: name,
         showlegend: showlegend,
         cliponaxis: false,
-        xaxis: 'x' + xaxis,
-        yaxis: 'y' + yaxis
+        xaxis: 'x' + x_axis,
+        yaxis: 'y' + y_axis
     }
 }
 
