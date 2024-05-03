@@ -116,6 +116,9 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
             size: marker_size,
             sizemode: 'diameter',
             opacity: marker_opacity,
+            line: {
+                width: 0 // this is needed otherwise plotly draws a thin white border
+            }
         },
         legendgroup: group_name,
         showlegend: showlegend,
@@ -144,6 +147,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
             color: 'transparent',
             size: marker_size,
             sizemode: 'diameter',
+            opacity: 1,
             line: {
                 color: border_color,
                 width: border_width

@@ -1,0 +1,10 @@
+type: multi_widget_single_page
+title: "test axis configurations"
+width: 600
+height: 500
+rowSize: 2
+widgets:
+  - config: data.functionalTest.marker_border.bubbleplot_border
+  - config: data.functionalTest.marker_border.bubbleplot_group_border
+  - config: data.functionalTest.marker_border.colorscale_numeric_smallmultiples_border
+  - config: data.functionalTest.marker_border.bubbleplot_small_multiples_with_groups_border
