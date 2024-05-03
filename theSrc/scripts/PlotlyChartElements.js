@@ -51,7 +51,7 @@ function createPlotlyData (config) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             plot_data.push(createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index))
-            if (hasMarkerBorder(config)) {
+            if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
             }
         }
@@ -67,7 +67,7 @@ function createPlotlyData (config) {
             const trace = createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
-            if (hasMarkerBorder(config)) {
+            if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
             }
         }
@@ -85,7 +85,7 @@ function createPlotlyData (config) {
                 if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
-                if (hasMarkerBorder(config)) {
+                if (hasMarkerBorder(config, gp_index)) {
                     plot_data.push(createScatterTraceForMarkerBorder(config, g_name, marker_size, p, gp_index))
                 }
                 if (g_add) group_added.push(g_name)
@@ -161,8 +161,13 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     }
 }
 
-function hasMarkerBorder (config) {
-    return config.pointBorderColor && config.pointBorderWidth
+function hasMarkerBorder (config, index) {
+    if (!config.pointBorderColor || !config.pointBorderWidth) {
+        return false
+    }
+    const border_color = index ? _.at(config.pointBorderColor, index) : config.pointBorderColor
+    const border_width = index ? _.at(config.pointBorderWidth, index) : config.pointBorderWidth
+    return border_color && border_width
 }
 
 // Creates the first trace to ensure categorical data is ordered properly
