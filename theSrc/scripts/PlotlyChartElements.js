@@ -54,6 +54,9 @@ function createPlotlyData (config) {
             if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
             }
+            if (hasMarkerAnnotations(config, index)) {
+                plot_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
+            }
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
@@ -69,6 +72,9 @@ function createPlotlyData (config) {
             plot_data.push(trace)
             if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+            }
+            if (hasMarkerAnnotations(config, index)) {
+                plot_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
             }
         }
     } else {
@@ -87,6 +93,9 @@ function createPlotlyData (config) {
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_data.push(createScatterTraceForMarkerBorder(config, g_name, marker_size, p, gp_index))
+                }
+                if (hasMarkerAnnotations(config, gp_index)) {
+                    plot_data.push(createScatterTraceForMarkerAnnotation(config, g_name, marker_size, p, gp_index))
                 }
                 if (g_add) group_added.push(g_name)
             }
@@ -147,7 +156,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
             color: 'transparent',
             size: marker_size,
             sizemode: 'diameter',
-            opacity: 1,
+            opacity: 1, // somehow this applies to the border, so it needs to be 1
             line: {
                 color: border_color,
                 width: border_width
@@ -161,6 +170,41 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     }
 }
 
+function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
+    const X = data_index ? _.at(config.X, data_index) : config.X
+    const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const text = data_index ? _.at(config.markerAnnotations, data_index) : config.markerAnnotations
+    const x_axis = getPanelXAxisSuffix(panel_index, config)
+    const y_axis = getPanelYAxisSuffix(panel_index, config)
+    return {
+        x: X,
+        y: Y,
+        hoverinfo: 'skip',
+        type: 'scatter',
+        mode: 'markers+text',
+        marker: {
+            color: 'transparent',
+            size: adjustMarkerSizeForAnnotation(marker_size),
+            sizemode: 'diameter',
+            line: {
+                width: 0 // this is needed otherwise plotly draws a thin white border
+            }
+        },
+        legendgroup: group_name,
+        showlegend: false,
+        cliponaxis: false,
+        xaxis: 'x' + x_axis,
+        yaxis: 'y' + y_axis,
+        text: text,
+        textposition: 'middle right'
+    }
+}
+
+function adjustMarkerSizeForAnnotation (marker_size) {
+    const adjustment = 1.25
+    return Array.isArray(marker_size) ? marker_size.map(s => s / adjustment) : marker_size / adjustment
+}
+
 function hasMarkerBorder (config, index) {
     if (!config.pointBorderColor || !config.pointBorderWidth) {
         return false
@@ -168,6 +212,13 @@ function hasMarkerBorder (config, index) {
     const border_color = index ? _.at(config.pointBorderColor, index) : config.pointBorderColor
     const border_width = index ? _.at(config.pointBorderWidth, index) : config.pointBorderWidth
     return border_color && border_width
+}
+
+function hasMarkerAnnotations (config, index) {
+    if (!config.markerAnnotations) {
+        return false
+    }
+    return !!(index ? _.at(config.markerAnnotations, index) : config.markerAnnotations)
 }
 
 // Creates the first trace to ensure categorical data is ordered properly
@@ -657,7 +708,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
             annotations.push({
                 name: 'markerlabel',
-                text: config.label[i],
+                text: combineLabelAndAnnotations(config, i),
                 yanchor: 'bottom',
                 arrowhead: 0,
                 arrowwidth: 0.5,
@@ -760,6 +811,17 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
 
 function removeSmallMultipleAnnotations (annotations) {
     return annotations.filter(a => a.name !== 'markerlabel' && a.name !== 'panellabel' && a.name !== 'ytitle' && a.name !== 'xtitle')
+}
+
+function combineLabelAndAnnotations (config, index) {
+    let label = config.label[index]
+    if (config.preLabelAnnotations && config.preLabelAnnotations[index]) {
+      label = config.preLabelAnnotations[index] + label
+    }
+    if (config.postLabelAnnotations && config.postLabelAnnotations[index]) {
+      label = label + config.postLabelAnnotations[index]
+    }
+    return label
 }
 
 function marginTop (config) {

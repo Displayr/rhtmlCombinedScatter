@@ -34,7 +34,7 @@ class RectPlot {
     this.yLevels = config.yLevels
     this.Z = config.Z
     this.group = config.group
-    this.label = config.label
+    this.label = this.combineLabelsAndAnnotations(config)
     this.labelAlt = config.labelAlt
     this.svg = svg
     this.rootElement = rootElement
@@ -355,7 +355,7 @@ class RectPlot {
                  .attr('x', d => d.x)
                  .attr('y', d => d.y)
                  .attr('font-family', d => d.fontFamily)
-                 .text(d => d.text)
+                 .html(d => d.text)
                  .attr('text-anchor', 'middle')
                  .attr('fill', d => d.color)
                  .attr('opacity', d => d.opacity)
@@ -469,6 +469,17 @@ class RectPlot {
 
   drawTrendLines () {
     this.tl.drawWith(this.svg, this.data.plotColors, this.trendLines)
+  }
+
+  combineLabelsAndAnnotations (config) {
+    let labels = _.escape(config.label)
+    if (config.preLabelAnnotations) {
+      labels = labels.map((l, i) => config.preLabelAnnotations[i] ? config.preLabelAnnotations[i] + l : l)
+    }
+    if (config.postLabelAnnotations) {
+      labels = labels.map((l, i) => config.postLabelAnnotations[i] ? l + config.postLabelAnnotations[i] : l)
+    }
+    return labels
   }
 }
 
