@@ -472,7 +472,7 @@ class RectPlot {
   }
 
   combineLabelsAndAnnotations (config) {
-    let labels = _.escape(config.label)
+    let labels = config.label.map(l => _.escape(l))
     if (config.preLabelAnnotations) {
       labels = labels.map((l, i) => config.preLabelAnnotations[i] ? config.preLabelAnnotations[i] + l : l)
     }
