@@ -221,7 +221,6 @@
   "zTitle": "Population",
   "title": "Life expectancy plot",
   "yTitleFontFamily": "Verdana",
-  "labelsFontSize": 16,
   "labelsFontColor": "#000000",
   "colors": [
     "#5B9BD5",
@@ -253,7 +252,7 @@
   "xPrefix": "$",
   "yPrefix": "",
   "zPrefix": "$",
-  "zSuffix": "people",
+  "zSuffix": "",
   "legendFontSize": 16,
   "legendFontColor": "black"
 }

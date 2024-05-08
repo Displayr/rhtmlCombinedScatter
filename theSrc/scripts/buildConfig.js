@@ -110,6 +110,9 @@ const defaultConfig = {
   marginRight: null,
   marginLeft: null,
   marginAutoexpand: true,
+  markerAnnotations: null,
+  preLabelAnnotations: null,
+  postLabelAnnotations: null,
   origin: true,
   originAlign: false,
   backgroundColor: 'transparent',
@@ -125,7 +128,7 @@ const defaultConfig = {
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
   pointRadius: null, // if Z then 4 else 2 (applied below)
-  pointBorderColor: '#FFFFFF',
+  pointBorderColor: null,
   pointBorderWidth: null,
   showLabels: true,
   showResetButton: true,

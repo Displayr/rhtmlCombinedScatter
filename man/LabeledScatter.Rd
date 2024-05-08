@@ -4,7 +4,7 @@
 \alias{LabeledScatter}
 \title{Labeled scatterplot HTMLWidget}
 \source{
-https://github.com/Displayr/rhtmlLabeledScatter
+https://github.com/Displayr/rhtmlCombinedScatter
 }
 \usage{
 LabeledScatter(
@@ -101,6 +101,9 @@ LabeledScatter(
   margin.left = NULL,
   margin.right = NULL,
   margin.autoexpand = TRUE,
+  marker.annotations = NULL,
+  pre.label.annotations = NULL,
+  post.label.annotations = NULL,
   origin = TRUE,
   origin.align = FALSE,
   panels = NULL,
@@ -376,6 +379,12 @@ on the marker.}
 
 \item{margin.autoexpand}{Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend}
 
+\item{marker.annotations}{Marker annotation strings}
+
+\item{pre.label.annotations}{Label annotation strings (before label)}
+
+\item{post.label.annotations}{Label annotation strings (after label)}
+
 \item{origin}{Defaults to FALSE. Shows the origin lines as dotted if not along axis.}
 
 \item{origin.align}{Defaults to FALSE. Aligns the origin lines as closely to axis as possible.}
@@ -408,10 +417,9 @@ on the marker.}
 When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
 \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).}
 
-\item{point.border.color}{Color of border around point}
+\item{point.border.color}{Colors of borders around points and bubbles}
 
-\item{point.border.width}{Width of border around scatter markers in pixels.
-Defaults to 0 for a scatterplot and 1 for a bubbleplot.}
+\item{point.border.width}{Widths of borders around points and bubbles in pixels}
 
 \item{subtitle}{is the subtitle text given to the plot}
 
@@ -541,7 +549,4 @@ Defaults to 0 for a scatterplot and 1 for a bubbleplot.}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
-}
-\author{
-Po Liu <po.liu@displayr.com>
 }

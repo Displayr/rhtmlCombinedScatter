@@ -1,0 +1,123 @@
+{
+  "label": [
+    "Afghanistan",
+    "Armenia",
+    "Azerbaijan",
+    "Bahrain",
+    "Bangladesh",
+    "Bhutan",
+    "Brunei"
+  ],
+  "X": [
+    59.3,
+    71.6,
+    69.6,
+    76.2,
+    70.6,
+    69.5,
+    76.3
+  ],
+  "Y": [
+    61.9,
+    77.7,
+    75.8,
+    77.9,
+    73.1,
+    70.1,
+    79.2
+  ],
+  "Z": [
+    32526562,
+    3017712,
+    9753968,
+    1377237,
+    160995642,
+    774830,
+    423188
+  ],
+  "group": [
+    "Middle East",
+    "Asia",
+    "Asia",
+    "Middle East",
+    "Asia",
+    "Asia",
+    "Asia"
+  ],
+  "panelLabels": [
+    "Small X",
+    "Other"
+   ], 
+  "panels": [
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "panelNumRows": 1,
+  "panelShareAxes": true,
+  "xTitle": "Mens life expectancy",
+  "yTitle": "Womens life expectancy",
+  "zTitle": "Population",
+  "title": "Life expectancy plot",
+  "yTitleFontFamily": "Verdana",
+  "labelsFontColor": null,
+  "colors": [
+    "#5B9BD5",
+    "#ED7D31",
+    "#A5A5A5",
+    "#1EC000",
+    "#4472C4",
+    "#70AD47",
+    "#255E91",
+    "#9E480E",
+    "#636363",
+    "#997300",
+    "#264478",
+    "#43682B",
+    "#FF2323"
+  ],
+  "xDecimals": 0,
+  "yDecimals": 0,
+  "zDecimals": 1,
+  "titleFontColor": "black",
+  "titleFontSize": 40,
+  "xTitleFontColor": "black",
+  "xTitleFontSize": 20,
+  "yTitleFontColor": "black",
+  "yTitleFontSize": 16,
+  "labelsFontSize": 8,
+  "xSuffix": "",
+  "ySuffix": "",
+  "xPrefix": "",
+  "yPrefix": "",
+  "zPrefix": "",
+  "zSuffix": "",
+  "legendFontSize": 16,
+  "legendFontColor": "black",
+  "xBoundsMaximum": 90,
+  "xBoundsMinimum": 50,
+  "yBoundsMaximum": 90,
+  "yBoundsMinimum": 50,
+  "pointBorderColor": [
+    "#FF0000",
+    null,
+    null,
+    null,
+    "#0000FF",
+    null,
+    null
+  ],
+  "pointBorderWidth": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0
+  ]
+}

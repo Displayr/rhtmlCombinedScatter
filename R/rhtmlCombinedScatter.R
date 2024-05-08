@@ -104,6 +104,9 @@
 #' @param margin.left The left margin in pixels
 #' @param margin.right The right margin in pixels
 #' @param margin.autoexpand Whether to automatically expand margins (even when set) to accommodate elements such as axis labels and the legend
+#' @param marker.annotations Marker annotation strings
+#' @param pre.label.annotations Label annotation strings (before label)
+#' @param post.label.annotations Label annotation strings (after label)
 #' @param y.title.font.color is the font color of the y axis title
 #' @param y.title.font.size is the font size of the y axis title
 #' @param y.title.font.family is the font family of the y axis title
@@ -143,9 +146,8 @@
 #' @param point.radius Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
 #'     When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
 #'     \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).
-#' @param point.border.color Color of border around point
-#' @param point.border.width Width of border around scatter markers in pixels.
-#'      Defaults to 0 for a scatterplot and 1 for a bubbleplot.
+#' @param point.border.color Colors of borders around points and bubbles
+#' @param point.border.width Widths of borders around points and bubbles in pixels
 #' @param x.bounds.minimum Integer or NULL; set minimum of range for plotting on the x axis
 #' @param x.bounds.maximum Integer or NULL; set minimum of range for plotting on the x axis
 #' @param y.bounds.minimum Integer or NULL; set minimum of range for plotting on the y axis
@@ -186,9 +188,7 @@
 #' @param label.placement.temperature.final Label placement algorithm final temperature (Default is 0.0001).
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
-#' @author Po Liu <po.liu@displayr.com>
-#'
-#' @source https://github.com/Displayr/rhtmlLabeledScatter
+#' @source https://github.com/Displayr/rhtmlCombinedScatter
 #'
 #' @import htmlwidgets
 #' @importFrom grDevices rgb colorRamp
@@ -290,6 +290,9 @@ LabeledScatter <- function(
     margin.left = NULL,
     margin.right = NULL,
     margin.autoexpand = TRUE,
+    marker.annotations = NULL,
+    pre.label.annotations = NULL,
+    post.label.annotations = NULL,
     origin = TRUE,
     origin.align = FALSE,
     panels = NULL,
@@ -592,7 +595,10 @@ LabeledScatter <- function(
              backgroundColor = background.color,
              plotAreaBackgroundColor = plot.background.color,
              plotBorderColor = plot.border.color,
-             plotBorderWidth = plot.border.width)
+             plotBorderWidth = plot.border.width,
+             markerAnnotations = marker.annotations,
+             preLabelAnnotations = pre.label.annotations,
+             postLabelAnnotations = post.label.annotations)
 
     sizing.policy <- htmlwidgets::sizingPolicy(browser.fill = TRUE,
                                                viewer.fill = TRUE,

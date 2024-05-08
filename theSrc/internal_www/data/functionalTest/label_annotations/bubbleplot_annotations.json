@@ -1,0 +1,50 @@
+{
+  "label": [
+    "0,0",
+    "2,2",
+    "2,3",
+    "3,2",
+    "3,3",
+    "4,4"
+  ],
+  "X": [
+    0,
+    2,
+    2,
+    3,
+    3,
+    4
+  ],
+  "Y": [
+    0,
+    2,
+    3,
+    2,
+    3,
+    4
+  ],
+  "Z": [
+    0,
+    1,
+    5,
+    5,
+    6,
+    8
+  ],
+  "preLabelAnnotations": [
+    null,
+    "<tspan style='text-shadow: 1px 1px 15px #FF0000, -1px -1px 15px #FF0000;'><tspan style='fill:red;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>A</tspan>",
+    null,
+    null,
+    "<tspan style='outline: 2px solid #CD343C; outline-offset: 0px;'>",
+    null
+  ],
+  "postLabelAnnotations": [
+    null,
+    "<tspan style='fill:red;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>&#8595;</tspan></tspan>",
+    null,
+    null,
+    "</tspan>",
+    null
+  ]
+}
