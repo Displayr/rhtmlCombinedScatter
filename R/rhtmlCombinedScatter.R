@@ -197,7 +197,7 @@
 #' @export
 #'
 
-LabeledScatter <- function(
+CombinedScatter <- function(
     X = NULL,
     Y = NULL,
     Z = NULL,
