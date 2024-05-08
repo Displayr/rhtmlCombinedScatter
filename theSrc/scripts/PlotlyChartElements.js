@@ -90,7 +90,7 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add))
+                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_data.push(createScatterTraceForMarkerBorder(config, g_name, marker_size, p, gp_index))
                 }
@@ -104,7 +104,7 @@ function createPlotlyData (config) {
     return plot_data
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.X, data_index) : config.X
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
@@ -116,7 +116,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
-        hoverinfo: 'name+text',
+        hoverinfo: has_groups ? 'name+text' : 'text',
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',
