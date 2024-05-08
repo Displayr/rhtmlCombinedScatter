@@ -245,7 +245,7 @@
   "xPrefix": "$",
   "yPrefix": "~",
   "zPrefix": "$",
-  "zSuffix": "people",
+  "zSuffix": "",
   "legendFontSize": 16,
   "legendFontColor": "black",
   "yBoundsMaximum": 85,

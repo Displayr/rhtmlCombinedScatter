@@ -1,0 +1,10 @@
+type: multi_widget_single_page
+title: "test axis configurations"
+width: 600
+height: 500
+rowSize: 2
+widgets:
+  - config: data.functionalTest.label_annotations.bubbleplot_label_annotations
+  - config: data.functionalTest.label_annotations.bubbleplot_group_annotations
+  - config: data.functionalTest.label_annotations.colorscale_numeric_smallmultiples_annotations
+  - config: data.functionalTest.label_annotations.bubbleplot_small_multiples_with_groups_annotations

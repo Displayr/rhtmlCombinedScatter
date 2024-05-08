@@ -102,22 +102,14 @@
   "xBoundsMinimum": 50,
   "yBoundsMaximum": 90,
   "yBoundsMinimum": 50,
-  "pointBorderColor": [
-    "#FF0000",
+  "showLabels":false,
+  "markerAnnotations": [
+    "<span style='color:red;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>&#8595;</span>",
     null,
     null,
     null,
-    "#0000FF",
     null,
-    null
-  ],
-  "pointBorderWidth": [
-    1,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0
+    null,
+    "<span style='color:blue;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>&#8593;</span>"
   ]
 }
