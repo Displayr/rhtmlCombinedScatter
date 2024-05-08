@@ -1,15 +1,13 @@
-[![](https://travis-ci.org/Displayr/rhtmlLabeledScatter.svg?branch=master)](https://travis-ci.org/Displayr/rhtmlLabeledScatter/)
-[![Coverage Status](https://coveralls.io/repos/github/Displayr/rhtmlLabeledScatter/badge.svg?branch=master)](https://coveralls.io/github/Displayr/rhtmlLabeledScatter?branch=master)
-# rhtmlLabeledScatter
+# rhtmlCombinedScatter
 
-An HTML widget that creates a labeled scatter plot
+A htmlwidget that creates a scatterplot. Combines plotly and [Displayr/rhtmlLabeledScatter](https://github.com/Displayr/rhtmlLabeledScatter) to produce a scatterplot with optimally positioned labels.
 
 ## Installation
 
 To install from GitHub:
 ```
 require(devtools)
-install_github("Displayr/rhtmlLabeledScatter", dependencies = NA)
+install_github("Displayr/rhtmlCombinedScatter", dependencies = NA)
 ```
 
 If you have not set up a GitHub Personal Access Token, you will likely need to do so to avoid 
@@ -26,6 +24,6 @@ in `Suggests` in the `DESCRIPTION` file (some of which may be proprietary and un
 
 ## Submitting a bug report
 
-If you encounter a problem using the package, please open an [issue](https://github.com/Displayr/rhtmlLabeledScatter/issues). To achieve a resolution as quickly as possible, please include a minimal, reproducible example of the bug, along with the exact error message or output you receive and the behavior you expect. Including the output of `sessionInfo()` in R can be helpful to reproduce the issue. Please see this [FAQ](https://community.rstudio.com/t/faq-whats-a-reproducible-example-reprex-and-how-do-i-create-one/5219), which has a number of useful tips on creating great reproducible examples. 
+If you encounter a problem using the package, please open an [issue](https://github.com/Displayr/rhtmlCombinedScatter/issues). To achieve a resolution as quickly as possible, please include a minimal, reproducible example of the bug, along with the exact error message or output you receive and the behavior you expect. Including the output of `sessionInfo()` in R can be helpful to reproduce the issue. Please see this [FAQ](https://community.rstudio.com/t/faq-whats-a-reproducible-example-reprex-and-how-do-i-create-one/5219), which has a number of useful tips on creating great reproducible examples. 
 
 [![Displayr logo](https://mwmclean.github.io/img/logo-header.png)](https://www.displayr.com)
