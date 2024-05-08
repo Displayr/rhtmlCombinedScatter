@@ -102,6 +102,15 @@
   "xBoundsMinimum": 50,
   "yBoundsMaximum": 90,
   "yBoundsMinimum": 50,
+  "preLabelAnnotations": [
+    "<span style='color:red;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>A</span>",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "<span style='color:blue;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>B</span>"
+  ],
   "postLabelAnnotations": [
     "<span style='color:red;font-size:12;font-family:Arial;font-weight:normal;font-style:normal;'>&#8595;</span>",
     null,
