@@ -19,6 +19,8 @@ const defaultConfig = {
   // plotly has not option to show axis line with dashes
   xAxisTickColor: '#EEEEEE',
   xAxisTickLength: 5,
+  xAxisLabelWrap: null,
+  xAxisLabelWrapNChar: null,
   xAxisZeroLineColor: '#000000',
   xAxisZeroLineDash: 'dot',
   xAxisZeroLineWidth: 1,
@@ -105,6 +107,8 @@ const defaultConfig = {
   legendY: null,
   legendXAnchor: null,
   legendYAnchor: null,
+  legendWrap: null,
+  legendWrapNChar: null,
   marginTop: null,
   marginBottom: null,
   marginRight: null,

@@ -1,0 +1,48 @@
+{
+  "X": [
+    "Alfa Romeo",
+    "General Motors",
+    "Land Rover"
+  ],
+  "Y": [
+    0.8516,
+    0.7926,
+    1.8161
+  ],
+  "Z": [
+    0.8516,
+    0.7926,
+    1.8161
+  ],
+  "group": {},
+  "xLevels": [
+    "Alfa Romeo",
+    "General Motors",
+    "Land Rover"
+  ],
+  "yLevels": [],
+  "fixedAspectRatio": true,
+  "colors": [
+    "#5B9BD5",
+    "#ED7D31",
+    "#A5A5A5",
+    "#1EC000",
+    "#4472C4",
+    "#70AD47",
+    "#255E91",
+    "#9E480E",
+    "#636363",
+    "#997300",
+    "#264478",
+    "#43682B",
+    "#FF2323"
+  ],
+  "labelsFontColor": null,
+  "labelsFontSize": 12,
+  "labelsLogoScale": null,
+  "yTitleFontSize": 16,
+  "xTitleFontSize": 16,
+  "pointRadius": 2,
+  "xAxisLabelWrap": true,
+  "xAxisLabelWrapNChar": 6
+}

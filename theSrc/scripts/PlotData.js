@@ -2,6 +2,7 @@ import _ from 'lodash'
 import autoBind from 'es6-autobind'
 import PlotColors from './PlotColors'
 import PlotLabel from './PlotLabel'
+import { wrapByNumberOfCharacters } from './PlotlyChartElements'
 import LegendUtils from './utils/LegendUtils'
 import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
@@ -284,7 +285,8 @@ class PlotData {
           let fontOpacity = _.includes(this.hiddenLabelsId, i) ? 0.0 : 1.0
           if ((this.vb.labelFontColor != null) && !(this.vb.labelFontColor === '')) { fontColor = this.vb.labelFontColor }
           const group = (this.group != null) ? this.group[i] : ''
-          const hidePointAndLabel = this.hiddenSeries.indexOf(group) > -1
+          const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
+          const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
           this.pts.push({ x, y, r, label, labelAlt, labelX: this.origX[i].toString(), labelY: this.origY[i].toString(), labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
           this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url, hidePointAndLabel })
         }

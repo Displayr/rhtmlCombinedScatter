@@ -18,9 +18,9 @@
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
 #' @param color.scale.title Color scale title
-#' @param colorScaleTitleFontColor Color scale title font color
-#' @param colorScaleTitleFontFamily Color scale title font family
-#' @param colorScaleTitleFontSize Color scale title font size
+#' @param color.scale.title.font.color Color scale title font color
+#' @param color.scale.title.font.family Color scale title font family
+#' @param color.scale.title.font.size Color scale title font size
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param background.color The color of the entire background
 #' @param plot.background.color The color of the plot area background
@@ -99,6 +99,8 @@
 #' @param legend.y The y position of the legend, relative to the plot area
 #' @param legend.x.anchor Either NULL, "left", "center" or "right"
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
+#' @param legend.wrap Whether to wrap the legend group names
+#' @param legend.wrap.n.char The number of characters before wrapping the legend group names
 #' @param margin.top The top margin in pixels
 #' @param margin.bottom The bottom margin in pixels
 #' @param margin.left The left margin in pixels
@@ -170,7 +172,7 @@
 #' @param fit.line.names A character vector of the names of the lines
 #' @param fit.ci.colors A character vector of the CI fill colors
 #' @param fit.ci.label.colors A character vector of the CI label colors
-#' @param plot.border.show Boolean toggle to show border around plot area (Default is TRUE).
+#' @param plot.border.show Boolean toggle to show border around plot area.
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
 #' @param label.placement.weight.distance Label placement algorithm weight for the distance between the label and the point (Default is 10.0)
@@ -235,8 +237,8 @@ CombinedScatter <- function(
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
     color.scale.title = "",
-    colorScaleTitleFontColor = rgb(44, 44, 44, maxColorValue = 255),
-    colorScaleTitleFontFamily = "Arial",
+    color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    color.scale.title.font.family = "Arial",
     colorScaleTitleFontSize = 12,
     color.scale.format = NULL,
     debug.mode = FALSE,
@@ -285,6 +287,8 @@ CombinedScatter <- function(
     legend.y = NULL,
     legend.x.anchor = NULL,
     legend.y.anchor = NULL,
+    legend.wrap = NULL,
+    legend.wrap.n.char = NULL,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -293,7 +297,7 @@ CombinedScatter <- function(
     marker.annotations = NULL,
     pre.label.annotations = NULL,
     post.label.annotations = NULL,
-    origin = TRUE,
+    origin = FALSE,
     origin.align = FALSE,
     panels = NULL,
     panel.num.rows = 2,
@@ -304,7 +308,7 @@ CombinedScatter <- function(
     panel.font.family = "Arial",
     panel.font.size = 12,
     plot.border.color = 'Black',
-    plot.border.show = TRUE,
+    plot.border.show = FALSE,
     plot.border.width = 1,
     plot.background.color = 'transparent',
     point.radius = if (is.null(Z)) 2 else 4,
@@ -499,6 +503,8 @@ CombinedScatter <- function(
              legendY = legend.y,
              legendXAnchor = legend.x.anchor,
              legendYAnchor = legend.y.anchor,
+             legendWrap = legend.wrap,
+             legendWrapNChar = legend.wrap.n.char,
              yTitleFontColor = y.title.font.color,
              yTitleFontFamily = y.title.font.family,
              yTitleFontSize = y.title.font.size,
