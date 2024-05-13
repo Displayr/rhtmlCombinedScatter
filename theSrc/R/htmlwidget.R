@@ -170,7 +170,7 @@
 #' @param fit.line.names A character vector of the names of the lines
 #' @param fit.ci.colors A character vector of the CI fill colors
 #' @param fit.ci.label.colors A character vector of the CI label colors
-#' @param plot.border.show Boolean toggle to show border around plot area (Default is TRUE).
+#' @param plot.border.show Boolean toggle to show border around plot area.
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
 #' @param label.placement.weight.distance Label placement algorithm weight for the distance between the label and the point (Default is 10.0)
@@ -293,7 +293,7 @@ CombinedScatter <- function(
     marker.annotations = NULL,
     pre.label.annotations = NULL,
     post.label.annotations = NULL,
-    origin = TRUE,
+    origin = FALSE,
     origin.align = FALSE,
     panels = NULL,
     panel.num.rows = 2,
@@ -304,7 +304,7 @@ CombinedScatter <- function(
     panel.font.family = "Arial",
     panel.font.size = 12,
     plot.border.color = 'Black',
-    plot.border.show = TRUE,
+    plot.border.show = FALSE,
     plot.border.width = 1,
     plot.background.color = 'transparent',
     point.radius = if (is.null(Z)) 2 else 4,
