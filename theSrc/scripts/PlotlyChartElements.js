@@ -88,14 +88,15 @@ function createPlotlyData (config) {
                 const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
+                const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerBorder(config, g_name, marker_size, p, gp_index))
+                    plot_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (hasMarkerAnnotations(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerAnnotation(config, g_name, marker_size, p, gp_index))
+                    plot_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (g_add) group_added.push(g_name)
             }
@@ -112,7 +113,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
     return {
-        x: X,
+        x: isXAxisLabelsWrapping(config) ? X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : X,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
@@ -230,6 +231,9 @@ function createBaseTrace (config) {
     }
     if (y_levels.length < x_levels.length) {
         y_levels = y_levels.concat(new Array(x_levels.length - y_levels.length).fill(config.Y[0]))
+    }
+    if (config.xLevels && isXAxisLabelsWrapping(config)) {
+        x_levels = x_levels.map(l => wrapByNumberOfCharacters(l, config.xAxisLabelWrapNChar))
     }
 
     return {
@@ -869,6 +873,43 @@ function chartHeight (config, height) {
     }
 }
 
+function isLegendWrapping (config) {
+    return config.legendWrap && config.legendWrapNChar
+}
+
+function isXAxisLabelsWrapping (config) {
+    return config.xAxisLabelWrap && config.xAxisLabelWrapNChar
+}
+
+function wrapByNumberOfCharacters (text, n_char) {
+    if (n_char <= 0) {
+        return ''
+    }
+    const tokens = text
+        .split(' ')
+        .map((token) => token.trim())
+        .filter((token) => token.length > 0)
+    if (tokens.length === 0) {
+        return ''
+    }
+    let current_line = []
+    const lines = []
+    let token
+    while ((token = tokens.shift())) {
+        current_line.push(token)
+        const width = _.sum(current_line.map(l => l.length)) + (current_line.length - 1)
+        if (width > n_char && current_line.length > 1) {
+                tokens.unshift(current_line.pop())
+                lines.push(`${current_line.join(' ')}`)
+                current_line = []
+        }
+    }
+    if (current_line.length > 0) {
+        lines.push(`${current_line.join(' ')}`)
+    }
+    return lines.join('<br>')
+}
+
 module.exports = {
     createPlotlyData,
     createPlotlyLayout,
@@ -878,5 +919,6 @@ module.exports = {
     titleHeight,
     footerHeight,
     chartHeight,
+    wrapByNumberOfCharacters,
     LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
 }

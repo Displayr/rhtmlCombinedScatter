@@ -26,6 +26,9 @@ class LegendSettings {
     this.title = config.zTitle
     this.zPrefix = config.zPrefix
     this.zSuffix = config.zSuffix
+    this.wrap = config.legendWrap
+    this.wrapNChar = config.legendWrapNChar
+    this.bubbleSizesAsDiameter = config.bubbleSizesAsDiameter
   }
 
   showLegend () { return this.show }

@@ -18,12 +18,13 @@
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
 #' @param color.scale.title Color scale title
-#' @param colorScaleTitleFontColor Color scale title font color
-#' @param colorScaleTitleFontFamily Color scale title font family
-#' @param colorScaleTitleFontSize Color scale title font size
+#' @param color.scale.title.font.color Color scale title font color
+#' @param color.scale.title.font.family Color scale title font family
+#' @param color.scale.title.font.size Color scale title font size
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param background.color The color of the entire background
 #' @param plot.background.color The color of the plot area background
+#' @param bubble.sizes.as.diameter Whether bubble size (Z) should be interpreted as bubble diameter instead of bubble area
 #' @param panel.num.rows Controls how many rows small multiples are arranged into
 #' @param panel.share.axes Defaults to TRUE. Whether or not axis bounds and titles are shared across all panels
 #' @param panel.x.gap A number between 0 and 1. Controls the horizontal space between panels.
@@ -49,6 +50,8 @@
 #' @param x.axis.tick.color Color of tick lines on the x axis.
 #' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
 #'      the tick labels are to the axis/grid lines.#'
+#' @param x.axis.label.wrap Whether to wrap the x-axis labels
+#' @param x.axis.label.wrap.n.char The number of characters before wrapping the x-axis labels
 #' @param y.axis.line.color Line color of the y axis line. This is shown at both the left and right
 #'      of the plot area when `plot.border.show = TRUE`.
 #' @param y.axis.line.width Width of the y axis line in pixels.
@@ -99,6 +102,8 @@
 #' @param legend.y The y position of the legend, relative to the plot area
 #' @param legend.x.anchor Either NULL, "left", "center" or "right"
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
+#' @param legend.wrap Whether to wrap the legend group names
+#' @param legend.wrap.n.char The number of characters before wrapping the legend group names
 #' @param margin.top The top margin in pixels
 #' @param margin.bottom The bottom margin in pixels
 #' @param margin.left The left margin in pixels
@@ -170,7 +175,7 @@
 #' @param fit.line.names A character vector of the names of the lines
 #' @param fit.ci.colors A character vector of the CI fill colors
 #' @param fit.ci.label.colors A character vector of the CI label colors
-#' @param plot.border.show Boolean toggle to show border around plot area (Default is TRUE).
+#' @param plot.border.show Boolean toggle to show border around plot area.
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
 #' @param label.placement.weight.distance Label placement algorithm weight for the distance between the label and the point (Default is 10.0)
@@ -214,6 +219,8 @@ CombinedScatter <- function(
     x.axis.line.width = 1,
     x.axis.tick.color = x.axis.grid.color,
     x.axis.tick.length = 5,
+    x.axis.label.wrap = NULL,
+    x.axis.label.wrap.n.char = NULL,
     x.axis.zero.line.color = '#000000',
     x.axis.zero.line.dash = 'dot',
     x.axis.zero.line.width = 1,
@@ -231,12 +238,13 @@ CombinedScatter <- function(
     y.axis.zero.line.dash = 'dot',
     y.axis.zero.line.width = 1,
     background.color = 'transparent',
+    bubble.sizes.as.diameter = FALSE,
     color.transparency = NULL,
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
     color.scale.title = "",
-    colorScaleTitleFontColor = rgb(44, 44, 44, maxColorValue = 255),
-    colorScaleTitleFontFamily = "Arial",
+    color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    color.scale.title.font.family = "Arial",
     colorScaleTitleFontSize = 12,
     color.scale.format = NULL,
     debug.mode = FALSE,
@@ -285,6 +293,8 @@ CombinedScatter <- function(
     legend.y = NULL,
     legend.x.anchor = NULL,
     legend.y.anchor = NULL,
+    legend.wrap = NULL,
+    legend.wrap.n.char = NULL,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -293,7 +303,7 @@ CombinedScatter <- function(
     marker.annotations = NULL,
     pre.label.annotations = NULL,
     post.label.annotations = NULL,
-    origin = TRUE,
+    origin = FALSE,
     origin.align = FALSE,
     panels = NULL,
     panel.num.rows = 2,
@@ -304,7 +314,7 @@ CombinedScatter <- function(
     panel.font.family = "Arial",
     panel.font.size = 12,
     plot.border.color = 'Black',
-    plot.border.show = TRUE,
+    plot.border.show = FALSE,
     plot.border.width = 1,
     plot.background.color = 'transparent',
     point.radius = if (is.null(Z)) 2 else 4,
@@ -499,6 +509,8 @@ CombinedScatter <- function(
              legendY = legend.y,
              legendXAnchor = legend.x.anchor,
              legendYAnchor = legend.y.anchor,
+             legendWrap = legend.wrap,
+             legendWrapNChar = legend.wrap.n.char,
              yTitleFontColor = y.title.font.color,
              yTitleFontFamily = y.title.font.family,
              yTitleFontSize = y.title.font.size,
@@ -520,6 +532,8 @@ CombinedScatter <- function(
              xAxisLineWidth = x.axis.line.width,
              xAxisTickColor = x.axis.tick.color,
              xAxisTickLength = x.axis.tick.length,
+             xAxisLabelWrap = x.axis.label.wrap,
+             xAxisLabelWrapNChar = x.axis.label.wrap.n.char,
              xAxisZeroLineColor = x.axis.zero.line.color,
              xAxisZeroLineDash = x.axis.zero.line.dash,
              xAxisZeroLineWidth = x.axis.zero.line.width,
@@ -593,6 +607,7 @@ CombinedScatter <- function(
              marginRight = margin.right,
              marginAutoexpand = margin.autoexpand,
              backgroundColor = background.color,
+             bubbleSizesAsDiameter = bubble.sizes.as.diameter,
              plotAreaBackgroundColor = plot.background.color,
              plotBorderColor = plot.border.color,
              plotBorderWidth = plot.border.width,

@@ -262,7 +262,7 @@ class LabeledScatter {
     const bubble_legend_rect = this.getBubbleLegendRect(is_to_right_of_plotly_legend, config)
     const bubble_legend = new BubbleLegend(legend_settings, bubble_legend_rect, config.pointRadius)
     const max_z = _.max(this.data.Z)
-    const legend_bubbles = LegendUtils.getLegendBubbles(max_z, legend_settings.zPrefix, legend_settings.zSuffix)
+    const legend_bubbles = LegendUtils.getLegendBubbles(max_z, legend_settings.zPrefix, legend_settings.zSuffix, legend_settings.bubbleSizesAsDiameter)
     bubble_legend.setup(legend_bubbles)
     const svg = this.createSvgForCustomElements('bubblelegendlayer')
     bubble_legend.drawBubblesWith(svg, this.axisSettings)
