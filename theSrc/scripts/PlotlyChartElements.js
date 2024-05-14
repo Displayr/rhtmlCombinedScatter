@@ -882,15 +882,32 @@ function isXAxisLabelsWrapping (config) {
 }
 
 function wrapByNumberOfCharacters (text, n_char) {
-    const n_lines = Math.ceil(text.length / n_char)
-    let result = ''
-    for (let i = 0; i < n_lines; i++) {
-        result = result + text.substr(i * n_char, n_char)
-        if (i < n_lines - 1) {
-            result = result + '<br>'
+    if (n_char <= 0) {
+        return ''
+    }
+    const tokens = text
+        .split(' ')
+        .map((token) => token.trim())
+        .filter((token) => token.length > 0)
+    if (tokens.length === 0) {
+        return ''
+    }
+    let current_line = []
+    const lines = []
+    let token
+    while ((token = tokens.shift())) {
+        current_line.push(token)
+        const width = _.sum(current_line.map(l => l.length)) + (current_line.length - 1)
+        if (width > n_char && current_line.length > 1) {
+                tokens.unshift(current_line.pop())
+                lines.push(`${current_line.join(' ')}`)
+                current_line = []
         }
     }
-    return result
+    if (current_line.length > 0) {
+        lines.push(`${current_line.join(' ')}`)
+    }
+    return lines.join('<br>')
 }
 
 module.exports = {

@@ -4,5 +4,5 @@ width: 576
 height:  512
 rowSize: 2
 widgets:
-  # - config: data.legacy_bubble.bubbleplot_colas|{"legendWrap":true,"legendWrapNChar":6}
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendWrap":true,"legendWrapNChar":8}
   - config: data.functionalTest.wrapping.categorical_with_wrapping

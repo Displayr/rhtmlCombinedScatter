@@ -24,6 +24,8 @@ CombinedScatter(
   x.axis.line.width = 1,
   x.axis.tick.color = x.axis.grid.color,
   x.axis.tick.length = 5,
+  x.axis.label.wrap = NULL,
+  x.axis.label.wrap.n.char = NULL,
   x.axis.zero.line.color = "#000000",
   x.axis.zero.line.dash = "dot",
   x.axis.zero.line.width = 1,
@@ -46,8 +48,8 @@ CombinedScatter(
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
   color.scale = NULL,
   color.scale.title = "",
-  colorScaleTitleFontColor = rgb(44, 44, 44, maxColorValue = 255),
-  colorScaleTitleFontFamily = "Arial",
+  color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  color.scale.title.font.family = "Arial",
   colorScaleTitleFontSize = 12,
   color.scale.format = NULL,
   debug.mode = FALSE,
@@ -96,6 +98,8 @@ CombinedScatter(
   legend.y = NULL,
   legend.x.anchor = NULL,
   legend.y.anchor = NULL,
+  legend.wrap = NULL,
+  legend.wrap.n.char = NULL,
   margin.top = NULL,
   margin.bottom = NULL,
   margin.left = NULL,
@@ -104,7 +108,7 @@ CombinedScatter(
   marker.annotations = NULL,
   pre.label.annotations = NULL,
   post.label.annotations = NULL,
-  origin = TRUE,
+  origin = FALSE,
   origin.align = FALSE,
   panels = NULL,
   panel.num.rows = 2,
@@ -115,7 +119,7 @@ CombinedScatter(
   panel.font.family = "Arial",
   panel.font.size = 12,
   plot.border.color = "Black",
-  plot.border.show = TRUE,
+  plot.border.show = FALSE,
   plot.border.width = 1,
   plot.background.color = "transparent",
   point.radius = if (is.null(Z)) 2 else 4,
@@ -221,6 +225,10 @@ of the plot area when `plot.border.show = TRUE`.}
 \item{x.axis.tick.length}{Length of tick lines on the x axis. This also adjust how close
 the tick labels are to the axis/grid lines.#'}
 
+\item{x.axis.label.wrap}{Whether to wrap the x-axis labels}
+
+\item{x.axis.label.wrap.n.char}{The number of characters before wrapping the x-axis labels}
+
 \item{x.axis.zero.line.color}{Line color of the zero line on the x-axis. Shown when `origin` is TRUE.}
 
 \item{x.axis.zero.line.dash}{Line type of zero line. Can be one of 'solid', 'dot', 'dash'.}
@@ -267,11 +275,9 @@ It should have the same length as the number of levels in `group`}
 
 \item{color.scale.title}{Color scale title}
 
-\item{colorScaleTitleFontColor}{Color scale title font color}
+\item{color.scale.title.font.color}{Color scale title font color}
 
-\item{colorScaleTitleFontFamily}{Color scale title font family}
-
-\item{colorScaleTitleFontSize}{Color scale title font size}
+\item{color.scale.title.font.family}{Color scale title font family}
 
 \item{color.scale.format}{A string that is interpreted for the format of the tick labels along the color scale bar.}
 
@@ -369,6 +375,10 @@ on the marker.}
 
 \item{legend.y.anchor}{Either NULL, "top", "center" or "bottom"}
 
+\item{legend.wrap}{Whether to wrap the legend group names}
+
+\item{legend.wrap.n.char}{The number of characters before wrapping the legend group names}
+
 \item{margin.top}{The top margin in pixels}
 
 \item{margin.bottom}{The bottom margin in pixels}
@@ -407,7 +417,7 @@ on the marker.}
 
 \item{plot.border.color}{Color of border around plot area (Default is black).}
 
-\item{plot.border.show}{Boolean toggle to show border around plot area (Default is TRUE).}
+\item{plot.border.show}{Boolean toggle to show border around plot area.}
 
 \item{plot.border.width}{Width of border around plot area in px (Default is 1).}
 
@@ -546,6 +556,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
+
+\item{color.scale.title.font.size}{Color scale title font size}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
