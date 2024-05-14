@@ -8,9 +8,15 @@ class LegendUtils {
     return (Math.sqrt(normalizedZ / Math.PI) * scale * 50 / 3)
   }
 
-  static getLegendBubbles (maxZ, zPrefix, zSuffix) {
-    const bubbleSizes = this.getLegendBubbleSizes(maxZ)
+  static getLegendBubbles (maxZ, zPrefix, zSuffix, bubbleSizesAsDiameter) {
+    let bubbleSizes = this.getLegendBubbleSizes(maxZ, bubbleSizesAsDiameter)
     const bubbleLabels = this.getLegendBubbleLabels(bubbleSizes, zPrefix, zSuffix)
+
+    // When bubbleSizesAsDiameter is true, we square the sizes,
+    // since they will be treated as area later.
+    if (bubbleSizesAsDiameter) {
+      bubbleSizes = bubbleSizes.map(s => s * s)
+    }
 
     const legendBubbles = {
       large: {
@@ -25,39 +31,60 @@ class LegendUtils {
         size: bubbleSizes[2],
         label: bubbleLabels[2],
       },
-      maxSize: Math.max(maxZ, bubbleSizes[0]),
+      maxSize: Math.max(bubbleSizesAsDiameter ? maxZ * maxZ : maxZ, bubbleSizes[0]),
     }
     return legendBubbles
   }
 
-  static getLegendBubbleSizes (maxZ) {
-    const significands = this.getBubbleSizeSignificands(maxZ)
+  static getLegendBubbleSizes (maxZ, bubbleSizesAsDiameter) {
+    const significands = this.getBubbleSizeSignificands(maxZ, bubbleSizesAsDiameter)
     const exponent = this.getExponent(maxZ)
     return significands.map(x => x * (10 ** exponent))
   }
 
-  static getBubbleSizeSignificands (maxZ) {
+  static getBubbleSizeSignificands (maxZ, bubbleSizesAsDiameter) {
     const significand = this.getSignificand(maxZ)
     const maxSignificand = this.roundSignificand(significand)
-
-    if (maxSignificand === 10) {
-      return [maxSignificand, 5, 1]
-    } else if (maxSignificand === 7) {
-      return [maxSignificand, 3, 1]
-    } else if (maxSignificand >= 6) {
-      return [maxSignificand, 3, 1]
-    } else if (maxSignificand === 5) {
-      return [maxSignificand, 2, 0.5]
-    } else if (maxSignificand === 4) {
-      return [maxSignificand, 2, 0.5]
-    } else if (maxSignificand === 3) {
-      return [maxSignificand, 1.5, 0.5]
-    } else if (maxSignificand === 2) {
-      return [maxSignificand, 1, 0.2]
-    } else if (maxSignificand === 1.5) {
-      return [maxSignificand, 0.7, 0.2]
-    } else { // maxSignificand === 1
-      return [maxSignificand, 0.5, 0.1] // consistent with maxSignificand == 10
+    if (bubbleSizesAsDiameter) {
+      if (maxSignificand === 10) {
+        return [maxSignificand, 7, 4]
+      } else if (maxSignificand === 7) {
+        return [maxSignificand, 5, 3]
+      } else if (maxSignificand >= 6) {
+        return [maxSignificand, 4, 2]
+      } else if (maxSignificand === 5) {
+        return [maxSignificand, 3, 2]
+      } else if (maxSignificand === 4) {
+        return [maxSignificand, 2, 1]
+      } else if (maxSignificand === 3) {
+        return [maxSignificand, 2, 1]
+      } else if (maxSignificand === 2) {
+        return [maxSignificand, 1.3, 0.7]
+      } else if (maxSignificand === 1.5) {
+        return [maxSignificand, 1, 0.5]
+      } else { // maxSignificand === 1
+        return [maxSignificand, 0.7, 0.4] // consistent with maxSignificand == 10
+      }
+    } else {
+      if (maxSignificand === 10) {
+        return [maxSignificand, 5, 1]
+      } else if (maxSignificand === 7) {
+        return [maxSignificand, 3, 1]
+      } else if (maxSignificand >= 6) {
+        return [maxSignificand, 3, 1]
+      } else if (maxSignificand === 5) {
+        return [maxSignificand, 2, 0.5]
+      } else if (maxSignificand === 4) {
+        return [maxSignificand, 2, 0.5]
+      } else if (maxSignificand === 3) {
+        return [maxSignificand, 1.5, 0.5]
+      } else if (maxSignificand === 2) {
+        return [maxSignificand, 1, 0.2]
+      } else if (maxSignificand === 1.5) {
+        return [maxSignificand, 0.7, 0.2]
+      } else { // maxSignificand === 1
+        return [maxSignificand, 0.5, 0.1] // consistent with maxSignificand == 10
+      }
     }
   }
 

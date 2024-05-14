@@ -221,7 +221,7 @@ class PlotData {
 
     const maxZ = _.max(this.Z)
     if (this.legendSettings.showBubblesInLegend) {
-      this.legendBubbles = legendUtils.getLegendBubbles(maxZ, this.legendSettings.zPrefix, this.legendSettings.zSuffix)
+      this.legendBubbles = legendUtils.getLegendBubbles(maxZ, this.legendSettings.zPrefix, this.legendSettings.zSuffix, this.legendSettings.bubbleSizesAsDiameter)
       this.normZ = legendUtils.normalizeZValues(this.Z, this.legendBubbles.maxSize)
     } else {
       this.normZ = legendUtils.normalizeZValues(this.Z, maxZ)

@@ -37,6 +37,7 @@ const defaultConfig = {
   yAxisZeroLineColor: '#000000',
   yAxisZeroLineDash: 'dot',
   yAxisZeroLineWidth: 1,
+  bubbleSizesAsDiameter: false,
   // The colorScale differs from the colors in that the colors supplied
   // should be regularly spaced and in ascending order.
   // We expect that R wrapper function will ensure the colorScale
@@ -234,12 +235,10 @@ function buildConfig (userConfig, width, height) {
   // Normalize bubble sizes to compute diameter in pixels
   config.normZ = null
   if (Array.isArray(config.Z)) {
-    const maxZ = _.max(config.Z)
-    config.normZ = LegendUtils.normalizeZValues(config.Z, maxZ)
+    const z = config.bubbleSizesAsDiameter ? config.Z.map(v => v * v) : config.Z
+    const maxZ = _.max(z)
+    config.normZ = LegendUtils.normalizeZValues(z, maxZ)
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
-    if (config.pointBorderWidth === null) config.pointBorderWidth = 1
-  } else {
-    if (config.pointBorderWidth === null) config.pointBorderWidth = 0
   }
 
   if (config.fitX && config.fitY) {
