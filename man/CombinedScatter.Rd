@@ -43,6 +43,7 @@ CombinedScatter(
   y.axis.zero.line.dash = "dot",
   y.axis.zero.line.width = 1,
   background.color = "transparent",
+  bubble.sizes.as.diameter = FALSE,
   color.transparency = NULL,
   colors = c("#5B9BD5", "#ED7D31", "#A5A5A5", "#1EC000", "#4472C4", "#70AD47", "#255E91",
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
@@ -264,6 +265,8 @@ the tick labels are to the axis/grid lines.}
 \item{y.axis.zero.line.width}{Line width in pixels of the zero line.}
 
 \item{background.color}{The color of the entire background}
+
+\item{bubble.sizes.as.diameter}{Whether bubble size (Z) should be interpreted as bubble diameter instead of bubble area}
 
 \item{color.transparency}{Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z}
 

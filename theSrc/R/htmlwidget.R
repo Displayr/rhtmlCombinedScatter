@@ -24,6 +24,7 @@
 #' @param color.scale.format A string that is interpreted for the format of the tick labels along the color scale bar.
 #' @param background.color The color of the entire background
 #' @param plot.background.color The color of the plot area background
+#' @param bubble.sizes.as.diameter Whether bubble size (Z) should be interpreted as bubble diameter instead of bubble area
 #' @param panel.num.rows Controls how many rows small multiples are arranged into
 #' @param panel.share.axes Defaults to TRUE. Whether or not axis bounds and titles are shared across all panels
 #' @param panel.x.gap A number between 0 and 1. Controls the horizontal space between panels.
@@ -237,6 +238,7 @@ CombinedScatter <- function(
     y.axis.zero.line.dash = 'dot',
     y.axis.zero.line.width = 1,
     background.color = 'transparent',
+    bubble.sizes.as.diameter = FALSE,
     color.transparency = NULL,
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
@@ -605,6 +607,7 @@ CombinedScatter <- function(
              marginRight = margin.right,
              marginAutoexpand = margin.autoexpand,
              backgroundColor = background.color,
+             bubbleSizesAsDiameter = bubble.sizes.as.diameter,
              plotAreaBackgroundColor = plot.background.color,
              plotBorderColor = plot.border.color,
              plotBorderWidth = plot.border.width,
