@@ -882,8 +882,8 @@ function isXAxisLabelsWrapping (config) {
 }
 
 function wrapByNumberOfCharacters (text, n_char) {
-    if (n_char <= 0) {
-        return ''
+    if (typeof text !== 'string' || n_char <= 0) {
+        return text
     }
     const tokens = text
         .split(' ')
