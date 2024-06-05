@@ -245,7 +245,7 @@ CombinedScatter <- function(
     color.scale.title = "",
     color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     color.scale.title.font.family = "Arial",
-    colorScaleTitleFontSize = 12,
+    color.scale.title.font.size = 12,
     color.scale.format = NULL,
     debug.mode = FALSE,
     fixed.aspect = FALSE,
