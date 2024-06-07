@@ -291,7 +291,7 @@ class RectPlot {
   drawLegend () {
     return new Promise((resolve) => {
       if (this.legendSettings.showBubblesInLegend() && Utils.isArrOfNums(this.Z)) {
-        this.bubbleLegend.drawBubblesWith(this.svg, this.axisSettings)
+        this.bubbleLegend.drawBubblesWith(this.svg)
         this.bubbleLegend.drawBubblesLabelsWith(this.svg)
         this.bubbleLegend.drawBubblesTitleWith(this.svg)
       }

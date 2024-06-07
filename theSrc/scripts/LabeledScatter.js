@@ -265,7 +265,7 @@ class LabeledScatter {
     const legend_bubbles = LegendUtils.getLegendBubbles(max_z, legend_settings.zPrefix, legend_settings.zSuffix, legend_settings.bubbleSizesAsDiameter)
     bubble_legend.setup(legend_bubbles)
     const svg = this.createSvgForCustomElements('bubblelegendlayer')
-    bubble_legend.drawBubblesWith(svg, this.axisSettings)
+    bubble_legend.drawBubblesWith(svg)
     bubble_legend.drawBubblesLabelsWith(svg)
     bubble_legend.drawBubblesTitleWith(svg)
   }
