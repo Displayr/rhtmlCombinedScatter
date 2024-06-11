@@ -51,7 +51,7 @@ CombinedScatter(
   color.scale.title = "",
   color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   color.scale.title.font.family = "Arial",
-  colorScaleTitleFontSize = 12,
+  color.scale.title.font.size = 12,
   color.scale.format = NULL,
   debug.mode = FALSE,
   fixed.aspect = FALSE,
@@ -281,6 +281,8 @@ It should have the same length as the number of levels in `group`}
 \item{color.scale.title.font.color}{Color scale title font color}
 
 \item{color.scale.title.font.family}{Color scale title font family}
+
+\item{color.scale.title.font.size}{Color scale title font size}
 
 \item{color.scale.format}{A string that is interpreted for the format of the tick labels along the color scale bar.}
 
@@ -559,8 +561,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
-
-\item{color.scale.title.font.size}{Color scale title font size}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

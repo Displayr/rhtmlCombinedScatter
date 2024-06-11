@@ -265,7 +265,7 @@ class PlotData {
           const fillOpacity = this.plotColors.getFillOpacity(this.transparency)
 
           let { label, width, height, url } = resolvedLabels[i]
-          const labelAlt = ((this.labelAlt !== null ? this.labelAlt[i] : undefined) !== null) ? this.labelAlt[i] : ''
+          const labelAlt = this.labelAlt !== null && this.labelAlt[i] !== null ? this.labelAlt[i] : ''
           const labelY = y - r - labelTopPadding
 
           const labelZ = Utils.isArrOfNums(this.Z) ? this.Z[i].toString() : ''

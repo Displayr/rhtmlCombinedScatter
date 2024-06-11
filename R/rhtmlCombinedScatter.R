@@ -245,7 +245,7 @@ CombinedScatter <- function(
     color.scale.title = "",
     color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     color.scale.title.font.family = "Arial",
-    colorScaleTitleFontSize = 12,
+    color.scale.title.font.size = 12,
     color.scale.format = NULL,
     debug.mode = FALSE,
     fixed.aspect = FALSE,
@@ -431,23 +431,26 @@ CombinedScatter <- function(
     } else
         panel.labels <- NULL
 
-    x = list(X = toJSON(X),
-             Y = toJSON(Y),
-             Z = toJSON(Z),
+    label <- if (is.null(label)) NULL else toJSON(as.character(label))
+    labelAlt <- if (is.null(label.alt)) NULL else toJSON(as.character(label.alt))
+
+    x = list(X = toJsonOrNull(X),
+             Y = toJsonOrNull(Y),
+             Z = toJsonOrNull(Z),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
              colorIsDateTime = color.is.date.time,
-             label = toJSON(as.character(label)),
-             labelAlt = toJSON(label.alt),
-             group = toJSON(group),
-             panelLabels = toJSON(panel.labels),
-             panels = toJSON(panels),
-             xLevels = toJSON(x.levels),
-             yLevels = toJSON(y.levels),
-             colorLevels = toJSON(color.levels),
+             label = label,
+             labelAlt = labelAlt,
+             group = toJsonOrNull(group),
+             panelLabels = toJsonOrNull(panel.labels),
+             panels = toJsonOrNull(panels),
+             xLevels = toJsonOrNull(x.levels),
+             yLevels = toJsonOrNull(y.levels),
+             colorLevels = toJsonOrNull(color.levels),
              fixedAspectRatio = fixed.aspect,
-             colors = toJSON(colors),
-             colorScale = toJSON(color.scale),
+             colors = toJsonOrNull(colors),
+             colorScale = toJsonOrNull(color.scale),
              colorScaleTitle = color.scale.title,
              colorScaleTitleFontColor = color.scale.title.font.color,
              colorScaleTitleFontFamily = color.scale.title.font.family,
@@ -573,19 +576,19 @@ CombinedScatter <- function(
              trendLines = trend.lines.show,
              trendLinesLineThickness = trend.lines.line.thickness,
              trendLinesPointSize = trend.lines.point.size,
-             fitX = toJSON(fit.x),
-             fitY = toJSON(fit.y),
-             fitGroup = toJSON(fit.group),
-             fitPanel = toJSON(fit.panel),
-             fitLowerBound = toJSON(fit.lower.bound),
-             fitUpperBound = toJSON(fit.upper.bound),
-             fitLineColors = toJSON(fit.line.colors),
+             fitX = toJsonOrNull(fit.x),
+             fitY = toJsonOrNull(fit.y),
+             fitGroup = toJsonOrNull(fit.group),
+             fitPanel = toJsonOrNull(fit.panel),
+             fitLowerBound = toJsonOrNull(fit.lower.bound),
+             fitUpperBound = toJsonOrNull(fit.upper.bound),
+             fitLineColors = toJsonOrNull(fit.line.colors),
              fitLineType = fit.line.type,
              fitLineWidth = fit.line.width,
              fitLineOpacity = fit.line.opacity,
-             fitLineNames = toJSON(fit.line.names),
-             fitCIColors = toJSON(fit.ci.colors),
-             fitCILabelColors = toJSON(fit.ci.label.colors),
+             fitLineNames = toJsonOrNull(fit.line.names),
+             fitCIColors = toJsonOrNull(fit.ci.colors),
+             fitCILabelColors = toJsonOrNull(fit.ci.label.colors),
              plotBorderShow = plot.border.show,
              labelPlacementWeightDistance = label.placement.weight.distance,
              labelPlacementWeightDistanceMultiplierCenteredAboveAnchor = label.placement.weight.distance.multiplier.centeredAboveAnchor,
@@ -625,4 +628,12 @@ CombinedScatter <- function(
                               height = height,
                               sizingPolicy = sizing.policy,
                               package = 'rhtmlCombinedScatter')
+}
+
+toJsonOrNull <- function(x) {
+    if (is.null(x)) {
+        NULL
+    } else {
+        toJSON(x)
+    }
 }

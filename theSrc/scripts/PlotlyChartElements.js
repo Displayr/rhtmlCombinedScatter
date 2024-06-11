@@ -12,7 +12,7 @@ const FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE = 0.8
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
-    let tooltip_labels = (!Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
+    let tooltip_labels = (!config.labelAlt || !Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
     if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
     const xFormatter = getFormatter(
         config.xTooltipFormat ? config.xTooltipFormat : config.xFormat,
@@ -882,8 +882,8 @@ function isXAxisLabelsWrapping (config) {
 }
 
 function wrapByNumberOfCharacters (text, n_char) {
-    if (n_char <= 0) {
-        return ''
+    if (typeof text !== 'string' || n_char <= 0) {
+        return text
     }
     const tokens = text
         .split(' ')
