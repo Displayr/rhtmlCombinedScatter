@@ -73,7 +73,7 @@ const defaultConfig = {
   grid: true,
   group: null,
   label: null,
-  labelAlt: [],
+  labelAlt: null,
   labelPlacementWeightDistance: 10,
   labelPlacementWeightDistanceMultiplierCenteredAboveAnchor: 1,
   labelPlacementWeightDistanceMultiplierCenteredUnderneathAnchor: 1.5,
