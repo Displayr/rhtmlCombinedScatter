@@ -179,6 +179,7 @@
 #' @param plot.border.show Boolean toggle to show border around plot area.
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
+#' @param label.auto.placement Whether to automatically place labels with an algorithm.
 #' @param label.placement.weight.distance Label placement algorithm weight for the distance between the label and the point (Default is 10.0)
 #' @param label.placement.weight.distance.multiplier.centeredAboveAnchor TODO document
 #' @param label.placement.weight.distance.multiplier.centeredUnderneathAnchor TODO document
@@ -260,6 +261,7 @@ CombinedScatter <- function(
     height = NULL,
     label = NULL,
     label.alt = NULL,
+    label.auto.placement = true,
     label.placement.maxAngle = 2 * 3.1415,
     label.placement.maxMove = 5.0,
     label.placement.numSweeps = 500,
@@ -593,6 +595,7 @@ CombinedScatter <- function(
              fitCIColors = toJsonOrNull(fit.ci.colors),
              fitCILabelColors = toJsonOrNull(fit.ci.label.colors),
              plotBorderShow = plot.border.show,
+             labelAutoPlacement = label.auto.placement,
              labelPlacementWeightDistance = label.placement.weight.distance,
              labelPlacementWeightDistanceMultiplierCenteredAboveAnchor = label.placement.weight.distance.multiplier.centeredAboveAnchor,
              labelPlacementWeightDistanceMultiplierCenteredUnderneathAnchor = label.placement.weight.distance.multiplier.centeredUnderneathAnchor,
