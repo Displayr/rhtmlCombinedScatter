@@ -21,6 +21,7 @@ const defaultConfig = {
   xAxisTickLength: 5,
   xAxisLabelWrap: null,
   xAxisLabelWrapNChar: null,
+  xAxisTickAngle: null,
   xAxisZeroLineColor: '#000000',
   xAxisZeroLineDash: 'dot',
   xAxisZeroLineWidth: 1,

@@ -399,6 +399,7 @@ function createPlotlyLayout (config, margin_right, height) {
         tickprefix: config.xPrefix,
         ticksuffix: config.xSuffix,
         tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
+        tickangle: config.xAxisTickAngle,
         layer: 'below traces'
     }
     const y_axis = {

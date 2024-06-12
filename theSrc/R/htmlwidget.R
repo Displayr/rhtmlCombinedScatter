@@ -49,7 +49,8 @@
 #' @param x.axis.grid.dash Line type of the x axis grid lines. Can be one of 'solid', 'dot', 'dash'.
 #' @param x.axis.tick.color Color of tick lines on the x axis.
 #' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
-#'      the tick labels are to the axis/grid lines.#'
+#'      the tick labels are to the axis/grid lines.
+#' @param x.axis.tick.angle The angle to rotate the x axis labels
 #' @param x.axis.label.wrap Whether to wrap the x-axis labels
 #' @param x.axis.label.wrap.n.char The number of characters before wrapping the x-axis labels
 #' @param y.axis.line.color Line color of the y axis line. This is shown at both the left and right
@@ -219,6 +220,7 @@ CombinedScatter <- function(
     x.axis.line.width = 1,
     x.axis.tick.color = x.axis.grid.color,
     x.axis.tick.length = 5,
+    x.axis.tick.angle = NULL,
     x.axis.label.wrap = NULL,
     x.axis.label.wrap.n.char = NULL,
     x.axis.zero.line.color = '#000000',
@@ -535,6 +537,7 @@ CombinedScatter <- function(
              xAxisLineWidth = x.axis.line.width,
              xAxisTickColor = x.axis.tick.color,
              xAxisTickLength = x.axis.tick.length,
+             xAxisTickAngle = x.axis.tick.angle,
              xAxisLabelWrap = x.axis.label.wrap,
              xAxisLabelWrapNChar = x.axis.label.wrap.n.char,
              xAxisZeroLineColor = x.axis.zero.line.color,
