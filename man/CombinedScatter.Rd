@@ -65,7 +65,7 @@ CombinedScatter(
   height = NULL,
   label = NULL,
   label.alt = NULL,
-  label.auto.placement = true,
+  label.auto.placement = TRUE,
   label.placement.maxAngle = 2 * 3.1415,
   label.placement.maxMove = 5,
   label.placement.numSweeps = 500,
