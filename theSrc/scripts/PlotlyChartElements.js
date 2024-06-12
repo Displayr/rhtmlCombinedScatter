@@ -615,7 +615,7 @@ function addLines (config) {
     for (let p = 0; p < npanel; p++) {
         const x = 'x' + getPanelXAxisSuffix(p, config)
         const y = 'y' + getPanelYAxisSuffix(p, config)
-        if (config.origin && (!config.xLevels || !config.xLevels.length)) {
+        if (config.origin && (!config.xLevels || !config.xLevels.length) && config.xAxisZeroLineWidth > 0) {
             lines.push({
                 type: 'line',
                 layer: 'above',
@@ -632,7 +632,7 @@ function addLines (config) {
                 yref: y + ' domain'
             })
         }
-        if (config.origin && (!config.yLevels || !config.yLevels.length)) {
+        if (config.origin && (!config.yLevels || !config.yLevels.length) && config.yAxisZeroLineWidth > 0) {
             lines.push({
                 type: 'line',
                 layer: 'above',
