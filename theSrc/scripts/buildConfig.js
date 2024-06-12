@@ -85,7 +85,7 @@ const defaultConfig = {
   labelPlacementWeightLabelLabelOverlap: 12,
   labelPlacementMaxAngle: 2 * Math.PI,
   labelPlacementMaxMove: 5,
-  labelPlacementNumSweeps: 0,
+  labelPlacementNumSweeps: 500,
   labelPlacementTemperatureInitial: 0.01,
   labelPlacementTemperatureFinal: 0.0001,
   labelPlacementSeed: 1,
