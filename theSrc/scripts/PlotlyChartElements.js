@@ -606,6 +606,17 @@ function createLegendSettings (config) {
             }
         }
     }
+    if (config.legendTitle) {
+        settings.title = {
+            text: config.legendTitle,
+            font: {
+                color: config.legendTitleFontColor,
+                family: config.legendTitleFontFamily,
+                size: config.legendTitleFontSize
+            },
+            side: 'top center'
+        }
+    }
     return settings
 }
 

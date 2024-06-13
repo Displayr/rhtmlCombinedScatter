@@ -1,0 +1,7 @@
+type: multi_widget_single_page
+title: "legend title"
+width: 576
+height:  512
+rowSize: 2
+widgets:
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendTitle":"Legend title","legendTitleFontColor":"#FF0000","legendTitleFontFamily":"Courier New","legendTitleFontSize":20}
