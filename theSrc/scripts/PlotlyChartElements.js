@@ -45,6 +45,7 @@ function createPlotlyData (config) {
     const n_panels = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
     const indices_by_panel = n_panels > 1 ? _.groupBy(indices, i => config.panels[i]) : {}
     const panel_nm = Object.keys(indices_by_panel)
+    config.wrappedX = isXAxisLabelsWrapping(config) ? config.X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : config.X
 
     if (!Array.isArray(config.group)) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
@@ -106,14 +107,14 @@ function createPlotlyData (config) {
 }
 
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
-    const X = data_index ? _.at(config.X, data_index) : config.X
+    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
     return {
-        x: isXAxisLabelsWrapping(config) ? X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : X,
+        x: X,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
@@ -141,7 +142,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
 function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index) {
     // We draw the marker border separately from the marker otherwise the legend symbols will also have borders
     // with a colors taken from the border colors
-    const X = data_index ? _.at(config.X, data_index) : config.X
+    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
     const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
@@ -172,7 +173,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
 }
 
 function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
-    const X = data_index ? _.at(config.X, data_index) : config.X
+    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const text = data_index ? _.at(config.markerAnnotations, data_index) : config.markerAnnotations
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -398,6 +399,7 @@ function createPlotlyLayout (config, margin_right, height) {
         tickprefix: config.xPrefix,
         ticksuffix: config.xSuffix,
         tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
+        tickangle: config.xAxisTickAngle,
         layer: 'below traces'
     }
     const y_axis = {
@@ -624,7 +626,7 @@ function addLines (config) {
     for (let p = 0; p < npanel; p++) {
         const x = 'x' + getPanelXAxisSuffix(p, config)
         const y = 'y' + getPanelYAxisSuffix(p, config)
-        if (config.origin && (!config.xLevels || !config.xLevels.length)) {
+        if (config.origin && (!config.xLevels || !config.xLevels.length) && config.xAxisZeroLineWidth > 0) {
             lines.push({
                 type: 'line',
                 layer: 'above',
@@ -641,7 +643,7 @@ function addLines (config) {
                 yref: y + ' domain'
             })
         }
-        if (config.origin && (!config.yLevels || !config.yLevels.length)) {
+        if (config.origin && (!config.yLevels || !config.yLevels.length) && config.yAxisZeroLineWidth > 0) {
             lines.push({
                 type: 'line',
                 layer: 'above',

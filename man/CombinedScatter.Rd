@@ -24,6 +24,7 @@ CombinedScatter(
   x.axis.line.width = 1,
   x.axis.tick.color = x.axis.grid.color,
   x.axis.tick.length = 5,
+  x.axis.tick.angle = NULL,
   x.axis.label.wrap = NULL,
   x.axis.label.wrap.n.char = NULL,
   x.axis.zero.line.color = "#000000",
@@ -64,6 +65,7 @@ CombinedScatter(
   height = NULL,
   label = NULL,
   label.alt = NULL,
+  label.auto.placement = TRUE,
   label.placement.maxAngle = 2 * 3.1415,
   label.placement.maxMove = 5,
   label.placement.numSweeps = 500,
@@ -224,7 +226,9 @@ of the plot area when `plot.border.show = TRUE`.}
 \item{x.axis.tick.color}{Color of tick lines on the x axis.}
 
 \item{x.axis.tick.length}{Length of tick lines on the x axis. This also adjust how close
-the tick labels are to the axis/grid lines.#'}
+the tick labels are to the axis/grid lines.}
+
+\item{x.axis.tick.angle}{The angle to rotate the x axis labels}
 
 \item{x.axis.label.wrap}{Whether to wrap the x-axis labels}
 
@@ -307,6 +311,8 @@ It should have the same length as the number of levels in `group`}
 \item{label}{is the array of text labels for the data set (can supply an url to show logos)}
 
 \item{label.alt}{is an optional array of alternate label text when an url was provided as the label. NOTE: must be same length as label}
+
+\item{label.auto.placement}{Whether to automatically place labels with an algorithm.}
 
 \item{label.placement.maxAngle}{Label placement algorithm setting to determine the domain of angles chosen for mcrotate (Default is 2*Pi).}
 

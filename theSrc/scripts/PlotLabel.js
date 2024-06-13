@@ -19,7 +19,7 @@ class PlotLabel {
     this.logoScale = logoScale
     this.promiseLabelArray = _.map(this.givenLabelArray, (label, index) => {
       if (PlotLabel._isStringLinkToImg(label)) {
-        return this._makeImgLabPromise(label, this.labelAlt[index] || '', this.logoScale[index])
+        return this._makeImgLabPromise(label, (this.labelAlt && this.labelAlt[index]) || '', this.logoScale[index])
       } else {
         return this._makeLabPromise(label)
       }

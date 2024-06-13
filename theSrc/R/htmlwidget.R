@@ -49,7 +49,8 @@
 #' @param x.axis.grid.dash Line type of the x axis grid lines. Can be one of 'solid', 'dot', 'dash'.
 #' @param x.axis.tick.color Color of tick lines on the x axis.
 #' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
-#'      the tick labels are to the axis/grid lines.#'
+#'      the tick labels are to the axis/grid lines.
+#' @param x.axis.tick.angle The angle to rotate the x axis labels
 #' @param x.axis.label.wrap Whether to wrap the x-axis labels
 #' @param x.axis.label.wrap.n.char The number of characters before wrapping the x-axis labels
 #' @param y.axis.line.color Line color of the y axis line. This is shown at both the left and right
@@ -178,6 +179,7 @@
 #' @param plot.border.show Boolean toggle to show border around plot area.
 #' @param plot.border.color Color of border around plot area (Default is black).
 #' @param plot.border.width Width of border around plot area in px (Default is 1).
+#' @param label.auto.placement Whether to automatically place labels with an algorithm.
 #' @param label.placement.weight.distance Label placement algorithm weight for the distance between the label and the point (Default is 10.0)
 #' @param label.placement.weight.distance.multiplier.centeredAboveAnchor TODO document
 #' @param label.placement.weight.distance.multiplier.centeredUnderneathAnchor TODO document
@@ -219,6 +221,7 @@ CombinedScatter <- function(
     x.axis.line.width = 1,
     x.axis.tick.color = x.axis.grid.color,
     x.axis.tick.length = 5,
+    x.axis.tick.angle = NULL,
     x.axis.label.wrap = NULL,
     x.axis.label.wrap.n.char = NULL,
     x.axis.zero.line.color = '#000000',
@@ -258,6 +261,7 @@ CombinedScatter <- function(
     height = NULL,
     label = NULL,
     label.alt = NULL,
+    label.auto.placement = TRUE,
     label.placement.maxAngle = 2 * 3.1415,
     label.placement.maxMove = 5.0,
     label.placement.numSweeps = 500,
@@ -535,6 +539,7 @@ CombinedScatter <- function(
              xAxisLineWidth = x.axis.line.width,
              xAxisTickColor = x.axis.tick.color,
              xAxisTickLength = x.axis.tick.length,
+             xAxisTickAngle = x.axis.tick.angle,
              xAxisLabelWrap = x.axis.label.wrap,
              xAxisLabelWrapNChar = x.axis.label.wrap.n.char,
              xAxisZeroLineColor = x.axis.zero.line.color,
@@ -590,6 +595,7 @@ CombinedScatter <- function(
              fitCIColors = toJsonOrNull(fit.ci.colors),
              fitCILabelColors = toJsonOrNull(fit.ci.label.colors),
              plotBorderShow = plot.border.show,
+             labelAutoPlacement = label.auto.placement,
              labelPlacementWeightDistance = label.placement.weight.distance,
              labelPlacementWeightDistanceMultiplierCenteredAboveAnchor = label.placement.weight.distance.multiplier.centeredAboveAnchor,
              labelPlacementWeightDistanceMultiplierCenteredUnderneathAnchor = label.placement.weight.distance.multiplier.centeredUnderneathAnchor,
