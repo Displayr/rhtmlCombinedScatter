@@ -391,9 +391,17 @@ class LabeledScatter {
     }
     if (this.hasBubbleLegend(config)) {
       const bubble_radius = LegendUtils.normalizedZtoRadius(config.pointRadius, 1)
-      width = Math.max(2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), width)
+      const bubble_title_width = this.bubbleTitleWidth(config)
+      width = Math.max(...[2 * (bubble_radius + LEGEND_BUBBLE_PADDING_SIDE), width, bubble_title_width + 2 * LEGEND_BUBBLE_PADDING_SIDE])
     }
     return width
+  }
+
+  bubbleTitleWidth (config) {
+    if (!config.zTitle) {
+      return 0
+    }
+    return Utils.textSize(config.zTitle, this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width
   }
 
   /**
