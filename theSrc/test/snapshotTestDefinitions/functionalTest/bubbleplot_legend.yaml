@@ -16,3 +16,4 @@ widgets:
   - config: data.functionalTest.bubbleplot_legend.bubbleplot_legend_example_10
   - config: data.functionalTest.bubbleplot_legend.bubbleplot_legend_example_11
   - config: data.functionalTest.bubbleplot_legend.bubbleplot_legend_example_12
+  - config: data.functionalTest.bubbleplot_legend.bubbleplot_legend_example_12|{"zTitle":"long bubble legend title"}

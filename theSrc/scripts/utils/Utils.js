@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import d3 from 'd3'
 import BigNumber from 'bignumber.js'
 
 class Utils {
@@ -59,6 +60,16 @@ class Utils {
     rect.right = rect.x + rect.width
     rect.bottom = rect.y + rect.height
     return rect
+  }
+
+  static textSize (text, element, font_family, font_size) {
+    const span = d3.select(element).append('span')
+    span.text(text)
+    span.style('font-family', font_family)
+    span.style('font-size', `${font_size}px`)
+    const size = { width: span[0][0].offsetWidth, height: span[0][0].offsetHeight }
+    span.remove()
+    return size
   }
 }
 
