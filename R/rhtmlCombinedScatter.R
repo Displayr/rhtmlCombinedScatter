@@ -29,9 +29,9 @@
 #' @param panel.share.axes Defaults to TRUE. Whether or not axis bounds and titles are shared across all panels
 #' @param panel.x.gap A number between 0 and 1. Controls the horizontal space between panels.
 #' @param panel.y.gap A number between 0 and 1. Controls the vertical space between panels.
-#' @param panel.font.color is the font color of the panels
-#' @param panel.font.family is the font family of the panels
-#' @param panel.font.size is the font size of the panels
+#' @param panel.title.font.color is the font color of the panel titles
+#' @param panel.title.font.family is the font family of the panel titles
+#' @param panel.title.font.size is the font size of the panel titles
 #' @param grid Defaults to TRUE. Shows the grid lines.
 #' @param origin Defaults to FALSE. Shows the origin lines as dotted if not along axis.
 #' @param origin.align Defaults to FALSE. Aligns the origin lines as closely to axis as possible.
@@ -314,9 +314,9 @@ CombinedScatter <- function(
     panel.share.axes = TRUE,
     panel.x.gap = 0.2,
     panel.y.gap = 0.3,
-    panel.font.color = rgb(44, 44, 44, maxColorValue = 255),
-    panel.font.family = "Arial",
-    panel.font.size = 12,
+    panel.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    panel.title.font.family = "Arial",
+    panel.title.font.size = 12,
     plot.border.color = 'Black',
     plot.border.show = FALSE,
     plot.border.width = 1,
@@ -562,9 +562,9 @@ CombinedScatter <- function(
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,
-             panelFontFamily = panel.font.family,
-             panelFontSize = panel.font.size,
-             panelFontColor = panel.font.color,
+             panelTitleFontFamily = panel.title.font.family,
+             panelTilteFontSize = panel.title.font.size,
+             panelTitleFontColor = panel.title.font.color,
              panelNumRows = panel.num.rows,
              panelShareAxes = panel.share.axes,
              panelXGap = panel.x.gap,

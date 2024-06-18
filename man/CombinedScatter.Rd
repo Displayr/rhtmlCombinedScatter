@@ -118,9 +118,9 @@ CombinedScatter(
   panel.share.axes = TRUE,
   panel.x.gap = 0.2,
   panel.y.gap = 0.3,
-  panel.font.color = rgb(44, 44, 44, maxColorValue = 255),
-  panel.font.family = "Arial",
-  panel.font.size = 12,
+  panel.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  panel.title.font.family = "Arial",
+  panel.title.font.size = 12,
   plot.border.color = "Black",
   plot.border.show = FALSE,
   plot.border.width = 1,
@@ -420,11 +420,11 @@ on the marker.}
 
 \item{panel.y.gap}{A number between 0 and 1. Controls the vertical space between panels.}
 
-\item{panel.font.color}{is the font color of the panels}
+\item{panel.title.font.color}{is the font color of the panel titles}
 
-\item{panel.font.family}{is the font family of the panels}
+\item{panel.title.font.family}{is the font family of the panel titles}
 
-\item{panel.font.size}{is the font size of the panels}
+\item{panel.title.font.size}{is the font size of the panel titles}
 
 \item{plot.border.color}{Color of border around plot area (Default is black).}
 
