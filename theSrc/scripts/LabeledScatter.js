@@ -559,16 +559,19 @@ class LabeledScatter {
     if (footer_element !== null) {
       const footer_height = footerHeight(config)
       footer_element
-          .select('.cursor-pointer')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('transform', `translate(${0.5 * this.width},${this.height - footer_height})`)
+        .select('.cursor-pointer')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('transform', `translate(${0.5 * this.width},${this.height - footer_height})`)
       footer_element
         .select('.annotation-text')
         .attr('x', 0)
         .attr('y', 0)
         .style('alignment-baseline', 'text-before-edge')
-      footer_element.selectAll('.annotation-text tspan').attr('x', 0)
+      footer_element.selectAll('.annotation-text tspan')
+        .attr('x', 0)
+        .attr('y', 0)
+        .style('alignment-baseline', 'text-before-edge')
 
       // We re-enlarge the height after it was shrunk to make way for the footer, otherwise the footer would not be shown
       d3.select(this.rootElement).selectAll('.main-svg').style('height', this.height)
