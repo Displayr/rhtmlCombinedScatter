@@ -9,7 +9,7 @@ import {
   footerHeight,
   chartHeight,
   LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
-  FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE
+  FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -559,7 +559,7 @@ class LabeledScatter {
     const footer_element = this.getAnnotationElement('footer', plotly_chart_layout)
     if (footer_element !== null) {
       const footer_height = footerHeight(config)
-      const footer_padding = config.footerFontSize * FOOTER_PADDING_AS_PROPORTION_OF_FONT_SIZE
+      const footer_padding = config.footerFontSize * FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE
       footer_element
         .select('.cursor-pointer')
         .attr('x', 0)
