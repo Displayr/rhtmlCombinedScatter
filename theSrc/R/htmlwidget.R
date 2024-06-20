@@ -415,7 +415,7 @@ CombinedScatter <- function(
             color.tmp <- group
         } else {
             tmp <- as.factor(group)
-            color.levels <- as.character(tmp)
+            color.levels <- levels(tmp)
             tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
             color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
             color.tmp <- as.numeric(tmp)
@@ -563,7 +563,7 @@ CombinedScatter <- function(
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,
              panelTitleFontFamily = panel.title.font.family,
-             panelTilteFontSize = panel.title.font.size,
+             panelTitleFontSize = panel.title.font.size,
              panelTitleFontColor = panel.title.font.color,
              panelNumRows = panel.num.rows,
              panelShareAxes = panel.share.axes,
