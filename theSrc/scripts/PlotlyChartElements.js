@@ -944,7 +944,7 @@ function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axe
     }
 }
 
-function hideAxis(axis) {
+function hideAxis (axis) {
     axis.showticklabels = false
     axis.ticklen = 0
     return axis
