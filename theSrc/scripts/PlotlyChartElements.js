@@ -920,6 +920,7 @@ function wrapByNumberOfCharacters (text, n_char) {
 function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axes) {
     n_rows = Math.min(n_rows, n_panels)
     if (share_axes && n_rows > 1) {
+        // Hide x-axis of first panel if there is more than one row
         const x_axis_clone = _.clone(x_axis)
         x_axis_clone.showticklabels = false
         plot_layout.xaxis = x_axis_clone
@@ -931,6 +932,7 @@ function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axe
     const n_cols = Math.ceil(n_panels / n_rows)
     for (let p = 2; p <= n_panels; p++) {
         if (share_axes && p <= n_panels - n_cols) {
+            // Hide x-axis of subsequent panels if they aren't the bottommost
             const x_axis_clone = _.clone(x_axis)
             x_axis_clone.showticklabels = false
             plot_layout['xaxis' + p] = x_axis_clone
@@ -938,6 +940,7 @@ function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axe
             plot_layout['xaxis' + p] = x_axis
         }
         if (share_axes && n_cols > 1 && p % n_cols !== 1) {
+            // Hide y-axis of subsequent panels if they aren't the leftmost
             const y_axis_clone = _.clone(y_axis)
             y_axis_clone.showticklabels = false
             plot_layout['yaxis' + p] = y_axis_clone
