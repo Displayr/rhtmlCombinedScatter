@@ -918,7 +918,7 @@ function wrapByNumberOfCharacters (text, n_char) {
 }
 
 function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axes) {
-    n_rows = Math.max(n_rows, n_panels)
+    n_rows = Math.min(n_rows, n_panels)
     if (share_axes && n_rows > 1) {
         const x_axis_clone = _.clone(x_axis)
         x_axis_clone.showticklabels = false
