@@ -443,8 +443,6 @@ function createPlotlyLayout (config, margin_right, height) {
 
     const plot_layout = {
         grid: grid,
-        xaxis: x_axis,
-        yaxis: y_axis,
         title: {
             text: config.title,
             font: {
@@ -476,12 +474,7 @@ function createPlotlyLayout (config, margin_right, height) {
         plot_bgcolor: config.plotAreaBackgroundColor,
         height: chartHeight(config, height)
     }
-    if (npanel >= 2) {
-        for (let p = 2; p <= npanel; p++) {
-            plot_layout['xaxis' + p] = x_axis
-            plot_layout['yaxis' + p] = y_axis
-        }
-    }
+    addAxesToGrid(plot_layout, x_axis, y_axis, npanel, config.panelNumRows, config.panelShareAxes)
     if (config.subtitle.length > 0) {
         plot_layout.annotations = [{
             name: 'subtitle',
@@ -922,6 +915,36 @@ function wrapByNumberOfCharacters (text, n_char) {
         lines.push(`${current_line.join(' ')}`)
     }
     return lines.join('<br>')
+}
+
+function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axes) {
+    n_rows = Math.max(n_rows, n_panels)
+    if (share_axes && n_rows > 1) {
+        const x_axis_clone = _.clone(x_axis)
+        x_axis_clone.showticklabels = false
+        plot_layout.xaxis = x_axis_clone
+    } else {
+        plot_layout.xaxis = x_axis
+    }
+    plot_layout.yaxis = y_axis
+
+    const n_cols = Math.ceil(n_panels / n_rows)
+    for (let p = 2; p <= n_panels; p++) {
+        if (share_axes && p <= n_panels - n_cols) {
+            const x_axis_clone = _.clone(x_axis)
+            x_axis_clone.showticklabels = false
+            plot_layout['xaxis' + p] = x_axis_clone
+        } else {
+            plot_layout['xaxis' + p] = x_axis
+        }
+        if (share_axes && n_cols > 1 && p % n_cols !== 1) {
+            const y_axis_clone = _.clone(y_axis)
+            y_axis_clone.showticklabels = false
+            plot_layout['yaxis' + p] = y_axis_clone
+        } else {
+            plot_layout['yaxis' + p] = y_axis
+        }
+    }
 }
 
 module.exports = {
