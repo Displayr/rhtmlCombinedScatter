@@ -105,6 +105,13 @@ class LabeledScatter {
       let plotlyChart = await Plotly.react(this.rootElement, plot_data, plot_layout, plot_config)
       if (Array.isArray(config.panels)) {
         const tmp_layout = {}
+        if (config.panelShareAxes) {
+          // get axis property names
+          // Object.keys(plotlyChart._fullLayout).map(x => x.match('xaxis.*')) // TODO improve regex to only numbers
+          // get min and max of ranges
+          
+          // apply min and max of ranges
+        }
         if (config.marginAutoexpand && config.panelShareAxes) {
           if (config.yTitle && config.yTitle.length > 0) {
             const margin_left = this.marginLeftForYTitleAnnotation(config)
