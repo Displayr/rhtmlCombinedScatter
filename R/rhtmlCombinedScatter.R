@@ -419,7 +419,7 @@ CombinedScatter <- function(
             tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
             color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
             color.tmp <- as.numeric(tmp)
-            group <- 1:length(group)
+            group <- color.tmp
         }
         color.min <- min(color.tmp, na.rm = TRUE)
         color.max <- max(color.tmp, na.rm = TRUE)
