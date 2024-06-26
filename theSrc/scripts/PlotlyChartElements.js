@@ -804,18 +804,6 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             y: 0,
             yanchor: 'top',
         })
-        for (let side of ['x', 'y']) {
-            let new_range = plotly_layout[side + 'axis'].range
-            for (let p = 2; p <= npanels; p++) {
-                const tmp_range = plotly_layout[side + 'axis' + p].range
-                if (tmp_range[0] < new_range[0]) new_range[0] = tmp_range[0]
-                if (tmp_range[1] > new_range[1]) new_range[1] = tmp_range[1]
-            }
-            settings[side + 'axis.range'] = new_range
-            for (let p = 2; p <= npanels; p++) {
-                plotly_layout[side + 'axis' + p + '.range'] = new_range
-            }
-        }
     }
     return settings
 }
