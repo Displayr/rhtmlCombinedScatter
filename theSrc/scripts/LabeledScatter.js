@@ -173,6 +173,15 @@ class LabeledScatter {
           }
           lastevent = ''
         })
+
+        plotlyChart.on('plotly_doubleclick', () => {
+          if (config.panelShareAxes) {
+            const tmp_layout = {}
+            this.shareRangeBetweenPanels(plotlyChart._fullLayout, tmp_layout)
+            // We do this so that we set the range after plotly sets the range
+            setTimeout(() => Plotly.relayout(plotlyChart, tmp_layout), 0)
+          }
+        })
       } else {
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
