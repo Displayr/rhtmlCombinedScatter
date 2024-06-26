@@ -106,11 +106,7 @@ class LabeledScatter {
       if (Array.isArray(config.panels)) {
         const tmp_layout = {}
         if (config.panelShareAxes) {
-          // get axis property names
-          // Object.keys(plotlyChart._fullLayout).map(x => x.match('xaxis.*')) // TODO improve regex to only numbers
-          // get min and max of ranges
-          
-          // apply min and max of ranges
+          this.shareRangeBetweenPanels(plotlyChart._fullLayout, tmp_layout)
         }
         if (config.marginAutoexpand && config.panelShareAxes) {
           if (config.yTitle && config.yTitle.length > 0) {
@@ -670,6 +666,23 @@ class LabeledScatter {
   marginBottomForXTitleAnnotation (config) {
     const nsew_rect = this.nsewdragRect()
     return chartHeight(config, this.height) - nsew_rect.bottom + config.xTitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
+  }
+
+  shareRangeBetweenPanels (full_layout, layout_modifications) {
+    const x_axis_names = Object.keys(full_layout).filter(x => x.match('^xaxis\\d*$'))
+    const y_axis_names = Object.keys(full_layout).filter(x => x.match('^yaxis\\d*$'))
+
+    const x_min = Math.min(...x_axis_names.map(name => full_layout[name].range[0]))
+    const x_max = Math.max(...x_axis_names.map(name => full_layout[name].range[1]))
+    const y_min = Math.min(...y_axis_names.map(name => full_layout[name].range[0]))
+    const y_max = Math.max(...y_axis_names.map(name => full_layout[name].range[1]))
+
+    x_axis_names.forEach(name => {
+      layout_modifications[`${name}.range`] = [x_min, x_max]
+    })
+    y_axis_names.forEach(name => {
+      layout_modifications[`${name}.range`] = [y_min, y_max]
+    })
   }
 }
 
