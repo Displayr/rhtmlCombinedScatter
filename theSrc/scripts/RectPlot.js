@@ -74,7 +74,6 @@ class RectPlot {
         boundsUnitsMajor: config.xBoundsUnitsMajor,
         prefix: config.xPrefix,
         suffix: config.xSuffix,
-        decimals: config.xDecimals,
       },
       y: {
         fontFamily: config.yAxisFontFamily,
@@ -84,12 +83,10 @@ class RectPlot {
         boundsUnitsMajor: config.yBoundsUnitsMajor,
         prefix: config.yPrefix,
         suffix: config.ySuffix,
-        decimals: config.yDecimals,
       },
       z: {
         prefix: config.zPrefix,
         suffix: config.zSuffix,
-        decimals: config.zDecimals,
       },
       strokeWidth: 1, // VIS-380: this currently matches plotly for chrome rendering bug
     }

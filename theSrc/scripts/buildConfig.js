@@ -166,7 +166,6 @@ const defaultConfig = {
   xBoundsMaximum: null,
   xBoundsMinimum: null,
   xBoundsUnitsMajor: null,
-  xDecimals: null,
   xFormat: null,
   xTooltipFormat: null,
   xIsDateTime: null, // NB computed in R
@@ -180,7 +179,6 @@ const defaultConfig = {
   yBoundsMaximum: null,
   yBoundsMinimum: null,
   yBoundsUnitsMajor: null,
-  yDecimals: null,
   yFormat: null,
   yTooltipFormat: null,
   yIsDateTime: null, // NB computed in R
@@ -191,7 +189,6 @@ const defaultConfig = {
   yTitleFontColor: '#2C2C2C',
   yTitleFontFamily: 'Arial',
   yTitleFontSize: 12,
-  zDecimals: null,
   zPrefix: '',
   zSuffix: '',
   zTitle: '',

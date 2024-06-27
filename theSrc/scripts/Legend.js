@@ -14,11 +14,6 @@ class Legend {
     autoBind(this)
     this.legendSettings = legendSettings
     this.legendElementsRect = legendElementsRect
-    this.decimals = {
-      x: axisSettings.x.decimals,
-      y: axisSettings.y.decimals,
-      z: axisSettings.z.decimals,
-    }
     this.prefix = {
       x: axisSettings.x.prefix,
       y: axisSettings.y.prefix,
@@ -117,7 +112,7 @@ class Legend {
       pt: movedPt[0],
       lab: movedLab[0],
       anchor: 'start',
-      text: `${movedLab[0].text} (${Utils.getFormattedNum(movedPt[0].labelX, this.decimals.x, this.prefix.x, this.suffix.x)}, ${Utils.getFormattedNum(movedPt[0].labelY, this.decimals.y, this.prefix.y, this.suffix.y)})`,
+      text: `${movedLab[0].text} (${Utils.getFormattedNum(movedPt[0].labelX, null, this.prefix.x, this.suffix.x)}, ${Utils.getFormattedNum(movedPt[0].labelY, null, this.prefix.y, this.suffix.y)})`,
       color: movedPt[0].color,
       isDraggedPt: true,
     })
