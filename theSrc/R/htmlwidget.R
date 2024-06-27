@@ -136,9 +136,6 @@
 #' @param tooltip.font.size is the font size of the tooltips
 #' @param width is the width of the plot. Defaults to max of window
 #' @param height is the height of the plot. Defaults to the max of window
-#' @param x.decimals the number of decimals in the x axis
-#' @param y.decimals the number of decimals in the y axis
-#' @param z.decimals the number of decimals in the bubble size axis
 #' @param y.prefix A string that prefixes all y values(eg. "$")
 #' @param x.prefix A string that prefixes all x values(eg. "$")
 #' @param z.prefix A string that prefixes all bubble values(eg. "$")
@@ -359,7 +356,6 @@ CombinedScatter <- function(
     x.bounds.maximum = NULL,
     x.bounds.minimum = NULL,
     x.bounds.units.major = NULL,
-    x.decimals = NULL,
     x.format = NULL,
     x.hover.format = NULL,
     x.levels = NULL,
@@ -373,7 +369,6 @@ CombinedScatter <- function(
     y.bounds.maximum = NULL,
     y.bounds.minimum = NULL,
     y.bounds.units.major = NULL,
-    y.decimals = NULL,
     y.format = NULL,
     y.hover.format = NULL,
     y.levels = NULL,
@@ -383,7 +378,6 @@ CombinedScatter <- function(
     y.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     y.title.font.family = "Arial",
     y.title.font.size = 12,
-    z.decimals = NULL,
     z.prefix = "",
     z.suffix = "",
     z.title = "")
@@ -468,9 +462,6 @@ CombinedScatter <- function(
              yTitle = y.title,
              zTitle = z.title,
              title = title,
-             xDecimals = x.decimals,
-             yDecimals = y.decimals,
-             zDecimals = z.decimals,
              xPrefix = x.prefix,
              yPrefix = y.prefix,
              zPrefix = z.prefix,

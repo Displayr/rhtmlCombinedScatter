@@ -163,7 +163,6 @@ CombinedScatter(
   x.bounds.maximum = NULL,
   x.bounds.minimum = NULL,
   x.bounds.units.major = NULL,
-  x.decimals = NULL,
   x.format = NULL,
   x.hover.format = NULL,
   x.levels = NULL,
@@ -177,7 +176,6 @@ CombinedScatter(
   y.bounds.maximum = NULL,
   y.bounds.minimum = NULL,
   y.bounds.units.major = NULL,
-  y.decimals = NULL,
   y.format = NULL,
   y.hover.format = NULL,
   y.levels = NULL,
@@ -187,7 +185,6 @@ CombinedScatter(
   y.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   y.title.font.family = "Arial",
   y.title.font.size = 12,
-  z.decimals = NULL,
   z.prefix = "",
   z.suffix = "",
   z.title = ""
@@ -512,8 +509,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{x.bounds.units.major}{Integer or NULL; set the distance between each tick mark on the x axis.}
 
-\item{x.decimals}{the number of decimals in the x axis}
-
 \item{x.format}{A string that is interpreted for the format of the x axis labels. Default is NULL.}
 
 \item{x.hover.format}{A string that is interpreted for the format of the x axis values in the tooltips.}
@@ -540,8 +535,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{y.bounds.units.major}{Integer or NULL; set the distance between each tick mark on the y axis.}
 
-\item{y.decimals}{the number of decimals in the y axis}
-
 \item{y.format}{A string that is interpreted for the format of the y axis labels. Default is NULL.}
 
 \item{y.hover.format}{A string that is interpreted for the format of the y axis values in the tooltips.}
@@ -559,8 +552,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{y.title.font.family}{is the font family of the y axis title}
 
 \item{y.title.font.size}{is the font size of the y axis title}
-
-\item{z.decimals}{the number of decimals in the bubble size axis}
 
 \item{z.prefix}{A string that prefixes all bubble values(eg. "$")}
 

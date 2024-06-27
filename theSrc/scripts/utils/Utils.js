@@ -39,9 +39,23 @@ class Utils {
   }
 
   static getFormattedNum (num, decimals, prefix = '', suffix = '') {
+    if (isNaN(Number(num))) {
+      return prefix + num + suffix
+    }
     // Note that BigNumber can have a max of 15 decimals
-    const numToDisplay = _.isNull(decimals) ? String(num) : (new BigNumber(num)).toFormat(decimals)
+    const numToDisplay = _.isNull(decimals) ? this.formatToSignificantDecimals(Number(num)) : (new BigNumber(num)).toFormat(decimals)
     return prefix + numToDisplay + suffix
+  }
+
+  // When sigificant_decimals = 2, 1 -> "1", 1.123 -> "1.12", 0.00123 -> "0.0012"
+  static formatToSignificantDecimals (num, sigificant_decimals = 2) {
+    const is_integer = num === Math.floor(num)
+    if (is_integer) {
+      return (new BigNumber(num)).toFormat(0)
+    }
+    const log_magnitude = Math.floor(Math.log10(Math.abs(num)))
+    const decimals = log_magnitude >= 0 ? sigificant_decimals : -log_magnitude - 1 + sigificant_decimals
+    return (new BigNumber(num)).toFormat(decimals)
   }
 
   static getExponentOfNum (num) {
