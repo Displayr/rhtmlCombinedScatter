@@ -49,8 +49,8 @@ class Utils {
 
   // When sigificant_decimals = 2, 1 -> "1", 1.123 -> "1.12", 0.00123 -> "0.0012"
   static formatToSignificantDecimals (num, sigificant_decimals = 2) {
-    const has_decimals = num !== Math.floor(num)
-    if (!has_decimals) {
+    const is_integer = num === Math.floor(num)
+    if (is_integer) {
       return (new BigNumber(num)).toFormat(0)
     }
     const log_magnitude = Math.floor(Math.log10(Math.abs(num)))
