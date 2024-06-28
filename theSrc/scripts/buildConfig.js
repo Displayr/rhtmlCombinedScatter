@@ -197,6 +197,12 @@ const defaultConfig = {
 function buildConfig (userConfig, width, height) {
   const config = _.merge({}, defaultConfig, userConfig, { width, height })
 
+  // If there are less colors in userConfig than defaultConfig,
+  // _.merge will take some colors from defaultConfig, which is not what we want, hence the code below.
+  if (userConfig.colors) {
+    config.colors = userConfig.colors
+  }
+
   if (_.isNull(config.pointRadius)) {
     config.pointRadius = (_.isArray(config.Z) && config.Z.length)
       ? 4 : 2
