@@ -111,7 +111,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
-    const marker_color = config.colors[group_index]
+    const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
     return {
