@@ -541,9 +541,11 @@ class LabeledScatter {
   }
 
   adjustTitles (plotly_chart_layout, config) {
+    const nsew_rect = this.nsewdragRect()
+    const plot_center = nsew_rect.left + 0.5 * nsew_rect.width
     const title_element = d3.select(this.rootElement).select('.gtitle')
-    const x = config.titleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
-    const text_anchor = config.titleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
+    const x = config.titleAlignment === 'Left' ? 0 : (config.titleAlignment === 'Center' ? plot_center : this.width)
+    const text_anchor = config.titleAlignment === 'Left' ? 'start' : (config.titleAlignment === 'Center' ? 'middle' : 'end')
     title_element
       .attr('x', x)
       .attr('dy', 0)
@@ -558,7 +560,7 @@ class LabeledScatter {
 
     const subtitle_element = this.getAnnotationElement('subtitle', plotly_chart_layout)
     if (subtitle_element !== null) {
-      const subtitle_x = config.subtitleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
+      const subtitle_x = config.subtitleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? plot_center : this.width)
       const subtitle_text_anchor = config.subtitleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
       subtitle_element
         .select('.cursor-pointer')
@@ -582,7 +584,7 @@ class LabeledScatter {
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${0.5 * this.width},${this.height - footer_height - footer_padding})`)
+        .attr('transform', `translate(${plot_center},${this.height - footer_height - footer_padding})`)
       footer_element
         .select('.annotation-text')
         .attr('x', 0)
