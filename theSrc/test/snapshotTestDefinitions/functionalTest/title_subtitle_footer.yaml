@@ -22,3 +22,4 @@ widgets:
   - config: data.functionalTest.scatterplot_simple|config.title_enabled|config.subtitle_enabled|config.footer_multiline|{"titleAlignment":"Right","subtitleAlignment":"Right"}
   - config: data.functionalTest.scatterplot_simple|config.title_multiline|config.subtitle_multiline|config.footer_multiline|{"titleAlignment":"Left","subtitleAlignment":"Left"}
   - config: data.functionalTest.scatterplot_simple|config.title_multiline|config.subtitle_multiline|config.footer_multiline|{"titleAlignment":"Right","subtitleAlignment":"Right"}
+  - config: data.functionalTest.scatterplot_simple|config.title_multiline|config.subtitle_multiline|config.footer_multiline|{"titleAlignment":"Center","subtitleAlignment":"Center"}
