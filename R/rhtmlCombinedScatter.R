@@ -69,12 +69,12 @@
 #' @param title.font.family is the font family of the plot title
 #' @param title.font.color is the font color of the plot title
 #' @param title.font.size is the font size of the plot title
-#' @param title.alignment One of "Left", "Center", "Right"
+#' @param title.alignment One of "Left", "Center", "Center of plot area", "Right"
 #' @param subtitle is the subtitle text given to the plot
 #' @param subtitle.font.family is the font of the subtitle text
 #' @param subtitle.font.color is the font color of the subtitle text
 #' @param subtitle.font.size is the font size of the subtitle text
-#' @param subtitle.alignment One of "Left", "Center", "Right"
+#' @param subtitle.alignment One of "Left", "Center", "Center of plot area", "Right"
 #' @param footer is the footer text given at the bottom at the plot
 #' @param footer.font.family is the font of the footer text
 #' @param footer.font.color is the font color of the footer text
@@ -325,12 +325,12 @@ CombinedScatter <- function(
     subtitle.font.color = rgb(44, 44, 44, maxColorValue = 255),
     subtitle.font.family = "Arial",
     subtitle.font.size = 12,
-    subtitle.alignment = "Center",
+    subtitle.alignment = "Center of plot area",
     title = "",
     title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     title.font.family = "Arial",
     title.font.size = 16,
-    title.alignment = "Center",
+    title.alignment = "Center of plot area",
     tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
     tooltip.font.family = "Arial",
     tooltip.font.size = 10,

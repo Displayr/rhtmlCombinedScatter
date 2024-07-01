@@ -542,8 +542,8 @@ class LabeledScatter {
 
   adjustTitles (plotly_chart_layout, config) {
     const title_element = d3.select(this.rootElement).select('.gtitle')
-    const x = config.titleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
-    const text_anchor = config.titleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
+    const x = this.titleX(config.titleAlignment)
+    const text_anchor = this.titleAnchor(config.titleAlignment)
     title_element
       .attr('x', x)
       .attr('dy', 0)
@@ -558,8 +558,8 @@ class LabeledScatter {
 
     const subtitle_element = this.getAnnotationElement('subtitle', plotly_chart_layout)
     if (subtitle_element !== null) {
-      const subtitle_x = config.subtitleAlignment === 'Left' ? 0 : (config.subtitleAlignment === 'Center' ? 0.5 * this.width : this.width)
-      const subtitle_text_anchor = config.subtitleAlignment === 'Left' ? 'start' : (config.subtitleAlignment === 'Center' ? 'middle' : 'end')
+      const subtitle_x = this.titleX(config.subtitleAlignment)
+      const subtitle_text_anchor = this.titleAnchor(config.subtitleAlignment)
       subtitle_element
         .select('.cursor-pointer')
         .attr('x', 0)
@@ -582,7 +582,7 @@ class LabeledScatter {
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${0.5 * this.width},${this.height - footer_height - footer_padding})`)
+        .attr('transform', `translate(${this.titleX('Center of plot area')},${this.height - footer_height - footer_padding})`)
       footer_element
         .select('.annotation-text')
         .attr('x', 0)
@@ -628,6 +628,29 @@ class LabeledScatter {
         ytitle_element
           .select('.annotation-text')
           .attr('x', 0)
+    }
+  }
+
+  titleX (alignment) {
+    if (alignment === 'Left') {
+      return 0
+    } else if (alignment === 'Center') {
+      return 0.5 * this.width
+    } else if (alignment === 'Center of plot area') {
+      const nsew_rect = this.nsewdragRect()
+      return nsew_rect.left + 0.5 * nsew_rect.width
+    } else { // Right
+      return this.width
+    }
+  }
+
+  titleAnchor (alignment) {
+    if (alignment === 'Left') {
+      return 'start'
+    } else if (alignment === 'Center' || alignment === 'Center of plot area') {
+      return 'middle'
+    } else { // Right
+      return 'end'
     }
   }
 
