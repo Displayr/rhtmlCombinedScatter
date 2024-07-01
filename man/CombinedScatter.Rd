@@ -447,7 +447,7 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{subtitle.font.size}{is the font size of the subtitle text}
 
-\item{subtitle.alignment}{One of "Left", "Center", "Right"}
+\item{subtitle.alignment}{One of "Left", "Center", "Center of plot area", "Right"}
 
 \item{title}{is the title text given to the plot}
 
@@ -457,7 +457,7 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{title.font.size}{is the font size of the plot title}
 
-\item{title.alignment}{One of "Left", "Center", "Right"}
+\item{title.alignment}{One of "Left", "Center", "Center of plot area", "Right"}
 
 \item{tooltip.font.color}{is the font color of the tooltips}
 
