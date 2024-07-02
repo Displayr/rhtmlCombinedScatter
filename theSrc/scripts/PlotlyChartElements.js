@@ -550,8 +550,7 @@ function createLegendSettings (config) {
         itemsizing: 'constant',
         tracegroupgap: 0,
         orientation: config.legendOrientation === 'Horizontal' ? 'h' : 'v',
-        bgcolor: 'rgba(0,0,0,0)',
-        valign: 'top'
+        bgcolor: 'rgba(0,0,0,0)'
     }
     if (config.legendX !== null) {
         settings.x = Math.max(-2, Math.min(3, config.legendX))
