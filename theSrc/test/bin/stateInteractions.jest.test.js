@@ -368,16 +368,28 @@ describe('state interactions', () => {
     await page.close()
   })
 
-    test(`${++testId}: Load smallmultiples with saved state `, async function () {
-      const { page } = await loadWidget({
-        browser,
-        configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_no_titles',
-        stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag',
-        width: 576,
-        height: 512
-      })
-      await page.mouse.move(200, 200)
-      await testSnapshots({ page, testName: 'smallmultiples_after_drag', tolerance: 1 })
-      await page.close()
+  test(`${++testId}: Hide labels in small multiples with shared axis`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.legacy_bubble.bubbleplot_small_multiples',
+      width: 800,
+      height: 500
     })
+    await scatterPlot.clickMouseOnAnchor()
+    await setTimeout(5000)
+    await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
+  })
+
+  test(`${++testId}: Load smallmultiples with saved state `, async function () {
+    const { page } = await loadWidget({
+      browser,
+      configName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_no_titles',
+      stateName: 'data.displayr_regression.set9.colorscale_numeric_smallmultiples_state.after_drag',
+      width: 576,
+      height: 512
+    })
+    await page.mouse.move(200, 200)
+    await testSnapshots({ page, testName: 'smallmultiples_after_drag', tolerance: 1 })
+    await page.close()
+  })
 })
