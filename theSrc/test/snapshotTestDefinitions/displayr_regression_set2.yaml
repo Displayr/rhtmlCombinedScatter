@@ -23,6 +23,7 @@ configs:
   - config: data.displayr_regression.set2.correspondence_analysis7
   - config: data.displayr_regression.set2.row_principal_scaled
   - config: data.displayr_regression.set2.same_titles
+  - config: data.displayr_regression.set2.x_equals_zero
   - config: data.displayr_regression.set2.y_equals_zero
     width: 988
     height: 675
