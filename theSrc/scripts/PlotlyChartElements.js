@@ -364,6 +364,13 @@ function createPlotlyLayout (config, margin_right, height) {
         grid.ygap = config.panelYGap
     }
 
+    const x_range = getRange(config.xBoundsMinimum,
+                             config.xBoundsMaximum,
+                             config.xDataType,
+                             config.X,
+                             _.max(config.normZ),
+                             config.width,
+                             config.fixedAspectRatio)
     const x_axis = {
         title: (npanel > 1 && config.panelShareAxes) ? null : {
             text: config.xTitle,
@@ -394,7 +401,7 @@ function createPlotlyLayout (config, margin_right, height) {
         automargin: true,
         autotypenumbers: 'strict',
         type: plotlyNumberType(config.xDataType),
-        range: getRange(config.xBoundsMinimum, config.xBoundsMaximum, config.xDataType, config.X, _.max(config.normZ), config.width),
+        range: x_range,
         rangemode: 'normal',
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
@@ -403,6 +410,13 @@ function createPlotlyLayout (config, margin_right, height) {
         tickangle: config.xAxisTickAngle,
         layer: 'below traces'
     }
+    const y_range = getRange(config.yBoundsMinimum,
+                             config.yBoundsMaximum,
+                             config.yDataType,
+                             config.Y,
+                             _.max(config.normZ),
+                             config.width,
+                             config.fixedAspectRatio)
     const y_axis = {
         title: (npanel > 1 && config.panelShareAxes) ? null : {
             text: config.yTitle,
@@ -431,7 +445,7 @@ function createPlotlyLayout (config, margin_right, height) {
         // draw zero line separately to ensure it sit on top layer
         zeroline: false,
         type: plotlyNumberType(config.yDataType),
-        range: getRange(config.yBoundsMinimum, config.yBoundsMaximum, config.yDataType, config.Y, _.max(config.normZ), config.width),
+        range: y_range,
         rangemode: 'normal',
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
@@ -517,7 +531,7 @@ function createPlotlyLayout (config, margin_right, height) {
     return plot_layout
 }
 
-function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth) {
+function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth, fixedAspectRatio) {
     let bounds = [minBounds, maxBounds]
     // Plotly seems to find a reasonable default range for non-date values
     if (type === DataTypeEnum.date && (minBounds === null || maxBounds === null)) {
@@ -536,6 +550,11 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth)
             : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
         bounds[0] -= bubble_offset
         bounds[1] += bubble_offset
+    } else if (fixedAspectRatio && values.every(v => v === 0) && (minBounds === null || maxBounds === null)) {
+        // When values are all zero, Plotly sets a range of [-1,1],
+        // which is not suitable when the aspect ratio is fixed.
+        // By setting it below, the actual range is determined by the data in the other axis
+        bounds = [-1e-16, 1e-16]
     }
     return bounds
 }
