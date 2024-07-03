@@ -92,7 +92,10 @@
 #' @param legend.font.color is the font color of the legend.
 #' @param legend.font.size is the font size of the legend
 #' @param legend.font.family is the font family of the legend
-#' @param legend.bubble.font.color is the font color of the legend bubble values.
+#' @param legend.title The title shown above the legend
+#' @param legend.title.font.color The font color of the legend title
+#' @param legend.title.font.size The font size of the legend title
+#' @param legend.title.font.family The font family of the legend title' @param legend.bubble.font.color is the font color of the legend bubble values.
 #' @param legend.bubble.font.size is the font size of the legend bubble values
 #' @param legend.bubble.font.family is the font family of the legend bubble values
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
@@ -278,6 +281,10 @@ CombinedScatter <- function(
     labels.logo.scale = NULL,
     labels.max.shown = NULL,
     labels.show = TRUE,
+    legend.title = "",
+    legend.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    legend.title.font.family = "Arial",
+    legend.title.font.size = 12,
     legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
     legend.bubble.font.family = "Arial",
     legend.bubble.font.size = 10,
@@ -496,6 +503,9 @@ CombinedScatter <- function(
              legendFontColor = legend.font.color,
              legendFontFamily = legend.font.family,
              legendFontSize = legend.font.size,
+             legendTitleFontColor = legend.title.font.color,
+             legendTitleFontFamily = legend.title.font.family,
+             legendTitleFontSize = legend.title.font.size,
              legendBubbleFontColor = legend.bubble.font.color,
              legendBubbleFontFamily = legend.bubble.font.family,
              legendBubbleFontSize = legend.bubble.font.size,

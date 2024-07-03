@@ -85,6 +85,10 @@ CombinedScatter(
   labels.logo.scale = NULL,
   labels.max.shown = NULL,
   labels.show = TRUE,
+  legend.title = "",
+  legend.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  legend.title.font.family = "Arial",
+  legend.title.font.size = 12,
   legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.bubble.font.family = "Arial",
   legend.bubble.font.size = 10,
@@ -351,7 +355,13 @@ on the marker.}
 
 \item{labels.show}{Toggle for showing labels. Defaults to true if labels array given}
 
-\item{legend.bubble.font.color}{is the font color of the legend bubble values.}
+\item{legend.title}{The title shown above the legend}
+
+\item{legend.title.font.color}{The font color of the legend title}
+
+\item{legend.title.font.family}{The font family of the legend title' @param legend.bubble.font.color is the font color of the legend bubble values.}
+
+\item{legend.title.font.size}{The font size of the legend title}
 
 \item{legend.bubble.font.family}{is the font family of the legend bubble values}
 
