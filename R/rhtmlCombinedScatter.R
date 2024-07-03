@@ -503,6 +503,7 @@ CombinedScatter <- function(
              legendFontColor = legend.font.color,
              legendFontFamily = legend.font.family,
              legendFontSize = legend.font.size,
+             legendTitle = legend.title,
              legendTitleFontColor = legend.title.font.color,
              legendTitleFontFamily = legend.title.font.family,
              legendTitleFontSize = legend.title.font.size,
