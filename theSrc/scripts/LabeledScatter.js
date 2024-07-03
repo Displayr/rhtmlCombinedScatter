@@ -655,7 +655,7 @@ class LabeledScatter {
   }
 
   getAnnotationElement (name, plotly_chart_layout) {
-    const index = plotly_chart_layout.annotations.map(a => a.name).indexOf(name)
+    const index = plotly_chart_layout.annotations.filter(a => a.visible).map(a => a.name).indexOf(name)
     if (index === -1) {
       return null
     }
