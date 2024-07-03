@@ -91,7 +91,9 @@ class Utils {
       color = `${color.substring(0, color.length - 1)},${opacity})`
     }
     if (this.isHexColorWithoutOpacity(color) && opacity !== null) {
-      color = `${color}${Math.floor(opacity * 255).toString(16)}`
+      opacity = Math.floor(opacity * 255)
+      const hex_opacity = opacity > 15 ? opacity.toString(16) : '0' + opacity.toString(16)
+      color = `${color}${hex_opacity}`
     }
     return color
   }
