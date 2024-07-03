@@ -376,7 +376,6 @@ describe('state interactions', () => {
       height: 500
     })
     await scatterPlot.clickMouseOnAnchor()
-    await setTimeout(5000)
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
   })
 
