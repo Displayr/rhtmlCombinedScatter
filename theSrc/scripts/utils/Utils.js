@@ -85,6 +85,26 @@ class Utils {
     span.remove()
     return size
   }
+
+  static addOpacity (color, opacity) {
+    if (this.isRgb(color) && opacity !== null) {
+      color = `${color.substring(0, color.length - 1)},${opacity})`
+    }
+    if (this.isHexColorWithoutOpacity(color) && opacity !== null) {
+      opacity = Math.floor(opacity * 255)
+      const hex_opacity = opacity > 15 ? opacity.toString(16) : '0' + opacity.toString(16)
+      color = `${color}${hex_opacity}`
+    }
+    return color
+  }
+
+  static isRgb (color) {
+    return color.match(/^rgb(\d+,\d+,\d+)$/)
+  }
+
+  static isHexColorWithoutOpacity (color) {
+    return color.match(/#[\d,A-F,a-f]{6}/)
+  }
 }
 
 module.exports = Utils

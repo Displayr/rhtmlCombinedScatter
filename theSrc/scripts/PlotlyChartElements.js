@@ -2,6 +2,7 @@ import _ from 'lodash'
 import d3 from 'd3'
 import DataTypeEnum from './utils/DataTypeEnum'
 import TooltipUtils from './utils/TooltipUtils'
+import Utils from './utils/Utils'
 
 // Plotly uses 1.3 for line spacing but we allocate 0.1 more per line
 // when computing the total height to add extra padding.
@@ -259,7 +260,7 @@ function addColorScale (trace, config) {
     const delta = 1.0 / (n - 1)
     let color_scale = []
     for (let i = 0; i < n; i++) {
-        color_scale.push([i * delta, config.colorScale[i]])
+        color_scale.push([i * delta, Utils.addOpacity(config.colorScale[i], config.transparency)])
     }
     const hover_font_color = config.colors.map(x => TooltipUtils.blackOrWhite(x))
     const colorFormatter = getFormatter(config.colorScaleFormat, color_values, config.colorIsDateTime)
