@@ -854,6 +854,9 @@ function marginTop (config) {
     if (config.subtitle && config.subtitle.length > 0) {
         margin_top += config.subtitle.split('<br>').length * config.subtitleFontSize * LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE
     }
+    if (margin_top > 0) { // has title or subtitle
+        margin_top += 0.5 * config.titleFontSize
+    }
     if (config.panelLabels && config.panelLabels.length > 0) {
         const n_columns = Math.ceil(config.panelLabels.length / config.panelNumRows)
         const max_lines = Math.max(...config.panelLabels.filter((_, i) => i < n_columns).map(l => l.split('<br>').length))
