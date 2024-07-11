@@ -7,7 +7,7 @@ widgets:
   - config: data.functionalTest.trendlines.logos_trendlines
   - config: data.functionalTest.trendlines.trendlines
   - config: data.functionalTest.trendlines.trendlines_2point
-  - config: data.functionalTest.scatterplot_simple|{"trendLines":"true"}
   - config: data.functionalTest.trendlines.logos_tech_trends
     width: 800
     height: 400
+  - config: data.functionalTest.scatterplot_simple|{"trendLines":"true"}
