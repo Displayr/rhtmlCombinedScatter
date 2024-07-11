@@ -10,3 +10,4 @@ widgets:
   - config: data.functionalTest.trendlines.logos_tech_trends
     width: 800
     height: 400
+  - config: data.functionalTest.scatterplot_simple|{"trendLines":"true"}

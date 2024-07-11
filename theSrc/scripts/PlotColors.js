@@ -25,7 +25,11 @@ class PlotColors {
   }
 
   getColorFromGroup (group) {
-    return this.groupToColorMap[group]
+    if (Utils.isArr(this.plotData.group)) {
+      return this.groupToColorMap[group]
+    } else {
+      return this.getNewColor(0) // takes the first color in the color wheel since all pts in same grp
+    }
   }
 
   getNewColor (index) {
