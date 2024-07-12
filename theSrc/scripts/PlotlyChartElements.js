@@ -393,8 +393,6 @@ function createPlotlyLayout (config, margin_right, height) {
             color: config.xAxisFontColor,
             size: config.xAxisFontSize
         },
-        linecolor: config.plotBorderShow ? config.plotBorderColor : config.xAxisLineColor,
-        linewidth: config.plotBorderShow ? config.plotBorderWidth : config.xAxisLineWidth,
         scaleratio: config.fixedAspectRatio ? 1 : null,
         scaleanchor: config.fixedAspectRatio ? 'y' : null,
         // draw zero line separately to ensure it sit on top layer
@@ -410,6 +408,14 @@ function createPlotlyLayout (config, margin_right, height) {
         tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
         tickangle: config.xAxisTickAngle,
         layer: 'below traces'
+    }
+    // Somehow plotly still draws an axis line even when the width = 0, so we only specify the line settings when width > 0
+    if (config.plotBorderShow && config.plotBorderWidth > 0) {
+        x_axis.linecolor = config.plotBorderColor
+        x_axis.linewidth = config.plotBorderWidth
+    } else if (config.xAxisLineWidth) {
+        x_axis.linecolor = config.xAxisLineColor
+        x_axis.linewidth = config.xAxisLineWidth
     }
     const y_range = getRange(config.yBoundsMinimum,
                              config.yBoundsMaximum,
@@ -439,8 +445,6 @@ function createPlotlyLayout (config, margin_right, height) {
             color: config.yAxisFontColor,
             size: config.yAxisFontSize
         },
-        linecolor: config.plotBorderShow ? config.plotBorderColor : config.yAxisLineColor,
-        linewidth: config.plotBorderShow ? config.plotBorderWidth : config.yAxisLineWidth,
         scaleratio: 1,
         scaleanchor: config.fixedAspectRatio ? 'x' : null,
         // draw zero line separately to ensure it sit on top layer
@@ -454,6 +458,14 @@ function createPlotlyLayout (config, margin_right, height) {
         tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
         automargin: true,
         layer: 'below traces'
+    }
+    // Somehow plotly still draws an axis line even when the width = 0, so we only specify the line settings when width > 0
+    if (config.plotBorderShow && config.plotBorderWidth > 0) {
+        y_axis.linecolor = config.plotBorderColor
+        y_axis.linewidth = config.plotBorderWidth
+    } else if (config.yAxisLineWidth) {
+        y_axis.linecolor = config.yAxisLineColor
+        y_axis.linewidth = config.yAxisLineWidth
     }
 
     const plot_layout = {
