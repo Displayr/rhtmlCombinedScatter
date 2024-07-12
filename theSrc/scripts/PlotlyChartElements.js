@@ -393,8 +393,8 @@ function createPlotlyLayout (config, margin_right, height) {
             color: config.xAxisFontColor,
             size: config.xAxisFontSize
         },
-        linecolor: config.plotBorderShow ? config.xAxisLineColor : 'transparent',
-        linewidth: config.xAxisLineWidth,
+        linecolor: config.plotBorderShow ? config.plotBorderColor : config.xAxisLineColor,
+        linewidth: config.plotBorderShow ? config.plotBorderWidth : config.xAxisLineWidth,
         scaleratio: config.fixedAspectRatio ? 1 : null,
         scaleanchor: config.fixedAspectRatio ? 'y' : null,
         // draw zero line separately to ensure it sit on top layer
@@ -439,8 +439,8 @@ function createPlotlyLayout (config, margin_right, height) {
             color: config.yAxisFontColor,
             size: config.yAxisFontSize
         },
-        linecolor: config.plotBorderShow ? config.yAxisLineColor : 'transparent',
-        linewidth: config.yAxisLineWidth,
+        linecolor: config.plotBorderShow ? config.plotBorderColor : config.yAxisLineColor,
+        linewidth: config.plotBorderShow ? config.plotBorderWidth : config.yAxisLineWidth,
         scaleratio: 1,
         scaleanchor: config.fixedAspectRatio ? 'x' : null,
         // draw zero line separately to ensure it sit on top layer
@@ -678,7 +678,7 @@ function addLines (config) {
             lines.push({
                 type: 'line',
                 layer: 'below',
-                line: { color: config.xAxisLineColor, width: config.xAxisLineWidth },
+                line: { color: config.plotBorderColor, width: config.plotBorderWidth },
                 y0: 1,
                 y1: 1,
                 yref: y + ' domain',
@@ -689,7 +689,7 @@ function addLines (config) {
             lines.push({
                 type: 'line',
                 layer: 'below',
-                line: { color: config.yAxisLineColor, width: config.yAxisLineWidth },
+                line: { color: config.plotBorderColor, width: config.plotBorderWidth },
                 y0: 0,
                 y1: 1,
                 yref: y + ' domain',
