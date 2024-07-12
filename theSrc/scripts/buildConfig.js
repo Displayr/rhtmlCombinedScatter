@@ -14,7 +14,7 @@ const defaultConfig = {
   xAxisGridColor: '#EEEEEE',
   xAxisGridDash: 'solid',
   xAxisGridWidth: 1,
-  xAxisLineColor: '#000000',
+  xAxisLineColor: '#00000000',
   xAxisLineWidth: 0,
   // plotly has not option to show axis line with dashes
   xAxisTickColor: '#EEEEEE',
@@ -31,7 +31,7 @@ const defaultConfig = {
   yAxisGridColor: '#EEEEEE',
   yAxisGridDash: 'solid',
   yAxisGridWidth: 1,
-  yAxisLineColor: '#000000',
+  yAxisLineColor: '#00000000',
   yAxisLineWidth: 0,
   yAxisTickColor: '#EEEEEE',
   yAxisTickLength: 5,
