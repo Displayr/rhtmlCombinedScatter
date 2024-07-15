@@ -15,7 +15,7 @@ const defaultConfig = {
   xAxisGridDash: 'solid',
   xAxisGridWidth: 1,
   xAxisLineColor: '#000000',
-  xAxisLineWidth: 1,
+  xAxisLineWidth: 0,
   // plotly has not option to show axis line with dashes
   xAxisTickColor: '#EEEEEE',
   xAxisTickLength: 5,
@@ -32,7 +32,7 @@ const defaultConfig = {
   yAxisGridDash: 'solid',
   yAxisGridWidth: 1,
   yAxisLineColor: '#000000',
-  yAxisLineWidth: 1,
+  yAxisLineWidth: 0,
   yAxisTickColor: '#EEEEEE',
   yAxisTickLength: 5,
   yAxisZeroLineColor: '#000000',
@@ -139,6 +139,8 @@ const defaultConfig = {
   panelYGap: 0.3,
   plotAreaBackgroundColor: 'transparent',
   plotBorderShow: true,
+  plotBorderWidth: 1,
+  plotBorderColor: '#000000',
   pointRadius: null, // if Z then 4 else 2 (applied below)
   pointBorderColor: null,
   pointBorderWidth: null,
