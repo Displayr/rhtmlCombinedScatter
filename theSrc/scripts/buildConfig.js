@@ -44,6 +44,7 @@ const defaultConfig = {
   // We expect that R wrapper function will ensure the colorScale
   // matches the colors (which is still used for the labels)
   colorScale: null,
+  colorScaleShow: true,
   colorScaleTitle: null,
   colorScaleTitleFontColor: '#2C2C2C',
   colorScaleTitleFontFamily: 'Arial',
@@ -104,7 +105,7 @@ const defaultConfig = {
   legendFontColor: '#2C2C2C',
   legendFontFamily: 'Arial',
   legendFontSize: 12,
-  legendShow: true,
+  legendShow: 'Automatic',
   legendOrientation: 'Vertical',
   legendTitle: null,
   legendTitleFontColor: '#2C2C2C',
