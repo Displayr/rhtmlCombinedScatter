@@ -403,6 +403,8 @@ function createPlotlyLayout (config, margin_right, height) {
         autotypenumbers: 'strict',
         type: plotlyNumberType(config.xDataType),
         range: x_range,
+        autorange: getAutoRange(x_range),
+        autorangeoptions: getAutoRangeOptions(x_range),
         rangemode: 'normal',
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
@@ -447,6 +449,8 @@ function createPlotlyLayout (config, margin_right, height) {
         zeroline: false,
         type: plotlyNumberType(config.yDataType),
         range: y_range,
+        autorange: getAutoRange(y_range),
+        autorangeoptions: getAutoRangeOptions(y_range),
         rangemode: 'normal',
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
@@ -558,6 +562,32 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
         bounds = [-1e-16, 1e-16]
     }
     return bounds
+}
+
+function getAutoRange (range) {
+    const has_min = range[0] !== '' && range[0] !== null
+    const has_max = range[1] !== '' && range[1] !== null
+    if (!has_min && !has_max) {
+        return true
+    } else if (has_min && has_max) {
+        return false
+    } else if (has_min && !has_max) {
+        return 'max'
+    } else { // !has_min && has_max
+        return 'min'
+    }
+}
+
+function getAutoRangeOptions (range) {
+    const has_min = range[0] !== '' && range[0] !== null
+    const has_max = range[1] !== '' && range[1] !== null
+    if (has_min && !has_max) {
+        return { minallowed: range[0] }
+    } else if (!has_min && has_max) {
+        return { maxallowed: range[1] }
+    } else {
+        return {}
+    }
 }
 
 function createLegendSettings (config) {
