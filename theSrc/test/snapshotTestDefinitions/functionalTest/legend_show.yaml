@@ -6,5 +6,6 @@ rowSize: 4
 widgets:
   - config: data.functionalTest.scatterplot_simple|{"legendShow":true,"title":"legendShow = true"}
   - config: data.functionalTest.scatterplot_simple|{"legendShow":"Show","title":"legendShow = 'Show'"}
-  - config: data.functionalTest.scatterplot_simple|{"legendShow":"Hide","title":"legendShow = 'Hide'"}
+  - config: data.bdd.bubbleplot_simple|{"legendShow":false,"title":"legendShow = false","titleFontSize":16}
+  - config: data.bdd.bubbleplot_simple|{"legendShow":"Hide","title":"legendShow = 'Hide'","titleFontSize":16}
   - config: data.displayr_regression.set9.colorscale_numeric|{"colorScaleShow":false,"title":"colorScaleShow = false"}
