@@ -403,8 +403,8 @@ function createPlotlyLayout (config, margin_right, height) {
         autotypenumbers: 'strict',
         type: plotlyNumberType(config.xDataType),
         range: x_range,
-        autorange: getAutoRange(config.xBoundsMinimum, config.xBoundsMaximum),
-        autorangeoptions: getAutoRangeOptions(config.xBoundsMinimum, config.xBoundsMaximum),
+        autorange: getAutoRange(x_range),
+        autorangeoptions: getAutoRangeOptions(x_range),
         rangemode: 'normal',
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
@@ -449,8 +449,8 @@ function createPlotlyLayout (config, margin_right, height) {
         zeroline: false,
         type: plotlyNumberType(config.yDataType),
         range: y_range,
-        autorange: getAutoRange(config.yBoundsMinimum, config.yBoundsMaximum),
-        autorangeoptions: getAutoRangeOptions(config.yBoundsMinimum, config.yBoundsMaximum),
+        autorange: getAutoRange(y_range),
+        autorangeoptions: getAutoRangeOptions(y_range),
         rangemode: 'normal',
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
@@ -564,9 +564,9 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
     return bounds
 }
 
-function getAutoRange (min_bounds, max_bounds) {
-    const has_min = min_bounds !== '' && min_bounds !== null
-    const has_max = max_bounds !== '' && max_bounds !== null
+function getAutoRange (range) {
+    const has_min = range[0] !== '' && range[0] !== null
+    const has_max = range[1] !== '' && range[1] !== null
     if (!has_min && !has_max) {
         return true
     } else if (has_min && has_max) {
@@ -578,13 +578,13 @@ function getAutoRange (min_bounds, max_bounds) {
     }
 }
 
-function getAutoRangeOptions (min_bounds, max_bounds) {
-    const has_min = min_bounds !== '' && min_bounds !== null
-    const has_max = max_bounds !== '' && max_bounds !== null
+function getAutoRangeOptions (range) {
+    const has_min = range[0] !== '' && range[0] !== null
+    const has_max = range[1] !== '' && range[1] !== null
     if (has_min && !has_max) {
-        return { minallowed: min_bounds }
+        return { minallowed: range[0] }
     } else if (!has_min && has_max) {
-        return { maxallowed: max_bounds }
+        return { maxallowed: range[1] }
     } else {
         return {}
     }
