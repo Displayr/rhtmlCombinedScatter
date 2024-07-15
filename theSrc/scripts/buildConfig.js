@@ -104,7 +104,7 @@ const defaultConfig = {
   legendFontColor: '#2C2C2C',
   legendFontFamily: 'Arial',
   legendFontSize: 12,
-  legendShow: true,
+  legendShow: 'Automatic',
   legendOrientation: 'Vertical',
   legendTitle: null,
   legendTitleFontColor: '#2C2C2C',

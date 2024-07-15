@@ -53,12 +53,12 @@ function createPlotlyData (config) {
         const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            plot_data.push(createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index))
+            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
-                plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+                plot_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
             if (hasMarkerAnnotations(config, index)) {
-                plot_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
+                plot_data.push(createScatterTraceForMarkerAnnotation(config, 'Series 1', marker_size, p, index))
             }
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
@@ -471,7 +471,7 @@ function createPlotlyLayout (config, margin_right, height) {
             },
             automargin: true
         },
-        showlegend: config.legendShow && !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0,
+        showlegend: getShowLegend(config),
         legend: createLegendSettings(config),
         margin: {
             t: marginTop(config),
@@ -587,6 +587,16 @@ function getAutoRangeOptions (range) {
         return { maxallowed: range[1] }
     } else {
         return {}
+    }
+}
+
+function getShowLegend (config) {
+    if (config.legendShow === 'Automatic') {
+        return !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0
+    } else if (config.legendShow === true) {
+        return !Array.isArray(config.colorScale)
+    } else {
+        return false
     }
 }
 
