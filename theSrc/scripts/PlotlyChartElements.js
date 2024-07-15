@@ -403,6 +403,8 @@ function createPlotlyLayout (config, margin_right, height) {
         autotypenumbers: 'strict',
         type: plotlyNumberType(config.xDataType),
         range: x_range,
+        autorange: getAutoRange(config.xBoundsMinimum, config.xBoundsMaximum),
+        autorangeoptions: getAutoRangeOptions(config.xBoundsMinimum, config.xBoundsMaximum),
         rangemode: 'normal',
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
@@ -447,6 +449,8 @@ function createPlotlyLayout (config, margin_right, height) {
         zeroline: false,
         type: plotlyNumberType(config.yDataType),
         range: y_range,
+        autorange: getAutoRange(config.yBoundsMinimum, config.yBoundsMaximum),
+        autorangeoptions: getAutoRangeOptions(config.yBoundsMinimum, config.yBoundsMaximum),
         rangemode: 'normal',
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
@@ -558,6 +562,32 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
         bounds = [-1e-16, 1e-16]
     }
     return bounds
+}
+
+function getAutoRange (min_bounds, max_bounds) {
+    const has_min = min_bounds !== '' && min_bounds !== null
+    const has_max = max_bounds !== '' && max_bounds !== null
+    if (!has_min && !has_max) {
+        return true
+    } else if (has_min && has_max) {
+        return false
+    } else if (has_min && !has_max) {
+        return 'max'
+    } else { // !has_min && has_max
+        return 'min'
+    }
+}
+
+function getAutoRangeOptions (min_bounds, max_bounds) {
+    const has_min = min_bounds !== '' && min_bounds !== null
+    const has_max = max_bounds !== '' && max_bounds !== null
+    if (has_min && !has_max) {
+        return { minallowed: min_bounds }
+    } else if (!has_min && has_max) {
+        return { maxallowed: max_bounds }
+    } else {
+        return {}
+    }
 }
 
 function createLegendSettings (config) {
