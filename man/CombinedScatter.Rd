@@ -49,6 +49,7 @@ CombinedScatter(
   colors = c("#5B9BD5", "#ED7D31", "#A5A5A5", "#1EC000", "#4472C4", "#70AD47", "#255E91",
     "#9E480E", "#636363", "#997300", "#264478", "#43682B", "#FF2323"),
   color.scale = NULL,
+  color.scale.show = TRUE,
   color.scale.title = "",
   color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   color.scale.title.font.family = "Arial",
@@ -281,6 +282,8 @@ It should have the same length as the number of levels in `group`}
 \item{color.scale}{Default to NULL. It can be set to a vector of hex colors in order to show
 `group` as a continuous color scale. In this case, `color` will be ignored.}
 
+\item{color.scale.show}{Whether to show the color scale bar (if it is available).}
+
 \item{color.scale.title}{Color scale title}
 
 \item{color.scale.title.font.color}{Color scale title font color}
@@ -381,7 +384,8 @@ on the marker.}
 
 \item{legend.font.size}{is the font size of the legend}
 
-\item{legend.show}{is the toggle to show the legend. Defaults to TRUE}
+\item{legend.show}{is the toggle to show the legend. Can be logical or "Automatic", "Show" or "Hide".
+When automatic, the legend is only shown when there is more than one group. Defaults to TRUE.}
 
 \item{legend.orientation}{Either "Vertical" or "Horizontal"}
 

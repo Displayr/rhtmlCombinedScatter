@@ -17,6 +17,7 @@
 #' @param color.transparency Value 0-1 specifying the transparency level of the plot points. Defaults to 1 without Z and 0.8 with Z
 #' @param color.scale Default to NULL. It can be set to a vector of hex colors in order to show
 #'  `group` as a continuous color scale. In this case, `color` will be ignored.
+#' @param color.scale.show Whether to show the color scale bar (if it is available).
 #' @param color.scale.title Color scale title
 #' @param color.scale.title.font.color Color scale title font color
 #' @param color.scale.title.font.family Color scale title font family
@@ -87,7 +88,8 @@
 #' @param labels.max.shown Number of labels to show on chart. If the number of labels is greater than this
 #'  this parameter, then the extra labels will be hidden by default but will be shown when the user clicks
 #'  on the marker.
-#' @param legend.show is the toggle to show the legend. Defaults to TRUE
+#' @param legend.show is the toggle to show the legend. Can be logical or "Automatic", "Show" or "Hide".
+#'  When automatic, the legend is only shown when there is more than one group. Defaults to TRUE.
 #' @param legend.bubbles.show toggle to show the bubble sizes in the legend. Defaults to TRUE
 #' @param legend.font.color is the font color of the legend.
 #' @param legend.font.size is the font size of the legend
@@ -245,6 +247,7 @@ CombinedScatter <- function(
     color.transparency = NULL,
     colors = c('#5B9BD5', '#ED7D31', '#A5A5A5', '#1EC000', '#4472C4', '#70AD47','#255E91','#9E480E','#636363','#997300','#264478','#43682B','#FF2323'),
     color.scale = NULL,
+    color.scale.show = TRUE,
     color.scale.title = "",
     color.scale.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     color.scale.title.font.family = "Arial",
@@ -456,6 +459,7 @@ CombinedScatter <- function(
              fixedAspectRatio = fixed.aspect,
              colors = toJsonOrNull(colors),
              colorScale = toJsonOrNull(color.scale),
+             colorScaleShow = color.scale.show,
              colorScaleTitle = color.scale.title,
              colorScaleTitleFontColor = color.scale.title.font.color,
              colorScaleTitleFontFamily = color.scale.title.font.family,

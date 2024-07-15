@@ -295,7 +295,7 @@ function addColorScale (trace, config) {
         trace['marker'].cmax = color_max
     }
     trace['marker'].color = config.colors
-    trace['marker'].showscale = true
+    trace['marker'].showscale = config.colorScaleShow
     trace['marker'].colorbar = color_bar
     trace['marker'].colorscale = color_scale
     trace['hoverlabel'].font = { color: hover_font_color }
@@ -593,9 +593,9 @@ function getAutoRangeOptions (range) {
 function getShowLegend (config) {
     if (config.legendShow === 'Automatic') {
         return !Array.isArray(config.colorScale) && Array.isArray(config.group) && config.group.length > 0
-    } else if (config.legendShow === true) {
+    } else if (config.legendShow === 'Show' || config.legendShow === true) {
         return !Array.isArray(config.colorScale)
-    } else {
+    } else { // config.legendShow === 'Hide' || config.legendShow === false
         return false
     }
 }
