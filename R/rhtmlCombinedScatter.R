@@ -427,8 +427,18 @@ CombinedScatter <- function(
         }
         color.min <- min(color.tmp, na.rm = TRUE)
         color.max <- max(color.tmp, na.rm = TRUE)
+
+        # Convert color variable to scale on 0 to 1
         colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
         colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
+
+        # Use existing color interpolation to reduce the number
+        # colors passed to plotly otherwise it will be ignored
+        if (length(color.scale) >= 50)
+        {
+            shorter.seq <- seq(from = 0, to = 1, length = 10)
+            color.scale <- rgb(color.func(shorter.seq), maxColorValue = 255)
+        }
     }
     if (!is.null(panels))
     {
