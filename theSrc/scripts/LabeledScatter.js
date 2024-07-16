@@ -422,7 +422,7 @@ class LabeledScatter {
    * Whether legend elements (legend points or bubble legend) are to be shown to the right of the plotly legend
    */
   isLegendElementsToRightOfPlotlyLegend (plotly_chart_layout, config) {
-    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
+    if (config.colorScale !== null && config.colorScaleShow && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
       return true
     }
     if (!plotly_chart_layout.legend || !this.isPlotlyLegendOnRight(plotly_chart_layout)) {

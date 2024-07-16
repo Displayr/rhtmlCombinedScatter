@@ -9,3 +9,4 @@ widgets:
   - config: data.bdd.bubbleplot_simple|{"legendShow":false,"title":"legendShow = false","titleFontSize":16}
   - config: data.bdd.bubbleplot_simple|{"legendShow":"Hide","title":"legendShow = 'Hide'","titleFontSize":16}
   - config: data.displayr_regression.set9.colorscale_numeric|{"colorScaleShow":false,"title":"colorScaleShow = false"}
+  - config: data.displayr_regression.set9.colorscale_bubble_numeric|{"colorScaleShow":false,"legendBubblesShow":true,"title":"colorScaleShow = false, legendBubblesShow = true","titleFontSize":16}
