@@ -27,7 +27,7 @@ function createPlotlyData (config) {
         config.yIsDateTime
     )
     let tooltips = indices.map(
-        i => `${tooltip_labels[i]} (${xFormatter(config.X[i])}, ${yFormatter(config.Y[i])})`
+        i => `${tooltip_labels[i]} (${config.xPrefix}${xFormatter(config.X[i])}${config.xSuffix}, ${config.yPrefix}${yFormatter(config.Y[i])}${config.ySuffix})`
     )
 
     // Check if this is a bubbleplot
