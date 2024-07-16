@@ -18,6 +18,12 @@ test_that("Basic working scatterplot", {
         label=paste0('N', 1:nrow(iris)), panels = iris$Species), NA)
 })
 
+test_that("Numeric color scale", {
+    expect_error(CombinedScatter(X=LifeCycleSavings[,1], Y=LifeCycleSavings[,2],
+        label = rownames(LifeCycleSavings),
+        group = LifeCycleSavings[,3], color.scale = terrain.colors(50)), NA)
+})
+
 test_that("Small Multiples", {
     expect_error(CombinedScatter(X=1:10, Y=1:10,
         panels=rep(c("A", "B"), each=5), panel.title.font.color = "#FF0000"), NA)
