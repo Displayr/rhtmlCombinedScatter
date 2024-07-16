@@ -351,7 +351,7 @@ class LabeledScatter {
   getLegendPointsRect (plotly_chart_layout, is_legend_elements_to_right_of_plotly_legend, config) {
     const nsewdrag_rect = this.nsewdragRect()
     if (is_legend_elements_to_right_of_plotly_legend) {
-      const legend_right = config.colorScale !== null ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
+      const legend_right = config.colorScale !== null && config.colorScaleShow ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
       return Utils.addTopBottomLeftRight({
         x: legend_right - nsewdrag_rect.x,
         y: LEGEND_POINTS_PADDING_TOP,
@@ -379,7 +379,7 @@ class LabeledScatter {
   getBubbleLegendRect (is_legend_elements_to_right_of_plotly_legend, config) {
     const nsewdrag_rect = this.nsewdragRect()
     if (is_legend_elements_to_right_of_plotly_legend) {
-      const legend_right = config.colorScale !== null ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
+      const legend_right = config.colorScale !== null && config.colorScaleShow ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
       const bubble_height = this.bubbleLegendHeight(config)
       return Utils.addTopBottomLeftRight({
         x: legend_right - nsewdrag_rect.x,
@@ -422,7 +422,7 @@ class LabeledScatter {
    * Whether legend elements (legend points or bubble legend) are to be shown to the right of the plotly legend
    */
   isLegendElementsToRightOfPlotlyLegend (plotly_chart_layout, config) {
-    if (config.colorScale !== null && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
+    if (config.colorScale !== null && config.colorScaleShow && (this.stateObj.legendPts.length > 0 || this.hasBubbleLegend(config))) {
       return true
     }
     if (!plotly_chart_layout.legend || !this.isPlotlyLegendOnRight(plotly_chart_layout)) {
@@ -460,7 +460,7 @@ class LabeledScatter {
 
   marginRightWhenLegendElementsToRightOfPlotlyLegend (config) {
     const nsewdrag_rect = this.nsewdragRect()
-    const legend_right = config.colorScale !== null ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
+    const legend_right = config.colorScale !== null && config.colorScaleShow ? this.plotlyColorbarRight() : this.plotlyLegendRect().right
     const required_margin = (legend_right - nsewdrag_rect.right) + this.legendPointsAndBubbleLegendWidth(config)
     return Math.max(required_margin, config.marginRight)
   }
