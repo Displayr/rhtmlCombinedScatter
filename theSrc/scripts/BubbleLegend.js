@@ -92,7 +92,7 @@ class BubbleLegend {
            .attr('cy', d => d.cy)
            .attr('r', d => d.r)
            .attr('fill', 'none')
-           .attr('stroke', this.legendSettings.getBubbleFontColor())
+           .attr('stroke', '#444444')
            .attr('stroke-opacity', 0.5)
       }
 
