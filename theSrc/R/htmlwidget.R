@@ -443,9 +443,8 @@ CombinedScatter <- function(
     if (!is.null(panels))
     {
         panels <- as.factor(panels)
-        panel.labels <- levels(panels)
+        panel.labels <- levels(panels)[levels(panels) %in% panels]
         panels <- as.numeric(panels) - 1
-
     } else
         panel.labels <- NULL
 
