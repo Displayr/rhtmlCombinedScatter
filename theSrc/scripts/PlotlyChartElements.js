@@ -791,7 +791,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
             annotations.push({
                 name: 'markerlabel',
-                text: combineLabelAndAnnotations(config, i),
+                text: combineLabelAndAnnotations(config, i).trim(),
                 yanchor: 'bottom',
                 arrowhead: 0,
                 arrowwidth: 0.5,
