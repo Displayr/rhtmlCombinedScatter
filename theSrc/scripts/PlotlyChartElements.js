@@ -82,7 +82,7 @@ function createPlotlyData (config) {
         }
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
-        const group_names = Object.keys(indices_by_group).sort()
+        const group_names = _.uniq(config.group)
         const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
