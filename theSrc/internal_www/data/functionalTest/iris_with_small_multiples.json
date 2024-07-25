@@ -622,5 +622,6 @@
     "yBoundsMaximum": 4.5,
     "yBoundsMinimum": 1.8,
     "tooltipFontSize": 12,
-    "tooltipFontFamily": "Verdana"
+    "tooltipFontFamily": "Verdana",
+    "labelsMaxShown": 101
 }

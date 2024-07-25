@@ -781,7 +781,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     let j = 0
     let k = 0
     let annotations = plotly_layout.annotations ? removeSmallMultipleAnnotations(plotly_layout.annotations) : []
-    const n = config.X.length
+    const n = config.labelsMaxShown !== null ? Math.min(config.X.length, config.labelsMaxShown) : config.X.length
     if (config.label && config.showLabels) {
         for (let i = 0; i < n; i++) {
             const curr_is_saved = saved_annotations !== null &&
