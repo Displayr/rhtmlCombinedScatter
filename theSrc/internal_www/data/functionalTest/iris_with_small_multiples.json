@@ -615,7 +615,7 @@
         "versicolor",
         "virginica"
     ],
-    "panelNumRows": 2,
+    "panelNumRows": 5,
     "panelShareAxes": true,
     "xBoundsMaximum": 8,
     "xBoundsMinimum": 4,

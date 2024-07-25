@@ -444,7 +444,10 @@ CombinedScatter <- function(
     {
         panels <- as.factor(panels)
         panel.labels <- levels(panels)[levels(panels) %in% panels]
-        panels <- as.numeric(panels) - 1
+        panels <- as.numeric(panels)
+        unique_values <- unique(panels)
+        new_values <- rank(unique(panels)) - 1
+        panels <- vapply(panels, function(v) new_values[v == unique_values], numeric(1))
     } else
         panel.labels <- NULL
 

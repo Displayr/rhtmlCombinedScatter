@@ -359,7 +359,7 @@ function createPlotlyLayout (config, margin_right, height) {
     if (npanel > 1) {
         grid = {}
         grid.pattern = 'independent'
-        grid.rows = config.panelNumRows
+        grid.rows = Math.min(config.panelNumRows, npanel)
         grid.columns = Math.ceil(npanel / grid.rows)
         grid.xgap = config.panelXGap
         grid.ygap = config.panelYGap
