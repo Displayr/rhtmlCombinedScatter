@@ -443,10 +443,17 @@ CombinedScatter <- function(
     if (!is.null(panels))
     {
         panels <- as.factor(panels)
+        # Exclude levels that do not appear in panels,
+        # so that every panel will have at least one data point.
         panel.labels <- levels(panels)[levels(panels) %in% panels]
         panels <- as.numeric(panels)
+
+        # There could be levels that are not represented in panels,
+        # e.g., the level with value 2 might not be present in panels due to filtering.
+        # If so, we need to shuffle the numbers in panels down so that
+        # they correctly correspond to the panels that are shown.
         unique_values <- unique(panels)
-        new_values <- rank(unique(panels)) - 1
+        new_values <- rank(unique_values) - 1
         panels <- vapply(panels, function(v) new_values[v == unique_values], numeric(1))
     } else
         panel.labels <- NULL

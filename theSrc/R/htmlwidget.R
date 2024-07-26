@@ -453,7 +453,7 @@ CombinedScatter <- function(
         # If so, we need to shuffle the numbers in panels down so that
         # they correctly correspond to the panels that are shown.
         unique_values <- unique(panels)
-        new_values <- rank(unique(panels)) - 1
+        new_values <- rank(unique_values) - 1
         panels <- vapply(panels, function(v) new_values[v == unique_values], numeric(1))
     } else
         panel.labels <- NULL
