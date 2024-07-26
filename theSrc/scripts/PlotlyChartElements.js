@@ -82,7 +82,7 @@ function createPlotlyData (config) {
         }
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
-        const group_names = Object.keys(indices_by_group)
+        const group_names = _.uniq(config.group)
         const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
@@ -359,7 +359,7 @@ function createPlotlyLayout (config, margin_right, height) {
     if (npanel > 1) {
         grid = {}
         grid.pattern = 'independent'
-        grid.rows = config.panelNumRows
+        grid.rows = Math.min(config.panelNumRows, npanel)
         grid.columns = Math.ceil(npanel / grid.rows)
         grid.xgap = config.panelXGap
         grid.ygap = config.panelYGap
@@ -781,7 +781,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     let j = 0
     let k = 0
     let annotations = plotly_layout.annotations ? removeSmallMultipleAnnotations(plotly_layout.annotations) : []
-    const n = config.X.length
+    const n = config.labelsMaxShown !== null ? Math.min(config.X.length, config.labelsMaxShown) : config.X.length
     if (config.label && config.showLabels) {
         for (let i = 0; i < n; i++) {
             const curr_is_saved = saved_annotations !== null &&
@@ -791,7 +791,7 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
             annotations.push({
                 name: 'markerlabel',
-                text: combineLabelAndAnnotations(config, i),
+                text: combineLabelAndAnnotations(config, i).trim(),
                 yanchor: 'bottom',
                 arrowhead: 0,
                 arrowwidth: 0.5,

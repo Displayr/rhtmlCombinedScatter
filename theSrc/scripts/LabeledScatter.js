@@ -535,7 +535,7 @@ class LabeledScatter {
   applyLegendClick (annotations, eventdata, config) {
     const changed = eventdata.data[eventdata.curveNumber].name
     for (let i = 0; i < config.group.length; i++) {
-        if (config.group[i] === changed) annotations[i].visible = !annotations[i].visible
+        if (config.group[i].toString() === changed) annotations[i].visible = !annotations[i].visible
     }
     return annotations
   }
