@@ -340,7 +340,7 @@ function checkD3Format (format, values, value_is_date) {
         case 'e': return '~e'
         case 'f': return '~f'
         case ',f': return ',.f'
-        case null: case undefined: case '': return '~s'
+        case null: case undefined: return ''
         default: return format
     }
 }
