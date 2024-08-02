@@ -112,7 +112,7 @@ function createPlotlyData (config) {
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
-    const trace_marker_size = data_index ? _.at(marker_size, data_index) : marker_size
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -148,6 +148,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     // with a colors taken from the border colors
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
     const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -160,7 +161,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
         mode: 'markers',
         marker: {
             color: 'transparent',
-            size: marker_size,
+            size: trace_marker_size,
             sizemode: 'diameter',
             opacity: 1, // somehow this applies to the border, so it needs to be 1
             line: {
@@ -179,6 +180,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
 function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const text = data_index ? _.at(config.markerAnnotations, data_index) : config.markerAnnotations
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
@@ -190,7 +192,7 @@ function createScatterTraceForMarkerAnnotation (config, group_name, marker_size,
         mode: 'markers+text',
         marker: {
             color: 'transparent',
-            size: adjustMarkerSizeForAnnotation(marker_size),
+            size: adjustMarkerSizeForAnnotation(trace_marker_size),
             sizemode: 'diameter',
             line: {
                 width: 0 // this is needed otherwise plotly draws a thin white border
