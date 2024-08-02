@@ -310,7 +310,7 @@ function setMarkerColorsUsingScale (trace, config, panel_index) {
     const marker_colors = []
     const n = config.group.length
     for (let i = 0; i < n; i++) {
-        if (config.panels[i] === panel_index) {
+        if (!config.panels || config.panels[i] === panel_index) {
             marker_colors.push(group_colors[config.group[i]])
         }
     } 
