@@ -71,9 +71,9 @@ function createPlotlyData (config) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             const trace = createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
-            // We set the marker colors according to the color scale as
+            // We set the marker colors again since
             // createScatterTraceForMarker is not able to set multiple colors in a trace
-            setMarkerColorsUsingScale(trace, config, p)
+            setTraceMarkerColorsFromConfig(trace, config, p)
             plot_data.push(trace)
             if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
@@ -305,7 +305,7 @@ function addColorScale (trace, config) {
     trace['hoverlabel'].font = { color: hover_font_color }
 }
 
-function setMarkerColorsUsingScale (trace, config, panel_index) {
+function setTraceMarkerColorsFromConfig (trace, config, panel_index) {
     const group_colors = createGroupColors(config)
     const marker_colors = []
     const n = config.group.length
