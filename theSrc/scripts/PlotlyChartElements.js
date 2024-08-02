@@ -40,6 +40,7 @@ function createPlotlyData (config) {
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
+    const plot_annotation_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
     }
@@ -55,10 +56,10 @@ function createPlotlyData (config) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
-                plot_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
             if (hasMarkerAnnotations(config, index)) {
-                plot_data.push(createScatterTraceForMarkerAnnotation(config, 'Series 1', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, 'Series 1', marker_size, p, index))
             }
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
@@ -74,10 +75,10 @@ function createPlotlyData (config) {
             if (p === 0) addColorScale(trace, config)
             plot_data.push(trace)
             if (hasMarkerBorder(config, index)) {
-                plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
             }
             if (hasMarkerAnnotations(config, index)) {
-                plot_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
             }
         }
     } else {
@@ -96,16 +97,19 @@ function createPlotlyData (config) {
                 const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (hasMarkerAnnotations(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (g_add) group_added.push(g_name)
             }
         }
     }
-    return plot_data
+    // Add the annotation traces last so that they don't interfere with the
+    // order of the marker points in the DOM, which is relied upon by
+    // code that handles marker label toggling.
+    return [...plot_data, ...plot_annotation_data]
 }
 
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
