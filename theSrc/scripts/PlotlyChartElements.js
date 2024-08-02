@@ -327,7 +327,7 @@ function checkD3Format (format, values, value_is_date) {
         case 'e': return '~e'
         case 'f': return '~f'
         case ',f': return ',.f'
-        case null: case undefined: case '': return '~s'
+        case null: case undefined: case '': return '~f' // avoid SI prefix
         default: return format
     }
 }
@@ -413,8 +413,7 @@ function createPlotlyLayout (config, margin_right, height) {
         ticksuffix: config.xSuffix,
         tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
         tickangle: config.xAxisTickAngle,
-        layer: 'below traces',
-        exponentformat: 'SI'
+        layer: 'below traces'
     }
     // Somehow plotly still draws an axis line even when the width = 0, so we only specify the line settings when width > 0
     if (config.plotBorderShow && config.plotBorderWidth > 0) {
