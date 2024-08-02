@@ -340,7 +340,7 @@ function checkD3Format (format, values, value_is_date) {
         case 'e': return '~e'
         case 'f': return '~f'
         case ',f': return ',.f'
-        case null: case undefined: return ''
+        case null: case undefined: return '' // this format yields SI but without "m" (thousandths).
         default: return format
     }
 }
