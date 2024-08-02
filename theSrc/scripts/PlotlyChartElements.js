@@ -313,7 +313,7 @@ function setMarkerColorsUsingScale (trace, config, panel_index) {
         if (!config.panels || config.panels[i] === panel_index) {
             marker_colors.push(group_colors[config.group[i]])
         }
-    } 
+    }
     trace['marker'].color = marker_colors
     trace['hoverlabel'].font = { color: marker_colors.map(x => TooltipUtils.blackOrWhite(x)) }
 }
