@@ -48,9 +48,9 @@ function createPlotlyData (config) {
     const indices_by_panel = n_panels > 1 ? _.groupBy(indices, i => config.panels[i]) : {}
     const panel_nm = Object.keys(indices_by_panel)
     config.wrappedX = isXAxisLabelsWrapping(config) ? config.X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : config.X
+    const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
 
     if (!Array.isArray(config.group)) {
-        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
@@ -67,11 +67,13 @@ function createPlotlyData (config) {
         tooltips = indices.map(i => `${tooltips[i]}<br>${
             Array.isArray(config.colorLevels) ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
         }`)
-        const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             const trace = createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
+            // We set the marker colors again since
+            // createScatterTraceForMarker is not able to set multiple colors in a trace
+            setTraceMarkerColorsFromConfig(trace, config, p)
             plot_data.push(trace)
             if (hasMarkerBorder(config, index)) {
                 plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
@@ -93,7 +95,6 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                const marker_size = config.normZ === null ? config.pointRadius * 2 : _.at(config.normZ, gp_index)
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
@@ -111,6 +112,7 @@ function createPlotlyData (config) {
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -126,7 +128,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
         mode: 'markers',
         marker: {
             color: marker_color,
-            size: marker_size,
+            size: trace_marker_size,
             sizemode: 'diameter',
             opacity: marker_opacity,
             line: {
@@ -146,6 +148,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     // with a colors taken from the border colors
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
     const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -158,7 +161,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
         mode: 'markers',
         marker: {
             color: 'transparent',
-            size: marker_size,
+            size: trace_marker_size,
             sizemode: 'diameter',
             opacity: 1, // somehow this applies to the border, so it needs to be 1
             line: {
@@ -177,6 +180,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
 function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
     const text = data_index ? _.at(config.markerAnnotations, data_index) : config.markerAnnotations
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
@@ -188,7 +192,7 @@ function createScatterTraceForMarkerAnnotation (config, group_name, marker_size,
         mode: 'markers+text',
         marker: {
             color: 'transparent',
-            size: adjustMarkerSizeForAnnotation(marker_size),
+            size: adjustMarkerSizeForAnnotation(trace_marker_size),
             sizemode: 'diameter',
             line: {
                 width: 0 // this is needed otherwise plotly draws a thin white border
@@ -299,6 +303,19 @@ function addColorScale (trace, config) {
     trace['marker'].colorbar = color_bar
     trace['marker'].colorscale = color_scale
     trace['hoverlabel'].font = { color: hover_font_color }
+}
+
+function setTraceMarkerColorsFromConfig (trace, config, panel_index) {
+    const group_colors = createGroupColors(config)
+    const marker_colors = []
+    const n = config.group.length
+    for (let i = 0; i < n; i++) {
+        if (!config.panels || config.panels[i] === panel_index) {
+            marker_colors.push(group_colors[config.group[i]])
+        }
+    }
+    trace['marker'].color = marker_colors
+    trace['hoverlabel'].font = { color: marker_colors.map(x => TooltipUtils.blackOrWhite(x)) }
 }
 
 // Returns a function that can be applied later
@@ -770,12 +787,7 @@ function plotlyNumberType (type) {
 
 function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     const npanels = config.panelLabels.length
-    let colors = config.colors
-    if (Array.isArray(config.group)) {
-        colors = {}
-        const gnames = _.uniq(config.group)
-        for (let i = 0; i < gnames.length; i++) colors[gnames[i]] = config.colors[i]
-    }
+    const colors = Array.isArray(config.group) ? createGroupColors(config) : config.colors
 
     // Add marker labels
     // Do this first so the indices line up with config.group
@@ -879,6 +891,15 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
         })
     }
     return settings
+}
+
+function createGroupColors (config) {
+    const colors = {}
+    const gnames = _.uniq(config.group)
+    for (let i = 0; i < gnames.length; i++) {
+        colors[gnames[i]] = config.colors[i]
+    }
+    return colors
 }
 
 function removeSmallMultipleAnnotations (annotations) {
