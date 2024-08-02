@@ -140,7 +140,6 @@
   "colorScaleTitleFontFamily": "Impact",
   "colorScaleTitleFontColor": "#006600",
   "colorScaleFormat": ".2f",
-  "transparency": 1,
   "origin": true,
   "xTitle": "q2: Coca-Cola - When 'at home'",
   "yTitle": "q2: Coca-Cola - When 'out and about'",
