@@ -40,6 +40,7 @@ function createPlotlyData (config) {
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
+    const plot_annotation_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
     }
@@ -55,10 +56,10 @@ function createPlotlyData (config) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
-                plot_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
             if (hasMarkerAnnotations(config, index)) {
-                plot_data.push(createScatterTraceForMarkerAnnotation(config, 'Series 1', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, 'Series 1', marker_size, p, index))
             }
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
@@ -76,10 +77,10 @@ function createPlotlyData (config) {
             setTraceMarkerColorsFromConfig(trace, config, p)
             plot_data.push(trace)
             if (hasMarkerBorder(config, index)) {
-                plot_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerBorder(config, ' ', marker_size, p, index))
             }
             if (hasMarkerAnnotations(config, index)) {
-                plot_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
+                plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, ' ', marker_size, p, index))
             }
         }
     } else {
@@ -97,16 +98,19 @@ function createPlotlyData (config) {
                 if (gp_index.length === 0) continue
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (hasMarkerAnnotations(config, gp_index)) {
-                    plot_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
                 }
                 if (g_add) group_added.push(g_name)
             }
         }
     }
-    return plot_data
+    // Add the annotation traces last so that they don't interfere with the
+    // order of the marker points in the DOM, which is relied upon by
+    // code that handles marker label toggling.
+    return [...plot_data, ...plot_annotation_data]
 }
 
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
@@ -219,14 +223,15 @@ function hasMarkerBorder (config, index) {
     }
     const border_color = index ? _.at(config.pointBorderColor, index) : config.pointBorderColor
     const border_width = index ? _.at(config.pointBorderWidth, index) : config.pointBorderWidth
-    return border_color && border_width
+    return Array.isArray(border_color) ? border_color.some((color, i) => !!color && !!border_width[i]) : border_color && border_width
 }
 
 function hasMarkerAnnotations (config, index) {
     if (!config.markerAnnotations) {
         return false
     }
-    return !!(index ? _.at(config.markerAnnotations, index) : config.markerAnnotations)
+    const marker_annotations = index ? _.at(config.markerAnnotations, index) : config.markerAnnotations
+    return marker_annotations.some(annotations => !!annotations)
 }
 
 // Creates the first trace to ensure categorical data is ordered properly
