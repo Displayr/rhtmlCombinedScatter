@@ -223,7 +223,7 @@ function hasMarkerBorder (config, index) {
     }
     const border_color = index ? _.at(config.pointBorderColor, index) : config.pointBorderColor
     const border_width = index ? _.at(config.pointBorderWidth, index) : config.pointBorderWidth
-    return border_color.some((color, i) => !!color && !!border_width[i])
+    return Array.isArray(border_color) ? border_color.some((color, i) => !!color && !!border_width[i]) : border_color && border_width
 }
 
 function hasMarkerAnnotations (config, index) {
