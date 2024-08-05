@@ -223,14 +223,15 @@ function hasMarkerBorder (config, index) {
     }
     const border_color = index ? _.at(config.pointBorderColor, index) : config.pointBorderColor
     const border_width = index ? _.at(config.pointBorderWidth, index) : config.pointBorderWidth
-    return border_color && border_width
+    return border_color.some((color, i) => !!color && !!border_width[i])
 }
 
 function hasMarkerAnnotations (config, index) {
     if (!config.markerAnnotations) {
         return false
     }
-    return !!(index ? _.at(config.markerAnnotations, index) : config.markerAnnotations)
+    const marker_annotations = index ? _.at(config.markerAnnotations, index) : config.markerAnnotations
+    return marker_annotations.some(annotations => !!annotations)
 }
 
 // Creates the first trace to ensure categorical data is ordered properly
