@@ -403,7 +403,7 @@ function createPlotlyLayout (config, margin_right, height) {
                 size: config.xTitleFontSize
             },
         },
-        showgrid: config.grid,
+        showgrid: config.grid && config.xAxisGridWidth > 0,
         gridcolor: config.xAxisGridColor,
         griddash: config.xAxisGridDash,
         gridwidth: config.xAxisGridWidth,
@@ -458,7 +458,7 @@ function createPlotlyLayout (config, margin_right, height) {
                 size: config.yTitleFontSize
             },
         },
-        showgrid: config.grid,
+        showgrid: config.grid && config.yAxisGridWidth > 0,
         gridcolor: config.yAxisGridColor,
         griddash: config.yAxisGridDash,
         gridwidth: config.yAxisGridWidth,
