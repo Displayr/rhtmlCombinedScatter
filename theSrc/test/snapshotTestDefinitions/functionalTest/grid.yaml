@@ -1,0 +1,7 @@
+type: multi_widget_single_page
+title: "test labels configurations"
+width: 400
+height: 400
+rowSize: 4
+widgets:
+  - config: data.functionalTest.scatterplot_simple|{"title":"grid width 0","xAxisGridWidth":0,"yAxisGridWidth":0}
