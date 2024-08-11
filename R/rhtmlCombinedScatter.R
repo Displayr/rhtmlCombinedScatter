@@ -425,11 +425,9 @@ CombinedScatter <- function(
             color.tmp <- as.numeric(tmp)
             group <- color.tmp
         }
-        color.min <- min(color.tmp, na.rm = TRUE)
-        color.max <- max(color.tmp, na.rm = TRUE)
 
         # Convert color variable to scale on 0 to 1
-        colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
+        colors.scaled <- seq(from = 0, to = 1, length = length(color.levels))
         colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
 
         # Use existing color interpolation to reduce the number
