@@ -24,7 +24,8 @@ class LegendSettings {
         color: _.isString(config.legendBubbleTitleFontColor) ? config.legendBubbleTitleFontColor : config.legendFontColor,
       },
     }
-    this.title = config.zTitleWrap ? wrapByNumberOfCharacters(config.zTitle, config.zTitleWrapNChar) : config.zTitle,
+    this.title = config.legendBubbleTitleWrap ? wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar) : config.zTitle,
+    console.log('title:' + this.title)
     this.zPrefix = config.zPrefix
     this.zSuffix = config.zSuffix
     this.wrap = config.legendWrap

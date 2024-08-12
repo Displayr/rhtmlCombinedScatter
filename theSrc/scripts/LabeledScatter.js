@@ -9,7 +9,8 @@ import {
   footerHeight,
   chartHeight,
   LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
-  FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE
+  FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE,
+  wrapByNumberOfCharacters
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -414,6 +415,10 @@ class LabeledScatter {
   bubbleTitleWidth (config) {
     if (!config.zTitle) {
       return 0
+    }
+    if (config.legendBubbleTitleWrap) {
+      const split_title = wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar)
+      return Utils.textSize(split_title[0], this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width
     }
     return Utils.textSize(config.zTitle, this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width
   }
