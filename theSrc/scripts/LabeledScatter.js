@@ -417,7 +417,7 @@ class LabeledScatter {
       return 0
     }
     if (config.legendBubbleTitleWrap) {
-      const split_title = wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar)
+      const split_title = wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar).split('<br>')
       return Utils.textSize(split_title[0], this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width
     }
     return Utils.textSize(config.zTitle, this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width

@@ -25,5 +25,6 @@ configs:
   - config: data.displayr_regression.set9.colorscale_categoric
   - config: data.displayr_regression.set9.colorscale_numeric_smallmultiples
   - config: data.displayr_regression.set9.colorscale_numeric_smallmultiples_bubble
+  - config: data.displayr_regression.set9.colorscale_numeric_smallmultiples_legend_wrap
   - config: data.displayr_regression.set9.colorscale_bubble_numeric_background
 

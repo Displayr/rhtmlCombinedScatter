@@ -92,15 +92,15 @@ CombinedScatter(
   legend.title.font.size = 12,
   legend.title.wrap = TRUE,
   legend.title.wrap.n.char = 30,
+  legend.bubbles.show = TRUE,
   legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.bubble.font.family = "Arial",
   legend.bubble.font.size = 10,
   legend.bubble.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.bubble.title.font.family = "Arial",
   legend.bubble.title.font.size = 12,
-  legend.bubbles.show = TRUE,
-  legend.bubbles.title.wrap = TRUE,
-  legend.bubbles.title.wrap.n.char = 30,
+  legend.bubble.title.wrap = TRUE,
+  legend.bubble.title.wrap.n.char = 30,
   legend.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.font.family = "Arial",
   legend.font.size = 12,
@@ -374,6 +374,8 @@ on the marker.}
 
 \item{legend.title.wrap.n.char}{The number of characters before wrapping the legend title}
 
+\item{legend.bubbles.show}{toggle to show the bubble sizes in the legend. Defaults to TRUE}
+
 \item{legend.bubble.font.color}{is the font color of the legend bubble values.}
 
 \item{legend.bubble.font.family}{is the font family of the legend bubble values}
@@ -386,7 +388,9 @@ on the marker.}
 
 \item{legend.bubble.title.font.size}{is the font size of the legend bubble title}
 
-\item{legend.bubbles.show}{toggle to show the bubble sizes in the legend. Defaults to TRUE}
+\item{legend.bubble.title.wrap}{Whether to wrap the legend bubble title}
+
+\item{legend.bubble.title.wrap.n.char}{The number of characters before wrapping the legend bubble title}
 
 \item{legend.font.color}{is the font color of the legend.}
 
@@ -582,10 +586,6 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
-
-\item{legend.bubble.title.wrap}{Whether to wrap the legend bubble title}
-
-\item{legend.bubble.title.wrap.n.char}{The number of characters before wrapping the legend bubble title}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
