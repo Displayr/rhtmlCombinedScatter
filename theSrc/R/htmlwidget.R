@@ -415,7 +415,7 @@ CombinedScatter <- function(
         color.func <- colorRamp(color.scale)
         color.is.date.time <- isDateTime(group)
         if (color.is.date.time) {
-            color.tmp <- unique(as.numeric(group)
+            color.tmp <- unique(as.numeric(group))
         } else if (is.numeric(group)) {
             color.tmp <- unique(group)
         } else {
