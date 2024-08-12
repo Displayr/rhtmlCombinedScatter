@@ -411,23 +411,26 @@ CombinedScatter <- function(
     color.levels <- NULL
     color.is.date.time <- FALSE
     if (!is.null(color.scale)) {
-        color.func <- colorRamp(unique(color.scale)) # undo recycling in PrepareColors
+        color.scale <- unique(color.scale) # undo recycling in PrepareColors
+        color.func <- colorRamp(color.scale)
         color.is.date.time <- isDateTime(group)
         if (color.is.date.time) {
-            color.tmp <- as.numeric(group)
+            color.tmp <- unique(as.numeric(group)
         } else if (is.numeric(group)) {
-            color.tmp <- group
+            color.tmp <- unique(group)
         } else {
             tmp <- as.factor(group)
             color.levels <- levels(tmp)
             tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
             color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
-            color.tmp <- as.numeric(tmp)
-            group <- color.tmp
+            color.tmp <- unique(as.numeric(tmp)
+            group <- as.numeric(tmp)
         }
+        color.min <- min(color.tmp, na.rm = TRUE)
+        color.max <- max(color.tmp, na.rm = TRUE)
 
         # Convert color variable to scale on 0 to 1
-        colors.scaled <- seq(from = 0, to = 1, length = length(color.levels))
+        colors.scaled <- (color.tmp - color.min)/(color.max - color.min)
         colors <- rgb(color.func(colors.scaled), maxColorValue = 255)
 
         # Use existing color interpolation to reduce the number
