@@ -1,5 +1,6 @@
 import autoBind from 'es6-autobind'
 import _ from 'lodash'
+import { wrapByNumberOfCharacters } from './PlotlyChartElements'
 
 class LegendSettings {
   constructor (config) {
@@ -23,7 +24,7 @@ class LegendSettings {
         color: _.isString(config.legendBubbleTitleFontColor) ? config.legendBubbleTitleFontColor : config.legendFontColor,
       },
     }
-    this.title = config.zTitle
+    this.title = config.zTitleWrap ? wrapByNumberOfCharacters(config.zTitle, config.zTitleWrapNChar) : config.zTitle,
     this.zPrefix = config.zPrefix
     this.zSuffix = config.zSuffix
     this.wrap = config.legendWrap

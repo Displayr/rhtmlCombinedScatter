@@ -697,7 +697,7 @@ function createLegendSettings (config) {
     }
     if (config.legendTitle) {
         settings.title = {
-            text: config.legendTitle,
+            text: config.legendTitleWrap ? wrapByNumberOfCharacters(config.legendTitle, config.legendTitleWrapNChar) : config.legendTitle,
             font: {
                 color: config.legendTitleFontColor,
                 family: config.legendTitleFontFamily,
