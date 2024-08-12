@@ -414,16 +414,16 @@ CombinedScatter <- function(
         color.func <- colorRamp(color.scale)
         color.is.date.time <- isDateTime(group)
         if (color.is.date.time) {
-            color.tmp <- as.numeric(group)
+            color.tmp <- unique(as.numeric(group))
         } else if (is.numeric(group)) {
-            color.tmp <- group
+            color.tmp <- unique(group)
         } else {
             tmp <- as.factor(group)
             color.levels <- levels(tmp)
             tmp.seq <- seq(from = 0, to = 1, length = nlevels(tmp))
             color.scale <- rgb(color.func(tmp.seq), maxColorValue = 255)
-            color.tmp <- as.numeric(tmp)
-            group <- color.tmp
+            color.tmp <- unique(as.numeric(tmp))
+            group <- as.numeric(tmp)
         }
         color.min <- min(color.tmp, na.rm = TRUE)
         color.max <- max(color.tmp, na.rm = TRUE)
