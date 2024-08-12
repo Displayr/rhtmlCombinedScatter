@@ -25,7 +25,6 @@ class LegendSettings {
       },
     }
     this.title = config.legendBubbleTitleWrap ? wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar) : config.zTitle,
-    console.log('title:' + this.title)
     this.zPrefix = config.zPrefix
     this.zSuffix = config.zSuffix
     this.wrap = config.legendWrap
