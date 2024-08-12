@@ -61,7 +61,7 @@ class BubbleLegend {
 
     drawBubblesTitleWith (svg) {
         if (this.legendSettings.hasTitleText()) {
-          const bubble_title_split = this.legendSettings.getTitle().split("<br>")
+          const bubble_title_split = this.legendSettings.getTitle().split('<br>')
           const nlines = bubble_title_split.length
 
           svg.selectAll('.legend-bubbles-title').remove()
@@ -79,13 +79,12 @@ class BubbleLegend {
              .attr('font-family', this.legendSettings.getBubbleTitleFontFamily())
              .attr('fill', this.legendSettings.getBubbleTitleFontColor())
              .text(bubble_title_split[0])
-
-          for (let i = 1; i < nlines; i++)
-            legendBubbleTitleSvg.append("tspan")
+          for (let i = 1; i < nlines; i++) {
+            legendBubbleTitleSvg.append('tspan')
                 .attr('x', d => d.x)
                 .attr('dy', '1.2em')
                 .text(bubble_title_split[i])
-
+          }
           SvgUtils.setSvgBBoxWidthAndHeight(this.getBubblesTitle(), legendBubbleTitleSvg)
         }
       }

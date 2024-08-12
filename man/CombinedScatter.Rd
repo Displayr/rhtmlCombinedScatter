@@ -90,6 +90,8 @@ CombinedScatter(
   legend.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.title.font.family = "Arial",
   legend.title.font.size = 12,
+  legend.title.wrap = TRUE,
+  legend.title.wrap.n.char = 30,
   legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.bubble.font.family = "Arial",
   legend.bubble.font.size = 10,
@@ -97,6 +99,8 @@ CombinedScatter(
   legend.bubble.title.font.family = "Arial",
   legend.bubble.title.font.size = 12,
   legend.bubbles.show = TRUE,
+  legend.bubbles.title.wrap = TRUE,
+  legend.bubbles.title.wrap.n.char = 30,
   legend.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.font.family = "Arial",
   legend.font.size = 12,
@@ -362,9 +366,13 @@ on the marker.}
 
 \item{legend.title.font.color}{The font color of the legend title}
 
-\item{legend.title.font.family}{The font family of the legend title' @param legend.bubble.font.color is the font color of the legend bubble values.}
+\item{legend.title.font.family}{The font family of the legend title}
 
 \item{legend.title.font.size}{The font size of the legend title}
+
+\item{legend.title.wrap}{Whether to wrap the legend title}
+
+\item{legend.title.wrap.n.char}{The number of characters before wrapping the legend title}
 
 \item{legend.bubble.font.family}{is the font family of the legend bubble values}
 
@@ -572,6 +580,10 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
+
+\item{legend.bubble.title.wrap}{Whether to wrap the legend bubble title}
+
+\item{legend.bubble.title.wrap.n.char}{The number of characters before wrapping the legend bubble title}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

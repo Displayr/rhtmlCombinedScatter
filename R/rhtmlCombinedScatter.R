@@ -97,12 +97,16 @@
 #' @param legend.title The title shown above the legend
 #' @param legend.title.font.color The font color of the legend title
 #' @param legend.title.font.size The font size of the legend title
-#' @param legend.title.font.family The font family of the legend title' @param legend.bubble.font.color is the font color of the legend bubble values.
+#' @param legend.title.font.family The font family of the legend title
+#' @param legend.title.wrap Whether to wrap the legend title
+#' @param legend.title.wrap.n.char The number of characters before wrapping the legend title
 #' @param legend.bubble.font.size is the font size of the legend bubble values
 #' @param legend.bubble.font.family is the font family of the legend bubble values
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
 #' @param legend.bubble.title.font.size is the font size of the legend bubble title
 #' @param legend.bubble.title.font.family is the font family of the legend bubble title
+#' @param legend.bubble.title.wrap Whether to wrap the legend bubble title
+#' @param legend.bubble.title.wrap.n.char The number of characters before wrapping the legend bubble title
 #' @param legend.orientation Either "Vertical" or "Horizontal"
 #' @param legend.x The x position of the legend, relative to the plot area
 #' @param legend.y The y position of the legend, relative to the plot area
@@ -288,6 +292,8 @@ CombinedScatter <- function(
     legend.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
     legend.title.font.family = "Arial",
     legend.title.font.size = 12,
+    legend.title.wrap = TRUE,
+    legend.title.wrap.n.char = 30,
     legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
     legend.bubble.font.family = "Arial",
     legend.bubble.font.size = 10,
@@ -295,6 +301,8 @@ CombinedScatter <- function(
     legend.bubble.title.font.family = "Arial",
     legend.bubble.title.font.size = 12,
     legend.bubbles.show = TRUE,
+    legend.bubbles.title.wrap = TRUE,
+    legend.bubbles.title.wrap.n.char = 30,
     legend.font.color = rgb(44, 44, 44, maxColorValue = 255),
     legend.font.family = "Arial",
     legend.font.size = 12,
@@ -530,12 +538,16 @@ CombinedScatter <- function(
              legendTitleFontColor = legend.title.font.color,
              legendTitleFontFamily = legend.title.font.family,
              legendTitleFontSize = legend.title.font.size,
+             legendTitleWrap = legend.title.wrap,
+             legendTitleWrapNChar = legend.title.wrap.n.char,
              legendBubbleFontColor = legend.bubble.font.color,
              legendBubbleFontFamily = legend.bubble.font.family,
              legendBubbleFontSize = legend.bubble.font.size,
              legendBubbleTitleFontColor = legend.bubble.title.font.color,
              legendBubbleTitleFontFamily = legend.bubble.title.font.family,
              legendBubbleTitleFontSize = legend.bubble.title.font.size,
+             legendBubbleTitleWrap = legend.bubble.title.wrap,
+             legendBubbleTitleWrapNChar = legend.bubble.title.wrap.n.char,
              legendOrientation = legend.orientation,
              legendX = legend.x,
              legendY = legend.y,
