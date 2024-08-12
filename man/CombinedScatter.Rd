@@ -374,6 +374,8 @@ on the marker.}
 
 \item{legend.title.wrap.n.char}{The number of characters before wrapping the legend title}
 
+\item{legend.bubble.font.color}{is the font color of the legend bubble values.}
+
 \item{legend.bubble.font.family}{is the font family of the legend bubble values}
 
 \item{legend.bubble.font.size}{is the font size of the legend bubble values}

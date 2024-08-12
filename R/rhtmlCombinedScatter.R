@@ -100,6 +100,7 @@
 #' @param legend.title.font.family The font family of the legend title
 #' @param legend.title.wrap Whether to wrap the legend title
 #' @param legend.title.wrap.n.char The number of characters before wrapping the legend title
+#' @param legend.bubble.font.color is the font color of the legend bubble values.
 #' @param legend.bubble.font.size is the font size of the legend bubble values
 #' @param legend.bubble.font.family is the font family of the legend bubble values
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
