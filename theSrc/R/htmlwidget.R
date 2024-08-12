@@ -411,7 +411,6 @@ CombinedScatter <- function(
     color.levels <- NULL
     color.is.date.time <- FALSE
     if (!is.null(color.scale)) {
-        color.scale <- unique(color.scale) # undo recycling in PrepareColors
         color.func <- colorRamp(color.scale)
         color.is.date.time <- isDateTime(group)
         if (color.is.date.time) {
