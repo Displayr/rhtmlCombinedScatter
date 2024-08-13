@@ -290,7 +290,9 @@ function addColorScale (trace, config) {
                 color: config.colorScaleTitleFontColor,
                 size: config.colorScaleTitleFontSize
             },
-            text: config.colorScaleTitle
+            text: isLegendTitleWrapping(config)
+                ? wrapByNumberOfCharacters(config.colorScaleTitle, config.legendTitleWrapNChar)
+                : config.colorScaleTitle
         }
     }
     if (config.colorIsDateTime || Array.isArray(config.colorLevels)) {
@@ -697,7 +699,7 @@ function createLegendSettings (config) {
     }
     if (config.legendTitle) {
         settings.title = {
-            text: config.legendTitle,
+            text: isLegendTitleWrapping(config) ? wrapByNumberOfCharacters(config.legendTitle, config.legendTitleWrapNChar) : config.legendTitle,
             font: {
                 color: config.legendTitleFontColor,
                 family: config.legendTitleFontFamily,
@@ -971,6 +973,10 @@ function chartHeight (config, height) {
 
 function isLegendWrapping (config) {
     return config.legendWrap && config.legendWrapNChar
+}
+
+function isLegendTitleWrapping (config) {
+    return config.legendTitleWrap && config.legendTitleWrapNChar
 }
 
 function isXAxisLabelsWrapping (config) {

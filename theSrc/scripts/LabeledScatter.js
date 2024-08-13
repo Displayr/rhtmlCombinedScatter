@@ -9,7 +9,7 @@ import {
   footerHeight,
   chartHeight,
   LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
-  FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE
+  FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE,
 } from './PlotlyChartElements'
 import DisplayError from './DisplayError'
 import {
@@ -415,7 +415,8 @@ class LabeledScatter {
     if (!config.zTitle) {
       return 0
     }
-    return Utils.textSize(config.zTitle, this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width
+    const widths = config.legendBubbleTitle.map(t => Utils.textSize(t, this.rootElement, config.legendBubbleTitleFontFamily, config.legendBubbleTitleFontSize).width)
+    return Math.max(...widths)
   }
 
   /**
@@ -453,7 +454,7 @@ class LabeledScatter {
     }
     let height = LegendUtils.normalizedZtoRadius(config.pointRadius, 1) * 2 + config.legendBubbleFontSize + LEGEND_BUBBLE_PADDING_TOP
     if (config.zTitle) {
-      height += config.legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT
+      height += config.legendBubbleTitleFontSize  * config.legendBubbleTitle.length * LEGEND_BUBBLE_TITLE_HEIGHT
     }
     return height
   }

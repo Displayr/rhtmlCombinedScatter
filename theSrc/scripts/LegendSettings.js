@@ -23,7 +23,7 @@ class LegendSettings {
         color: _.isString(config.legendBubbleTitleFontColor) ? config.legendBubbleTitleFontColor : config.legendFontColor,
       },
     }
-    this.title = config.zTitle
+    this.title = config.legendBubbleTitle
     this.zPrefix = config.zPrefix
     this.zSuffix = config.zSuffix
     this.wrap = config.legendWrap
@@ -32,7 +32,7 @@ class LegendSettings {
   }
 
   showLegend () { return this.show }
-  hasTitleText () { return this.title !== '' }
+  hasTitleText () { return !!this.title }
   getTitle () { return this.title }
   showBubblesInLegend () { return this.showBubbles }
   getFontFamily () { return this.font.family }

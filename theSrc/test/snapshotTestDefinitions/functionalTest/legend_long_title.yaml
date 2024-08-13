@@ -1,0 +1,7 @@
+type: multi_widget_single_page
+title: "legend long title"
+width: 576
+height:  512
+rowSize: 2
+widgets:
+  - config: data.legacy_bubble.bubbleplot_colas|{"legendTitle":"Legend title that is quite long and contains question name","legendTitleWrap":true,"legendTitleWrapNChar":20,"legendTitleFontFamily":"Courier New","zTitle":"Bubble legend title that is also very long and needs to be wrapped","legendBubbleTitleFontFamily":"Courier New","legendBubbleTitleWrap":true,"legendBubbleTitleWrapNChar":20}

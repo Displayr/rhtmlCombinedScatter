@@ -61,22 +61,30 @@ class BubbleLegend {
 
     drawBubblesTitleWith (svg) {
         if (this.legendSettings.hasTitleText()) {
+          const bubble_title_split = this.legendSettings.getTitle()
+          const nlines = bubble_title_split.length
+
           svg.selectAll('.legend-bubbles-title').remove()
           let legendBubbleTitleFontSize = this.legendSettings.getBubbleTitleFontSize()
-          const legendBubbleTitleSvg = svg.selectAll('.legend-bubbles-title')
+          let legendBubbleTitleSvg = svg.selectAll('.legend-bubbles-title')
              .data(this.getBubblesTitle())
              .enter()
              .append('text')
              .attr('class', 'legend-bubbles-title')
              .attr('x', d => d.x)
-             .attr('y', d => d.y - (legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT))
+             .attr('y', d => d.y - (legendBubbleTitleFontSize * LEGEND_BUBBLE_TITLE_HEIGHT) * nlines)
              .attr('text-anchor', 'middle')
              .attr('font-weight', 'normal')
              .attr('font-size', this.legendSettings.getBubbleTitleFontSize())
              .attr('font-family', this.legendSettings.getBubbleTitleFontFamily())
              .attr('fill', this.legendSettings.getBubbleTitleFontColor())
-             .text(this.legendSettings.getTitle())
-
+             .text(bubble_title_split[0])
+          for (let i = 1; i < nlines; i++) {
+            legendBubbleTitleSvg.append('tspan')
+                .attr('x', d => d.x)
+                .attr('dy', '1.2em')
+                .text(bubble_title_split[i])
+          }
           SvgUtils.setSvgBBoxWidthAndHeight(this.getBubblesTitle(), legendBubbleTitleSvg)
         }
       }
