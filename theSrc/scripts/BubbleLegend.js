@@ -61,7 +61,7 @@ class BubbleLegend {
 
     drawBubblesTitleWith (svg) {
         if (this.legendSettings.hasTitleText()) {
-          const bubble_title_split = this.legendSettings.getTitle().split('<br>')
+          const bubble_title_split = this.legendSettings.getTitle()
           const nlines = bubble_title_split.length
 
           svg.selectAll('.legend-bubbles-title').remove()

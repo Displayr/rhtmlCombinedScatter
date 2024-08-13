@@ -1,6 +1,7 @@
 import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
 import LegendUtils from './utils/LegendUtils'
+import { wrapByNumberOfCharacters } from './PlotlyChartElements'
 const _ = require('lodash')
 
 // TODO all of the margin config params below can probably be removed
@@ -255,6 +256,16 @@ function buildConfig (userConfig, width, height) {
     const maxZ = _.max(z)
     config.normZ = LegendUtils.normalizeZValues(z, maxZ)
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+  }
+
+  if (config.zTitle) {
+    if (config.legendBubbleTitleWrap && config.legendBubbleTitleWrapNChar) {
+      config.legendBubbleTitle = wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar).split('<br>')
+    } else {
+      config.legendBubbleTitle = [ config.zTitle ]
+    }
+  } else {
+      config.legendBubbleTitle = null
   }
 
   if (config.fitX && config.fitY) {
