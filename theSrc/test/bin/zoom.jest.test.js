@@ -87,7 +87,6 @@ describe('zoom', () => {
       width: 800,
       height: 500,
     })
-    await scatterPlot.clickFirstLegendItem()
     await new Promise(resolve => setTimeout(resolve, 1000))
     await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
 
