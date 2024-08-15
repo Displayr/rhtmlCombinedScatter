@@ -358,7 +358,7 @@ describe('state interactions', () => {
     await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
 
     await page.mouse.move(400, 400)
-    await setTimeout(3000)
+    await page.waitFor(3000)
     await testSnapshots({ page, testName: 'smallmultiples_showing_reset' })
 
     await scatterPlot.clickResetButton()
@@ -375,8 +375,8 @@ describe('state interactions', () => {
       width: 800,
       height: 500
     })
+    await page.waitFor(1000)
     await scatterPlot.clickMouseOnAnchor()
-    await page.waitFor(1000);
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
   })
 
