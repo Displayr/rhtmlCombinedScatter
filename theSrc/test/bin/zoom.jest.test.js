@@ -94,7 +94,7 @@ describe('zoom', () => {
     await testSnapshots({ page, testName: 'shared_axes_after_zoom' })
 
     await page.mouse.click(500, 300)
-    await page.mouse.click(500, 300, {clickCount: 2})
+    await page.mouse.click(500, 300, { clickCount: 2 })
     await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
   })
 })
