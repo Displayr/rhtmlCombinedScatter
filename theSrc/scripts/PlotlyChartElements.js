@@ -409,7 +409,7 @@ function createPlotlyLayout (config, margin_right, height) {
         gridcolor: config.xAxisGridColor,
         griddash: config.xAxisGridDash,
         gridwidth: config.xAxisGridWidth,
-        showticklabels: config.showXAxis,
+        showticklabels: config.showXAxis && config.xAxisFontSize > 0,
         tickcolor: config.xAxisTickColor,
         ticklen: config.xAxisTickLength,
         tickfont: {
@@ -464,7 +464,7 @@ function createPlotlyLayout (config, margin_right, height) {
         gridcolor: config.yAxisGridColor,
         griddash: config.yAxisGridDash,
         gridwidth: config.yAxisGridWidth,
-        showticklabels: config.showYAxis,
+        showticklabels: config.showYAxis && config.yAxisFontSize > 0,
         tickcolor: config.yAxisTickColor,
         ticklen: config.yAxisTickLength,
         tickfont: {
