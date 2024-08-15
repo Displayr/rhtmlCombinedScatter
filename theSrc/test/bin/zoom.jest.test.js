@@ -90,9 +90,11 @@ describe('zoom', () => {
     await new Promise(resolve => setTimeout(resolve, 3000))
     await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
 
-    await scatterPlot.drag({ from: { x: 500, y: 300 }, to: { x: 800, y: 100 } })
-    await testSnapshots({ page, testName: 'shared_axis_after_zoom' })
+    await scatterPlot.drag({ from: { x: 500, y: 250 }, to: { x: 800, y: 150 } })
+    await testSnapshots({ page, testName: 'shared_axes_after_zoom' })
 
-    //await testSnapshots({ page, testName: 'shared_axes_before_zoom', tolerance: 1 })
+    await page.mouse.click(500, 300)
+    await page.mouse.click(500, 300, {clickCount: 2})
+    await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
   })
 })
