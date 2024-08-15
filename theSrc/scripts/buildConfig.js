@@ -230,6 +230,7 @@ function buildConfig (userConfig, width, height) {
   if (config.colorScaleTitleFontSize === 0) { config.colorScaleTitle = '' }
   if (config.legendTitleFontSize === 0) { config.legendTitle = '' }
   if (config.legendFontSize === 0) { config.legendFontSize = 1 }
+  if (config.labelsFontSize === 0 && config.panels !== null ) { config.label = null }
 
   if (config.xIsDateTime) {
     config.X = _.map(config.X, (d) => new Date(d))

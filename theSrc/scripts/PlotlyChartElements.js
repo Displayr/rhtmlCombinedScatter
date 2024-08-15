@@ -841,24 +841,26 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
     }
 
     // Add panel titles
-    for (let p = 0; p < npanels; p++) {
-        annotations.push({
-            name: 'panellabel',
-            text: config.panelLabels[p],
-            x: 0.5,
-            y: 1,
-            font: {
-                family: config.panelTitleFontFamily,
-                color: config.panelTitleFontColor,
-                size: config.panelTitleFontSize
-            },
-            showarrow: false,
-            xanchor: 'center',
-            yanchor: 'bottom',
-            xref: 'x' + getPanelXAxisSuffix(p, config) + ' domain',
-            yref: 'y' + getPanelYAxisSuffix(p, config) + ' domain'
-        })
-        j++
+    if (config.panelTitleFontSize > 0) {
+        for (let p = 0; p < npanels; p++) {
+            annotations.push({
+                name: 'panellabel',
+                text: config.panelLabels[p],
+                x: 0.5,
+                y: 1,
+                font: {
+                    family: config.panelTitleFontFamily,
+                    color: config.panelTitleFontColor,
+                    size: config.panelTitleFontSize
+                },
+                showarrow: false,
+                xanchor: 'center',
+                yanchor: 'bottom',
+                xref: 'x' + getPanelXAxisSuffix(p, config) + ' domain',
+                yref: 'y' + getPanelYAxisSuffix(p, config) + ' domain'
+            })
+            j++
+        }
     }
 
     const settings = { annotations: annotations }
