@@ -23,6 +23,9 @@ configs:
   - config: data.legacy_bubble.bubbleplot_small_multiples_with_groups
     width: 800
     height: 500
+  - config: data.legacy_bubble.bubbleplot_small_multiples_zero_font_size
+    width: 800
+    height: 500
   - config: data.legacy_bubble.bubbleplot_overlap
     width: 400
     height: 350

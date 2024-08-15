@@ -223,6 +223,15 @@ function buildConfig (userConfig, width, height) {
   if (config.yAxisFontFamily === null) { config.yAxisFontFamily = config.axisFontFamily }
   if (config.yAxisFontSize === null) { config.yAxisFontSize = config.axisFontSize }
 
+  if (config.titleFontSize === 0) { config.title = '' }
+  if (config.subtitleFontSize === 0) { config.subtitle = '' }
+  if (config.xTitleFontSize === 0) { config.xTitle = '' }
+  if (config.yTitleFontSize === 0) { config.yTitle = '' }
+  if (config.colorScaleTitleFontSize === 0) { config.colorScaleTitle = '' }
+  if (config.legendTitleFontSize === 0) { config.legendTitle = '' }
+  if (config.legendFontSize === 0) { config.legendFontSize = 1 }
+  if (config.labelsFontSize === 0 && config.panels !== null) { config.label = null }
+
   if (config.xIsDateTime) {
     config.X = _.map(config.X, (d) => new Date(d))
     config.xDataType = DataTypeEnum.date

@@ -1,0 +1,86 @@
+{
+  "label": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "Zero size"
+  ],
+  "X": [
+    5,
+    3,
+    3,
+    4,
+    4,
+    1.2
+  ],
+  "Y": [
+    6,
+    3,
+    4,
+    3,
+    4,
+    1.2
+  ],
+  "Z": [
+    6,
+    2,
+    2,
+    2,
+    2,
+    0
+  ],
+  "group": [
+    "G1",
+    "G1",
+    "G2",
+    "G1",
+    "G2",
+    "G2"
+  ],
+  "tooltipText": [
+    "tooltip 0",
+    "tooltip 1",
+    "tooltip 2",
+    "tooltip 3",
+    "tooltip 4",
+    "tooltip 5"
+  ],
+  "title": "Title",
+  "subtitle": "Subtitle",
+  "footer": "Some text for the footer",
+  "xTitle": "X axis",
+  "yTitle": "Y axis",
+  "zTitle": "Bubble sizes",
+  "legendTitle": "Legend",
+  "titleFontSize": 0,
+  "subtitleFontSize": 0,
+  "footerFontSize": 0,
+  "yTitleFontSize": 0,
+  "xTitleFontSize": 0,
+  "xAxisFontSize": 0,
+  "yAxisFontSize": 0,
+  "labelsFontSize": 0,
+  "legendFontSize": 0,
+  "legendTitleFontSize": 0,
+  "legendBubbleFontSize": 0,
+  "legendBubbleTitleFontSize": 0,
+  "plotBorderShow": true,
+  "plotBorderWidth": 0,
+  "xAxisGridWidth": 0,
+  "yAxisGridWidth": 0,
+  "xAxisLineWidth": 0,
+  "yAxisLineWidth": 0,
+  "xAxisZeroLineWidth": 0,
+  "yAxisZeroLineWidth": 0,
+  "xDecimals": 0,
+  "yDecimals": 0,
+  "zDecimals": 0,
+  "colors": [
+    "#5B9BD5",
+    "#ED7D31"
+  ],
+  "showResetButton": true,
+  "pointRadius": 2
+}
