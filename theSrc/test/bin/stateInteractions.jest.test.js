@@ -371,12 +371,11 @@ describe('state interactions', () => {
   test(`${++testId}: Hide labels in small multiples with shared axis`, async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
-      configName: 'data.legacy_bubble.bubbleplot_small_multiples',
+      configName: 'data.legacy_bubble.bubbleplot_small_multiples_with_groups',
       width: 800,
       height: 500
     })
-    await scatterPlot.clickPlotlyAnnotation()
-    await page.waitFor(3000)
+    await new Promise(resolve => setTimeout(resolve, 1000))
     await scatterPlot.clickMouseOnAnchor()
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
   })
