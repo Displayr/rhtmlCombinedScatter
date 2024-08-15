@@ -1038,11 +1038,6 @@ function addAxesToGrid (plot_layout, x_axis, y_axis, n_panels, n_rows, share_axe
         } else {
             plot_layout['yaxis' + p] = y_axis
         }
-        // Keep axes in sync when zooming
-        if (share_axes) {
-            plot_layout['xaxis' + p].matches = 'x'
-            plot_layout['yaxis' + p].matches = 'y'
-        }
     }
 }
 
