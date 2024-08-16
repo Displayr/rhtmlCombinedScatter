@@ -79,4 +79,22 @@ describe('zoom', () => {
     await testSnapshots({ page, testName: 'small_multiples_after_zoom' })
     await page.close()
   })
+
+  test('Zoom and doubleclick with shared axes', async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.legacy_bubble.bubbleplot_small_multiples',
+      width: 800,
+      height: 500,
+    })
+    await new Promise(resolve => setTimeout(resolve, 3000))
+    await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
+
+    await scatterPlot.drag({ from: { x: 500, y: 250 }, to: { x: 800, y: 150 } })
+    await testSnapshots({ page, testName: 'shared_axes_after_zoom' })
+
+    await page.mouse.click(500, 300)
+    await page.mouse.click(500, 300, { clickCount: 2 })
+    await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
+  })
 })
