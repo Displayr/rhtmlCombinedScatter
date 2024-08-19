@@ -601,9 +601,9 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{midpoint.line.color}{Midpoint line color}
 
-\item{midpoint.line.dash}{Midpoint line type}
+\item{midpoint.line.dash}{Midpoint line type. Can be one of 'solid', 'dot', 'dash'.}
 
-\item{midpoint.line.width}{Midpoint line width}
+\item{midpoint.line.width}{Midpoint line width in pixels}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

@@ -204,8 +204,8 @@
 #' @param x.midpoint Numeric scalar of the x midpoint for the quadrant
 #' @param y.midpoint Numeric scalar of the y midpoint for the quadrant
 #' @param midpoint.line.color Midpoint line color
-#' @param midpoint.line.dash Midpoint line type
-#' @param midpoint.line.width Midpoint line width
+#' @param midpoint.line.dash Midpoint line type. Can be one of 'solid', 'dot', 'dash'.
+#' @param midpoint.line.width Midpoint line width in pixels
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
