@@ -200,6 +200,12 @@ const defaultConfig = {
   zPrefix: '',
   zSuffix: '',
   zTitle: '',
+  showQuadrants: false,
+  xMidpoint: 0,
+  yMidpoint: 0,
+  midpointLineColor: '#000000',
+  midpointLineDash: 'solid',
+  midpointLineWidth: 1
 }
 
 function buildConfig (userConfig, width, height) {

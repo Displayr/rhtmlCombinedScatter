@@ -196,7 +196,13 @@ CombinedScatter(
   y.title.font.size = 12,
   z.prefix = "",
   z.suffix = "",
-  z.title = ""
+  z.title = "",
+  show.quadrants = FALSE,
+  x.midpoint = 0,
+  y.midpoint = 0,
+  midpoint.line.color = "#000000",
+  midpoint.line.dash = "solid",
+  midpoint.line.width = 1
 )
 }
 \arguments{
@@ -586,6 +592,18 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
 \item{z.title}{is the title text given to the bubble size}
+
+\item{show.quadrants}{Whether to show quadrants}
+
+\item{x.midpoint}{Numeric scalar of the x midpoint for the quadrant}
+
+\item{y.midpoint}{Numeric scalar of the y midpoint for the quadrant}
+
+\item{midpoint.line.color}{Midpoint line color}
+
+\item{midpoint.line.dash}{Midpoint line type}
+
+\item{midpoint.line.width}{Midpoint line width}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
