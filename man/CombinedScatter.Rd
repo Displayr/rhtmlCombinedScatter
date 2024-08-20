@@ -197,7 +197,7 @@ CombinedScatter(
   z.prefix = "",
   z.suffix = "",
   z.title = "",
-  show.quadrants = FALSE,
+  quadrants.show = FALSE,
   x.midpoint = 0,
   y.midpoint = 0,
   midpoint.line.color = "#000000",
@@ -593,7 +593,7 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{z.title}{is the title text given to the bubble size}
 
-\item{show.quadrants}{Whether to show quadrants}
+\item{quadrants.show}{Whether to show quadrants}
 
 \item{x.midpoint}{Numeric scalar of the x midpoint for the quadrant}
 

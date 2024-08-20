@@ -9,6 +9,10 @@ async function drawQuadrants (plotly_chart, config) {
 }
 
 function drawMidpointLines (layout, config, x_range, y_range) {
+    if (config.midpointLineWidth === 0) {
+        return
+    }
+
     // The range may be reversed, hence we still need to compute the min and max
     const x_min = Math.min(...x_range)
     const x_max = Math.max(...x_range)

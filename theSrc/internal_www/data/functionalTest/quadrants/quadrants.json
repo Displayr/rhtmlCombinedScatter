@@ -20,7 +20,7 @@
   "plotBorderShow":false,
   "xAxisZeroLineWidth":0,
   "yAxisZeroLineWidth":0,
-  "showQuadrants":true,
+  "quadrantsShow":true,
   "xMidpoint":2.6,
   "yMidpoint":2.3,
   "midpointLineColor": "#FF0000",

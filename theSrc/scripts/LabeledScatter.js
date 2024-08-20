@@ -175,7 +175,7 @@ class LabeledScatter {
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
         }
-        if (config.showQuadrants) {
+        if (config.quadrantsShow) {
           await drawQuadrants(this.rootElement, config)
         }
         this.adjustTitles(plotlyChart._fullLayout, config)

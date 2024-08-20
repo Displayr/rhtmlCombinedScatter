@@ -200,7 +200,7 @@ const defaultConfig = {
   zPrefix: '',
   zSuffix: '',
   zTitle: '',
-  showQuadrants: false,
+  quadrantsShow: false,
   xMidpoint: 0,
   yMidpoint: 0,
   midpointLineColor: '#000000',

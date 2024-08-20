@@ -200,7 +200,7 @@
 #' @param label.placement.seed Label placement algorithm setting for the randomiser seed (Default is 1).
 #' @param label.placement.temperature.initial Label placement algorithm initial temperature (Default is 0.01).
 #' @param label.placement.temperature.final Label placement algorithm final temperature (Default is 0.0001).
-#' @param show.quadrants Whether to show quadrants
+#' @param quadrants.show Whether to show quadrants
 #' @param x.midpoint Numeric scalar of the x midpoint for the quadrant
 #' @param y.midpoint Numeric scalar of the y midpoint for the quadrant
 #' @param midpoint.line.color Midpoint line color
@@ -406,7 +406,7 @@ CombinedScatter <- function(
     z.prefix = "",
     z.suffix = "",
     z.title = "",
-    show.quadrants = FALSE,
+    quadrants.show = FALSE,
     x.midpoint = 0,
     y.midpoint = 0,
     midpoint.line.color = '#000000',
@@ -673,7 +673,7 @@ CombinedScatter <- function(
              markerAnnotations = marker.annotations,
              preLabelAnnotations = pre.label.annotations,
              postLabelAnnotations = post.label.annotations,
-             showQuadrants = show.quadrants,
+             quadrantsShow = quadrants.show,
              xMidpoint = x.midpoint,
              yMidpoint = y.midpoint,
              midpointLineColor = midpoint.line.color,
