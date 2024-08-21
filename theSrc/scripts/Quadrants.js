@@ -15,7 +15,7 @@ function drawMidpointLines (layout, config, x_range, y_range) {
     const y_min = Math.min(...y_range)
     const y_max = Math.max(...y_range)
 
-    if (config.xMidpointLineWidth === 0 && config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
+    if (config.xMidpointLineWidth > 0 && config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
         layout.shapes.push({
             type: 'line',
             layer: 'above',
@@ -32,7 +32,7 @@ function drawMidpointLines (layout, config, x_range, y_range) {
             yref: 'y domain'
         })
     }
-    if (config.yMidpointLineWidth === 0 && config.yMidpoint >= y_min && config.yMidpoint <= y_max) {
+    if (config.yMidpointLineWidth > 0 && config.yMidpoint >= y_min && config.yMidpoint <= y_max) {
         layout.shapes.push({
             type: 'line',
             layer: 'above',
