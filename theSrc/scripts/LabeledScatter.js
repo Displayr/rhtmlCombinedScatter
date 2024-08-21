@@ -36,6 +36,7 @@ import 'babel-polyfill'
 import InsufficientHeightError from './exceptions/InsufficientHeightError'
 import InsufficientWidthError from './exceptions/InsufficientWidthError'
 import DataTypeEnum from './utils/DataTypeEnum'
+import { drawQuadrants } from './Quadrants'
 
 class LabeledScatter {
   constructor (element, width, height, stateChangedCallback) {
@@ -173,6 +174,9 @@ class LabeledScatter {
       } else {
         if (FitLine.isFitDataAvailable(config)) {
           await FitLine.draw(this.rootElement, config)
+        }
+        if (config.quadrantsShow) {
+          await drawQuadrants(this.rootElement, config)
         }
         this.adjustTitles(plotlyChart._fullLayout, config)
         const tmp_layout = {}

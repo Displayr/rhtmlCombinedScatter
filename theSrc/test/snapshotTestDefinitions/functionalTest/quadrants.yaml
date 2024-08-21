@@ -1,0 +1,9 @@
+type: multi_widget_single_page
+title: "quadrants"
+width: 400
+height: 400
+rowSize: 4
+widgets:
+  - config: data.functionalTest.quadrants.quadrants
+  - config: data.functionalTest.quadrants.quadrants|{"xMidpoint":1.2,"title":"x midpoint outside range"}
+  - config: data.functionalTest.quadrants.quadrants|{"yMidpoint":3.2,"title":"y midpoint outside range"}

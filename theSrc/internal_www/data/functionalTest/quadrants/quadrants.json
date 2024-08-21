@@ -1,0 +1,32 @@
+{
+  "label": [
+    "2,2",
+    "2,3",
+    "3,2",
+    "3,3"
+  ],
+  "X": [
+    2,
+    2,
+    3,
+    3
+  ],
+  "Y": [
+    2,
+    3,
+    2,
+    3
+  ],
+  "plotBorderShow":false,
+  "xAxisZeroLineWidth":0,
+  "yAxisZeroLineWidth":0,
+  "quadrantsShow":true,
+  "xMidpoint":2.6,
+  "yMidpoint":2.3,
+  "xMidpointLineColor": "#FF0000",
+  "xMidpointLineDash": "dash",
+  "xMidpointLineWidth": 3,
+  "yMidpointLineColor": "#00FF00",
+  "yMidpointLineDash": "dot",
+  "yMidpointLineWidth": 5
+}

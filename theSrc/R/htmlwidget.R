@@ -200,6 +200,15 @@
 #' @param label.placement.seed Label placement algorithm setting for the randomiser seed (Default is 1).
 #' @param label.placement.temperature.initial Label placement algorithm initial temperature (Default is 0.01).
 #' @param label.placement.temperature.final Label placement algorithm final temperature (Default is 0.0001).
+#' @param quadrants.show Whether to show quadrants
+#' @param x.midpoint Numeric scalar of the x midpoint for the quadrant
+#' @param y.midpoint Numeric scalar of the y midpoint for the quadrant
+#' @param x.midpoint.line.color x midpoint line color
+#' @param x.midpoint.line.dash x midpoint line type. Can be one of 'solid', 'dot', 'dash'.
+#' @param x.midpoint.line.width x midpoint line width in pixels
+#' @param y.midpoint.line.color y midpoint line color
+#' @param y.midpoint.line.dash y midpoint line type. Can be one of 'solid', 'dot', 'dash'.
+#' @param y.midpoint.line.width y midpoint line width in pixels
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
@@ -399,7 +408,16 @@ CombinedScatter <- function(
     y.title.font.size = 12,
     z.prefix = "",
     z.suffix = "",
-    z.title = "")
+    z.title = "",
+    quadrants.show = FALSE,
+    x.midpoint = 0,
+    y.midpoint = 0,
+    x.midpoint.line.color = '#000000',
+    x.midpoint.line.dash = 'solid',
+    x.midpoint.line.width = 1,
+    y.midpoint.line.color = '#000000',
+    y.midpoint.line.dash = 'solid',
+    y.midpoint.line.width = 1)
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))
@@ -660,7 +678,16 @@ CombinedScatter <- function(
              plotBorderWidth = plot.border.width,
              markerAnnotations = marker.annotations,
              preLabelAnnotations = pre.label.annotations,
-             postLabelAnnotations = post.label.annotations)
+             postLabelAnnotations = post.label.annotations,
+             quadrantsShow = quadrants.show,
+             xMidpoint = x.midpoint,
+             yMidpoint = y.midpoint,
+             xMidpointLineColor = x.midpoint.line.color,
+             xMidpointLineDash = x.midpoint.line.dash,
+             xMidpointLineWidth = x.midpoint.line.width,
+             yMidpointLineColor = y.midpoint.line.color,
+             yMidpointLineDash = y.midpoint.line.dash,
+             yMidpointLineWidth = y.midpoint.line.width)
 
     sizing.policy <- htmlwidgets::sizingPolicy(browser.fill = TRUE,
                                                viewer.fill = TRUE,
