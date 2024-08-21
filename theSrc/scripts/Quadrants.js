@@ -9,24 +9,20 @@ async function drawQuadrants (plotly_chart, config) {
 }
 
 function drawMidpointLines (layout, config, x_range, y_range) {
-    if (config.midpointLineWidth === 0) {
-        return
-    }
-
     // The range may be reversed, hence we still need to compute the min and max
     const x_min = Math.min(...x_range)
     const x_max = Math.max(...x_range)
     const y_min = Math.min(...y_range)
     const y_max = Math.max(...y_range)
 
-    if (config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
+    if (config.xMidpointLineWidth === 0 && config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
         layout.shapes.push({
             type: 'line',
             layer: 'above',
             line: {
-                color: config.midpointLineColor,
-                dash: config.midpointLineDash,
-                width: config.midpointLineWidth
+                color: config.xMidpointLineColor,
+                dash: config.xMidpointLineDash,
+                width: config.xMidpointLineWidth
             },
             x0: config.xMidpoint,
             x1: config.xMidpoint,
@@ -36,14 +32,14 @@ function drawMidpointLines (layout, config, x_range, y_range) {
             yref: 'y domain'
         })
     }
-    if (config.yMidpoint >= y_min && config.yMidpoint <= y_max) {
+    if (config.yMidpointLineWidth === 0 && config.yMidpoint >= y_min && config.yMidpoint <= y_max) {
         layout.shapes.push({
             type: 'line',
             layer: 'above',
             line: {
-                color: config.midpointLineColor,
-                dash: config.midpointLineDash,
-                width: config.midpointLineWidth
+                color: config.yMidpointLineColor,
+                dash: config.yMidpointLineDash,
+                width: config.yMidpointLineWidth
             },
             x0: 0,
             x1: 1,

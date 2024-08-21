@@ -23,7 +23,10 @@
   "quadrantsShow":true,
   "xMidpoint":2.6,
   "yMidpoint":2.3,
-  "midpointLineColor": "#FF0000",
-  "midpointLineDash": "dash",
-  "midpointLineWidth": 3
+  "xMidpointLineColor": "#FF0000",
+  "xMidpointLineDash": "dash",
+  "xMidpointLineWidth": 3,
+  "yMidpointLineColor": "#00FF00",
+  "yMidpointLineDash": "dot",
+  "yMidpointLineWidth": 5
 }

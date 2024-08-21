@@ -203,9 +203,12 @@
 #' @param quadrants.show Whether to show quadrants
 #' @param x.midpoint Numeric scalar of the x midpoint for the quadrant
 #' @param y.midpoint Numeric scalar of the y midpoint for the quadrant
-#' @param midpoint.line.color Midpoint line color
-#' @param midpoint.line.dash Midpoint line type. Can be one of 'solid', 'dot', 'dash'.
-#' @param midpoint.line.width Midpoint line width in pixels
+#' @param x.midpoint.line.color x midpoint line color
+#' @param x.midpoint.line.dash x midpoint line type. Can be one of 'solid', 'dot', 'dash'.
+#' @param x.midpoint.line.width x midpoint line width in pixels
+#' @param y.midpoint.line.color y midpoint line color
+#' @param y.midpoint.line.dash y midpoint line type. Can be one of 'solid', 'dot', 'dash'.
+#' @param y.midpoint.line.width y midpoint line width in pixels
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
@@ -409,9 +412,12 @@ CombinedScatter <- function(
     quadrants.show = FALSE,
     x.midpoint = 0,
     y.midpoint = 0,
-    midpoint.line.color = '#000000',
-    midpoint.line.dash = 'solid',
-    midpoint.line.width = 1)
+    x.midpoint.line.color = '#000000',
+    x.midpoint.line.dash = 'solid',
+    x.midpoint.line.width = 1,
+    y.midpoint.line.color = '#000000',
+    y.midpoint.line.dash = 'solid',
+    y.midpoint.line.width = 1)
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))
@@ -676,9 +682,12 @@ CombinedScatter <- function(
              quadrantsShow = quadrants.show,
              xMidpoint = x.midpoint,
              yMidpoint = y.midpoint,
-             midpointLineColor = midpoint.line.color,
-             midpointLineDash = midpoint.line.dash,
-             midpointLineWidth = midpoint.line.width)
+             xMidpointLineColor = x.midpoint.line.color,
+             xMidpointLineDash = x.midpoint.line.dash,
+             xMidpointLineWidth = x.midpoint.line.width,
+             yMidpointLineColor = y.midpoint.line.color,
+             yMidpointLineDash = y.midpoint.line.dash,
+             yMidpointLineWidth = y.midpoint.line.width)
 
     sizing.policy <- htmlwidgets::sizingPolicy(browser.fill = TRUE,
                                                viewer.fill = TRUE,
