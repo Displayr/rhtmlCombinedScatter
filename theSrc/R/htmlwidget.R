@@ -209,6 +209,10 @@
 #' @param y.midpoint.line.color y midpoint line color
 #' @param y.midpoint.line.dash y midpoint line type. Can be one of 'solid', 'dot', 'dash'.
 #' @param y.midpoint.line.width y midpoint line width in pixels
+#' @param top.left.quadrant.color Color of the top left quadrant
+#' @param top.right.quadrant.color Color of the top right quadrant
+#' @param bottom.left.quadrant.color Color of the bottom left quadrant
+#' @param bottom.right.quadrant.color Color of the bottom right quadrant
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
@@ -417,7 +421,11 @@ CombinedScatter <- function(
     x.midpoint.line.width = 1,
     y.midpoint.line.color = '#000000',
     y.midpoint.line.dash = 'solid',
-    y.midpoint.line.width = 1)
+    y.midpoint.line.width = 1,
+    top.left.quadrant.color = 'transparent',
+    top.right.quadrant.color = 'transparent',
+    bottom.left.quadrant.color = 'transparent',
+    bottom.right.quadrant.color = 'transparent')
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))

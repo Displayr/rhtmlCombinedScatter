@@ -205,7 +205,11 @@ CombinedScatter(
   x.midpoint.line.width = 1,
   y.midpoint.line.color = "#000000",
   y.midpoint.line.dash = "solid",
-  y.midpoint.line.width = 1
+  y.midpoint.line.width = 1,
+  top.left.quadrant.color = "transparent",
+  top.right.quadrant.color = "transparent",
+  bottom.left.quadrant.color = "transparent",
+  bottom.right.quadrant.color = "transparent"
 )
 }
 \arguments{
@@ -613,6 +617,14 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{y.midpoint.line.dash}{y midpoint line type. Can be one of 'solid', 'dot', 'dash'.}
 
 \item{y.midpoint.line.width}{y midpoint line width in pixels}
+
+\item{top.left.quadrant.color}{Color of the top left quadrant}
+
+\item{top.right.quadrant.color}{Color of the top right quadrant}
+
+\item{bottom.left.quadrant.color}{Color of the bottom left quadrant}
+
+\item{bottom.right.quadrant.color}{Color of the bottom right quadrant}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
