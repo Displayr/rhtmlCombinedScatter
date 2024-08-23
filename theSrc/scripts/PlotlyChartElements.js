@@ -576,31 +576,33 @@ function createPlotlyLayout (config, margin_right, height) {
 function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth, fixedAspectRatio) {
     // Plotly seems to find a reasonable default range for non-date values
     if (type === DataTypeEnum.date) {
-        if (minBounds !== null && typeof minBounds === 'string') {
+        if (minBounds !== null && typeof minBounds === 'string' && minBounds) {
             minBounds = Utils.parseDateAsUtc(minBounds)
         }
-        if (maxBounds !== null && typeof maxBounds === 'string') {
+        if (maxBounds !== null && typeof maxBounds === 'string' && maxBounds) {
             maxBounds = Utils.parseDateAsUtc(maxBounds)
         }
         const bounds = [minBounds, maxBounds]
-        if (minBounds === null || maxBounds === null) {
+        const has_min_bounds = minBounds !== null && minBounds
+        const has_max_bounds = maxBounds !== null && maxBounds
+        if (!has_min_bounds || !has_max_bounds) {
             const dates = values.map(d => d.getTime())
             dates.sort()
             let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
             for (let i = 1; i < dates.length; i++) {
                 min_diff = Math.min(min_diff, dates[i] - dates[i - 1])
             }
-            if (minBounds === null) bounds[0] = dates[0] - min_diff
-            if (maxBounds === null) bounds[1] = dates[dates.length - 1] + min_diff
+            if (!has_min_bounds) bounds[0] = dates[0] - min_diff
+            if (!has_max_bounds) bounds[1] = dates[dates.length - 1] + min_diff
     
             // Estimate the extra space we need to add for bubbles
             // This is approximate because we don't know plotWidth yet
             const bubble_offset = !maxBubbleSize ? 0
                 : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
-            if (minBounds === null) {
+            if (!has_min_bounds) {
                 bounds[0] -= bubble_offset
             }
-            if (maxBounds === null) {
+            if (!has_max_bounds) {
                 bounds[1] += bubble_offset
             }
         }
