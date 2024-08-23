@@ -357,13 +357,13 @@ function getDefaultDateFormat (dates) {
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin
-    const min_mult = 2
 
     // Values after new line only appear uniquely
     // https://plotly.com/python/time-series/#configuring-tick-labels
-    if (diff < min_mult * 60 * 60 * 1000) return '%H:%M:%s:%L\n%b %d %Y'
-    else if (diff < min_mult * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
-    else if (diff < min_mult * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
+    // The cutoffs are set to approximately where plotly transitions the tick formats
+    if (diff < 5 * 60 * 1000) return '%H:%M:%S.%L\n%b %d %Y'
+    else if (diff < 5 * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
+    else if (diff < 3 * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
     else return '%b %Y'
 }
 
