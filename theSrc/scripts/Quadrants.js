@@ -6,7 +6,7 @@ async function drawQuadrants (plotly_chart, config) {
     const y_range = plotly_chart._fullLayout.yaxis.range
     const ranges = getRanges(x_range, y_range)
     drawMidpointLines(layout, config, ranges)
-    drawQuadrantRectangles(layout, config, ranges)
+    drawQuadrantColors(layout, config, ranges)
     await Plotly.relayout(plotly_chart, layout)
 }
 
@@ -49,7 +49,7 @@ function drawMidpointLines (layout, config, ranges) {
     }
 }
 
-function drawQuadrantRectangles (layout, config, ranges) {
+function drawQuadrantColors (layout, config, ranges) {
     const { x_min, x_max, y_min, y_max } = ranges
 
     if (config.topLeftQuadrantColor && config.yMidpoint < y_max && config.xMidpoint > x_min) {
