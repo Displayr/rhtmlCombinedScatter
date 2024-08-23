@@ -208,7 +208,11 @@ const defaultConfig = {
   xMidpointLineWidth: 1,
   yMidpointLineColor: '#000000',
   yMidpointLineDash: 'solid',
-  yMidpointLineWidth: 1
+  yMidpointLineWidth: 1,
+  quadrantTopLeftColor: 'transparent',
+  quadrantTopRightColor: 'transparent',
+  quadrantBottomLeftColor: 'transparent',
+  quadrantBottomRightColor: 'transparent',
 }
 
 function buildConfig (userConfig, width, height) {
