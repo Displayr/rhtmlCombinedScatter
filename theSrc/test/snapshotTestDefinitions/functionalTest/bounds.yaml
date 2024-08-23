@@ -17,3 +17,7 @@ widgets:
   - config: data.functionalTest.scatterplot_simple|{"xBoundsMaximum":-10,"xBoundsMinimum":10,"yBoundsMaximum":1, "yBoundsMinimum":4}|{"title":"reversed x and y bounds"}
   - config: data.functionalTest.scatterplot_simple|{"xBoundsMinimum":-10,"yBoundsMinimum":-5}|{"title":"x and y min only"}
   - config: data.functionalTest.scatterplot_simple|{"xBoundsMaximum":10,"yBoundsMaximum":5}|{"title":"x and y max only"}
+  - config: data.functionalTest.scatterplot_x_datetimes|{"xBoundsMinimum":"2011-01-01"}
+  - config: data.functionalTest.scatterplot_x_datetimes|{"xBoundsMinimum":"2010-01-01", "xBoundsMaximum":"2015-01-01"}
+  - config: data.functionalTest.scatterplot_y_datetimes|{"yBoundsMinimum":"2011-01-01"}
+  - config: data.functionalTest.scatterplot_y_datetimes|{"yBoundsMinimum":"2010-01-01", "yBoundsMaximum":"2015-01-01"}

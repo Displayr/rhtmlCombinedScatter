@@ -357,13 +357,13 @@ function getDefaultDateFormat (dates) {
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin
-    const min_mult = 4
 
     // Values after new line only appear uniquely
     // https://plotly.com/python/time-series/#configuring-tick-labels
-    if (diff < min_mult * 60 * 60 * 1000) return '%H:%M:%s:%L\n%b %d %Y'
-    else if (diff < min_mult * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
-    else if (diff < min_mult * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
+    // The cutoffs are set to approximately where plotly transitions the tick formats
+    if (diff < 5 * 60 * 1000) return '%H:%M:%S.%L\n%b %d %Y'
+    else if (diff < 5 * 24 * 60 * 60 * 1000) return '%H:%M\n%b %d %Y'
+    else if (diff < 3 * 30 * 24 * 60 * 60 * 1000) return '%b %d\n%Y'
     else return '%b %Y'
 }
 
@@ -574,31 +574,47 @@ function createPlotlyLayout (config, margin_right, height) {
 }
 
 function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth, fixedAspectRatio) {
-    let bounds = [minBounds, maxBounds]
     // Plotly seems to find a reasonable default range for non-date values
-    if (type === DataTypeEnum.date && (minBounds === null || maxBounds === null)) {
-        const dates = values.map(d => d.getTime())
-        dates.sort()
-        let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
-        for (let i = 1; i < dates.length; i++) {
-            min_diff = Math.min(min_diff, dates[i] - dates[i - 1])
+    if (type === DataTypeEnum.date) {
+        if (minBounds !== null && typeof minBounds === 'string' && minBounds) {
+            minBounds = Utils.parseDateAsUtc(minBounds)
         }
-        if (minBounds === null) bounds[0] = dates[0] - min_diff
-        if (maxBounds === null) bounds[1] = dates[dates.length - 1] + min_diff
-
-        // Estimate the extra space we need to add for bubbles
-        // This is approximate because we don't know plotWidth yet
-        const bubble_offset = !maxBubbleSize ? 0
-            : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
-        bounds[0] -= bubble_offset
-        bounds[1] += bubble_offset
+        if (maxBounds !== null && typeof maxBounds === 'string' && maxBounds) {
+            maxBounds = Utils.parseDateAsUtc(maxBounds)
+        }
+        const bounds = [minBounds, maxBounds]
+        const has_min_bounds = minBounds !== null && minBounds
+        const has_max_bounds = maxBounds !== null && maxBounds
+        if (!has_min_bounds || !has_max_bounds) {
+            const dates = values.map(d => d.getTime())
+            dates.sort()
+            let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
+            for (let i = 1; i < dates.length; i++) {
+                min_diff = Math.min(min_diff, dates[i] - dates[i - 1])
+            }
+            if (!has_min_bounds) bounds[0] = dates[0] - min_diff
+            if (!has_max_bounds) bounds[1] = dates[dates.length - 1] + min_diff
+    
+            // Estimate the extra space we need to add for bubbles
+            // This is approximate because we don't know plotWidth yet
+            const bubble_offset = !maxBubbleSize ? 0
+                : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+            if (!has_min_bounds) {
+                bounds[0] -= bubble_offset
+            }
+            if (!has_max_bounds) {
+                bounds[1] += bubble_offset
+            }
+        }
+        return bounds
     } else if (fixedAspectRatio && values.every(v => v === 0) && (minBounds === null || maxBounds === null)) {
         // When values are all zero, Plotly sets a range of [-1,1],
         // which is not suitable when the aspect ratio is fixed.
         // By setting it below, the actual range is determined by the data in the other axis
-        bounds = [-1e-16, 1e-16]
+        return [-1e-16, 1e-16]
+    } else {
+        return [minBounds, maxBounds]
     }
-    return bounds
 }
 
 function getAutoRange (range) {

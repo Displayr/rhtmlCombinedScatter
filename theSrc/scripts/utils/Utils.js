@@ -105,6 +105,13 @@ class Utils {
   static isHexColorWithoutOpacity (color) {
     return color.match(/#[\d,A-F,a-f]{6}/)
   }
+
+  static parseDateAsUtc (date_str) {
+    const utc_date = Date.parse(date_str + ' UTC')
+    // If the string already contains time-zone info (e.g., "2023-09-28T14:30:00Z"),
+    // then utc_date will be NaN, in which case we try again without the suffix
+    return !isNaN(utc_date) ? utc_date : Date.parse(date_str)
+  }
 }
 
 module.exports = Utils
