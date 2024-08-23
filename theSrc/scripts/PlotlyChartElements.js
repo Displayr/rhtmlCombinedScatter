@@ -577,10 +577,10 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
     // Plotly seems to find a reasonable default range for non-date values
     if (type === DataTypeEnum.date) {
         if (minBounds !== null && typeof minBounds === 'string') {
-            minBounds = Date.parse(minBounds)
+            minBounds = Utils.parseDateAsUtc(minBounds)
         }
         if (maxBounds !== null && typeof maxBounds === 'string') {
-            maxBounds = Date.parse(maxBounds)
+            maxBounds = Utils.parseDateAsUtc(maxBounds)
         }
         const bounds = [minBounds, maxBounds]
         if (minBounds === null || maxBounds === null) {
@@ -597,8 +597,12 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
             // This is approximate because we don't know plotWidth yet
             const bubble_offset = !maxBubbleSize ? 0
                 : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
-            bounds[0] -= bubble_offset
-            bounds[1] += bubble_offset
+            if (minBounds === null) {
+                bounds[0] -= bubble_offset
+            }
+            if (maxBounds === null) {
+                bounds[1] += bubble_offset
+            }
         }
         return bounds
     } else if (fixedAspectRatio && values.every(v => v === 0) && (minBounds === null || maxBounds === null)) {
