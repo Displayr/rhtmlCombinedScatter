@@ -357,7 +357,7 @@ function getDefaultDateFormat (dates) {
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin
-    const min_mult = 4
+    const min_mult = 2
 
     // Values after new line only appear uniquely
     // https://plotly.com/python/time-series/#configuring-tick-labels
