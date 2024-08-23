@@ -583,7 +583,7 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
             maxBounds = Date.parse(maxBounds)
         }
         const bounds = [minBounds, maxBounds]
-        if (minBounds === null || minBounds === null) {
+        if (minBounds === null || maxBounds === null) {
             const dates = values.map(d => d.getTime())
             dates.sort()
             let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
