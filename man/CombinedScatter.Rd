@@ -618,13 +618,13 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{y.midpoint.line.width}{y midpoint line width in pixels}
 
-\item{top.left.quadrant.color}{Color of the top left quadrant}
+\item{quadrant.top.left.color}{Color of the top left quadrant}
 
-\item{top.right.quadrant.color}{Color of the top right quadrant}
+\item{quadrant.top.right.color}{Color of the top right quadrant}
 
-\item{bottom.left.quadrant.color}{Color of the bottom left quadrant}
+\item{quadrant.bottom.left.color}{Color of the bottom left quadrant}
 
-\item{bottom.right.quadrant.color}{Color of the bottom right quadrant}
+\item{quadrant.bottom.right.color}{Color of the bottom right quadrant}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.

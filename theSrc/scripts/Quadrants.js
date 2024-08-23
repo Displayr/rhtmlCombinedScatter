@@ -52,7 +52,7 @@ function drawMidpointLines (layout, config, ranges) {
 function drawQuadrantColors (layout, config, ranges) {
     const { x_min, x_max, y_min, y_max } = ranges
 
-    if (config.topLeftQuadrantColor && config.yMidpoint < y_max && config.xMidpoint > x_min) {
+    if (config.quadrantTopLeftColor && config.yMidpoint < y_max && config.xMidpoint > x_min) {
         layout.shapes.push({
             type: 'rect',
             x0: x_min,
@@ -61,7 +61,7 @@ function drawQuadrantColors (layout, config, ranges) {
             y0: config.yMidpoint < y_min ? y_min : config.yMidpoint,
             y1: y_max,
             yref: 'y',
-            fillcolor: config.topLeftQuadrantColor,
+            fillcolor: config.quadrantTopLeftColor,
             line: {
                 width: 0
             },
@@ -69,7 +69,7 @@ function drawQuadrantColors (layout, config, ranges) {
         })
     }
 
-    if (config.topRightQuadrantColor && config.yMidpoint < y_max && config.xMidpoint < x_max) {
+    if (config.quadrantTopRightColor && config.yMidpoint < y_max && config.xMidpoint < x_max) {
         layout.shapes.push({
             type: 'rect',
             x0: config.xMidpoint < x_min ? x_min : config.xMidpoint,
@@ -78,7 +78,7 @@ function drawQuadrantColors (layout, config, ranges) {
             y0: config.yMidpoint < y_min ? y_min : config.yMidpoint,
             y1: y_max,
             yref: 'y',
-            fillcolor: config.topRightQuadrantColor,
+            fillcolor: config.quadrantTopRightColor,
             line: {
                 width: 0
             },
@@ -86,7 +86,7 @@ function drawQuadrantColors (layout, config, ranges) {
         })
     }
 
-    if (config.bottomLeftQuadrantColor && config.yMidpoint > y_min && config.xMidpoint > x_min) {
+    if (config.quadrantBottomLeftColor && config.yMidpoint > y_min && config.xMidpoint > x_min) {
         layout.shapes.push({
             type: 'rect',
             x0: x_min,
@@ -95,7 +95,7 @@ function drawQuadrantColors (layout, config, ranges) {
             y0: y_min,
             y1: config.yMidpoint > y_max ? y_max : config.yMidpoint,
             yref: 'y',
-            fillcolor: config.bottomLeftQuadrantColor,
+            fillcolor: config.quadrantBottomLeftColor,
             line: {
                 width: 0
             },
@@ -103,7 +103,7 @@ function drawQuadrantColors (layout, config, ranges) {
         })
     }
 
-    if (config.bottomRightQuadrantColor && config.yMidpoint > y_min && config.xMidpoint < x_max) {
+    if (config.quadrantBottomRightColor && config.yMidpoint > y_min && config.xMidpoint < x_max) {
         layout.shapes.push({
             type: 'rect',
             x0: config.xMidpoint < x_min ? x_min : config.xMidpoint,
@@ -112,7 +112,7 @@ function drawQuadrantColors (layout, config, ranges) {
             y0: y_min,
             y1: config.yMidpoint > y_max ? y_max : config.yMidpoint,
             yref: 'y',
-            fillcolor: config.bottomRightQuadrantColor,
+            fillcolor: config.quadrantBottomRightColor,
             line: {
                 width: 0
             },

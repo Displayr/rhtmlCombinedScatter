@@ -29,8 +29,8 @@
   "yMidpointLineColor": "#00FF00",
   "yMidpointLineDash": "dot",
   "yMidpointLineWidth": 5,
-  "topLeftQuadrantColor": "#FF0000",
-  "topRightQuadrantColor": "#00FF00",
-  "bottomLeftQuadrantColor": "#0000FF",
-  "bottomRightQuadrantColor": "#FFFF00"
+  "quadrantTopLeftColor": "#FF0000",
+  "quadrantTopRightColor": "#00FF00",
+  "quadrantBottomLeftColor": "#0000FF",
+  "quadrantBottomRightColor": "#FFFF00"
 }
