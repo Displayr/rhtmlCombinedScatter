@@ -209,6 +209,10 @@
 #' @param y.midpoint.line.color y midpoint line color
 #' @param y.midpoint.line.dash y midpoint line type. Can be one of 'solid', 'dot', 'dash'.
 #' @param y.midpoint.line.width y midpoint line width in pixels
+#' @param quadrant.top.left.color Color of the top left quadrant
+#' @param quadrant.top.right.color Color of the top right quadrant
+#' @param quadrant.bottom.left.color Color of the bottom left quadrant
+#' @param quadrant.bottom.right.color Color of the bottom right quadrant
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
@@ -417,7 +421,11 @@ CombinedScatter <- function(
     x.midpoint.line.width = 1,
     y.midpoint.line.color = '#000000',
     y.midpoint.line.dash = 'solid',
-    y.midpoint.line.width = 1)
+    y.midpoint.line.width = 1,
+    top.left.quadrant.color = 'transparent',
+    top.right.quadrant.color = 'transparent',
+    bottom.left.quadrant.color = 'transparent',
+    bottom.right.quadrant.color = 'transparent')
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))
@@ -687,7 +695,11 @@ CombinedScatter <- function(
              xMidpointLineWidth = x.midpoint.line.width,
              yMidpointLineColor = y.midpoint.line.color,
              yMidpointLineDash = y.midpoint.line.dash,
-             yMidpointLineWidth = y.midpoint.line.width)
+             yMidpointLineWidth = y.midpoint.line.width,
+             quadrantTopLeftColor = quadrant.top.left.color,
+             quadrantTopRightColor = quadrant.top.right.color,
+             quadrantBottomLeftColor = quadrant.bottom.left.color,
+             quadrantBottomRightColor = quadrant.bottom.right.color)
 
     sizing.policy <- htmlwidgets::sizingPolicy(browser.fill = TRUE,
                                                viewer.fill = TRUE,

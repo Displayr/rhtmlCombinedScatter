@@ -4,16 +4,14 @@ async function drawQuadrants (plotly_chart, config) {
     const layout = plotly_chart.layout
     const x_range = plotly_chart._fullLayout.xaxis.range
     const y_range = plotly_chart._fullLayout.yaxis.range
-    drawMidpointLines(layout, config, x_range, y_range)
+    const ranges = getRanges(x_range, y_range)
+    drawMidpointLines(layout, config, ranges)
+    drawQuadrantColors(layout, config, ranges)
     await Plotly.relayout(plotly_chart, layout)
 }
 
-function drawMidpointLines (layout, config, x_range, y_range) {
-    // The range may be reversed, hence we still need to compute the min and max
-    const x_min = Math.min(...x_range)
-    const x_max = Math.max(...x_range)
-    const y_min = Math.min(...y_range)
-    const y_max = Math.max(...y_range)
+function drawMidpointLines (layout, config, ranges) {
+    const { x_min, x_max, y_min, y_max } = ranges
 
     if (config.xMidpointLineWidth > 0 && config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
         layout.shapes.push({
@@ -49,6 +47,87 @@ function drawMidpointLines (layout, config, x_range, y_range) {
             yref: 'y'
         })
     }
+}
+
+function drawQuadrantColors (layout, config, ranges) {
+    const { x_min, x_max, y_min, y_max } = ranges
+
+    if (config.quadrantTopLeftColor && config.yMidpoint < y_max && config.xMidpoint > x_min) {
+        layout.shapes.push({
+            type: 'rect',
+            x0: x_min,
+            x1: config.xMidpoint > x_max ? x_max : config.xMidpoint,
+            xref: 'x',
+            y0: config.yMidpoint < y_min ? y_min : config.yMidpoint,
+            y1: y_max,
+            yref: 'y',
+            fillcolor: config.quadrantTopLeftColor,
+            line: {
+                width: 0
+            },
+            layer: 'below'
+        })
+    }
+
+    if (config.quadrantTopRightColor && config.yMidpoint < y_max && config.xMidpoint < x_max) {
+        layout.shapes.push({
+            type: 'rect',
+            x0: config.xMidpoint < x_min ? x_min : config.xMidpoint,
+            x1: x_max,
+            xref: 'x',
+            y0: config.yMidpoint < y_min ? y_min : config.yMidpoint,
+            y1: y_max,
+            yref: 'y',
+            fillcolor: config.quadrantTopRightColor,
+            line: {
+                width: 0
+            },
+            layer: 'below'
+        })
+    }
+
+    if (config.quadrantBottomLeftColor && config.yMidpoint > y_min && config.xMidpoint > x_min) {
+        layout.shapes.push({
+            type: 'rect',
+            x0: x_min,
+            x1: config.xMidpoint > x_max ? x_max : config.xMidpoint,
+            xref: 'x',
+            y0: y_min,
+            y1: config.yMidpoint > y_max ? y_max : config.yMidpoint,
+            yref: 'y',
+            fillcolor: config.quadrantBottomLeftColor,
+            line: {
+                width: 0
+            },
+            layer: 'below'
+        })
+    }
+
+    if (config.quadrantBottomRightColor && config.yMidpoint > y_min && config.xMidpoint < x_max) {
+        layout.shapes.push({
+            type: 'rect',
+            x0: config.xMidpoint < x_min ? x_min : config.xMidpoint,
+            x1: x_max,
+            xref: 'x',
+            y0: y_min,
+            y1: config.yMidpoint > y_max ? y_max : config.yMidpoint,
+            yref: 'y',
+            fillcolor: config.quadrantBottomRightColor,
+            line: {
+                width: 0
+            },
+            layer: 'below'
+        })
+    }
+}
+
+function getRanges (x_range, y_range) {
+    // The range may be reversed, hence we still need to compute the min and max
+    const x_min = Math.min(...x_range)
+    const x_max = Math.max(...x_range)
+    const y_min = Math.min(...y_range)
+    const y_max = Math.max(...y_range)
+    return { x_min, x_max, y_min, y_max }
 }
 
 module.exports = {
