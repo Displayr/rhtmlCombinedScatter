@@ -422,10 +422,10 @@ CombinedScatter <- function(
     y.midpoint.line.color = '#000000',
     y.midpoint.line.dash = 'solid',
     y.midpoint.line.width = 1,
-    top.left.quadrant.color = 'transparent',
-    top.right.quadrant.color = 'transparent',
-    bottom.left.quadrant.color = 'transparent',
-    bottom.right.quadrant.color = 'transparent')
+    quadrant.top.left.color = 'transparent',
+    quadrant.top.right.color = 'transparent',
+    quadrant.bottom.left.color = 'transparent',
+    quadrant.bottom.right.color = 'transparent')
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))
