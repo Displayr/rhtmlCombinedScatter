@@ -213,6 +213,23 @@ const defaultConfig = {
   quadrantTopRightColor: 'transparent',
   quadrantBottomLeftColor: 'transparent',
   quadrantBottomRightColor: 'transparent',
+  quadrantsShow: false,
+  quadrantTopLeftTitle: '',
+  quadrantTopLeftTitleFontColor: '#2C2C2C',
+  quadrantTopLeftTitleFontFamily: 'Arial',
+  quadrantTopLeftTitleFontSize: 16,
+  quadrantTopRightTitle: '',
+  quadrantTopRightTitleFontColor: '#2C2C2C',
+  quadrantTopRightTitleFontFamily: 'Arial',
+  quadrantTopRightTitleFontSize: 16,
+  quadrantBottomLeftTitle: '',
+  quadrantBottomLeftTitleFontColor: '#2C2C2C',
+  quadrantBottomLeftTitleFontFamily: 'Arial',
+  quadrantBottomLeftTitleFontSize: 16,
+  quadrantBottomRightTitle: '',
+  quadrantBottomRightTitleFontColor: '#2C2C2C',
+  quadrantBottomRightTitleFontFamily: 'Arial',
+  quadrantBottomRightTitleFontSize: 16,
 }
 
 function buildConfig (userConfig, width, height) {

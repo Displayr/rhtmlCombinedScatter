@@ -1,12 +1,13 @@
 import Plotly from 'plotly.js-basic-dist-min'
 
-async function drawQuadrants (plotly_chart, config) {
+async function drawQuadrants (plotly_chart, config, state) {
     const layout = plotly_chart.layout
     const x_range = plotly_chart._fullLayout.xaxis.range
     const y_range = plotly_chart._fullLayout.yaxis.range
     const ranges = getRanges(x_range, y_range)
     drawMidpointLines(layout, config, ranges)
     drawQuadrantColors(layout, config, ranges)
+    drawQuadrantTitles(layout, config, x_range, y_range, state)
     await Plotly.relayout(plotly_chart, layout)
 }
 
@@ -118,6 +119,113 @@ function drawQuadrantColors (layout, config, ranges) {
             },
             layer: 'below'
         })
+    }
+}
+function drawQuadrantTitles (layout, config, x_range, y_range, state) {
+    if (!layout.annotations)
+        layout.annotations = [];
+    let index = layout.annotations.length
+    if (config.quadrantTopLeftTitle && config.yMidpoint < y_range[1] && 
+        config.xMidpoint > x_range[0]) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+            ? state.getStored('quadrantTitle' + index)
+            : { ax: 0, ay: 0 }
+        layout.annotations.push({
+            text: config.quadrantTopLeftTitle,
+            xanchor: 'left',
+            xref: 'x',
+            ax: initial_offset.ax,
+            x: x_range[0],
+            xshift: 50,
+            yanchor: 'top',
+            yref: 'y',
+            ay: initial_offset.ay,
+            y: y_range[1],
+            yshift: -50,
+            font: {
+                family: config.quadrantTopLeftTitleFontFamily,
+                color: config.quadrantTopLeftTitleFontColor,
+                size: config.quadrantTopLeftTitleFontSize
+            },
+            arrowcolor: 'transparent' // invisible arrow to allow dragging
+        })
+        index++;
+    }
+    if (config.quadrantTopRightTitle && config.yMidpoint < y_range[1] ) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+            ? state.getStored('quadrantTitle' + index)
+            : { ax: 0, ay: 0 }
+        layout.annotations.push({
+            text: config.quadrantTopRightTitle,
+            xanchor: 'right',
+            xref: 'x',
+            ax: initial_offset.ax,
+            x: x_range[1],
+            xshift: -50,
+            yanchor: 'top',
+            yref: 'y',
+            ay: initial_offset.ay,
+            y: y_range[1],
+            yshift: -50,
+            font: {
+                family: config.quadrantTopRightTitleFontFamily,
+                color: config.quadrantTopRightTitleFontColor,
+                size: config.quadrantTopRightTitleFontSize
+            },
+            arrowcolor: 'transparent'
+        })
+    }
+    if (config.quadrantBottomLeftTitle && config.yMidpoint > y_range[0] && 
+        config.xMidpoint > x_range[0]) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+            ? state.getStored('quadrantTitle' + index)
+            : { ax: 0, ay: 0 }
+        layout.annotations.push({
+            text: config.quadrantBottomLeftTitle,
+            xanchor: 'left',
+            xref: 'x',
+            ax: initial_offset.ax,
+            x: x_range[0],
+            xshift: 50,
+            yanchor: 'bottom',
+            yref: 'y',
+            ay: initial_offset.ay,
+            y: y_range[0],
+            yshift: 50,
+            font: {
+                family: config.quadrantBottomLeftTitleFontFamily,
+                color: config.quadrantBottomLeftTitleFontColor,
+                size: config.quadrantBottomLeftTitleFontSize
+            },
+            arrowcolor: 'transparent' // invisible arrow to allow dragging
+        })
+        index++;
+    }
+    if (config.quadrantBottomRightTitle && config.yMidpoint > y_range[0] && 
+        config.xMidpoint < x_range[1]) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+            ? state.getStored('quadrantTitle' + index)
+            : { ax: 0, ay: 0 }
+        layout.annotations.push({
+            text: config.quadrantBottomRightTitle,
+            xanchor: 'right',
+            xref: 'x',
+            ax: initial_offset.ax,
+            x: x_range[1],
+            xshift: -50,
+            yanchor: 'bottom',
+            yref: 'y',
+            ay: initial_offset.ay,
+            y: y_range[0],
+            yshift: 50,
+            font: {
+                family: config.quadrantBottomRightTitleFontFamily,
+                color: config.quadrantBottomRightTitleFontColor,
+                size: config.quadrantBottomRightTitleFontSize
+            },
+            arrowcolor: 'transparent' // invisible arrow to allow dragging
+        })
+        index++;
     }
 }
 
