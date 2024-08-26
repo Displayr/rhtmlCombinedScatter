@@ -418,7 +418,8 @@ describe('state interactions', () => {
       width: 800,
       height: 500
     })
-    await testSnapshots({ page, testName: 'quadrant_title_after_drag' })
+    // Use different snapshot because the reset button is visible
+    await testSnapshots({ page, testName: 'quadrant_title_after_drag_reload' })
     await page.close()
   })
 })
