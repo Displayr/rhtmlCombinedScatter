@@ -6,4 +6,4 @@ rowSize: 4
 widgets:
   - config: data.functionalTest.quadrants.quadrants
   - config: data.functionalTest.quadrants.quadrants|{"xMidpoint":1.2,"title":"x midpoint outside range"}
-  - config: data.functionalTest.quadrants.quadrants|{"yMidpoint":3.2,"title":"y midpoint outside range","quadrantBottomRightTitleFontSize":8,"quadrantBottomLeftTitleFontColor":"#FFFFFF","quadrantBottomLeftFontFamily":"Courier New"}
+  - config: data.functionalTest.quadrants.quadrants|{"yMidpoint":3.2,"title":"y midpoint outside range","quadrantBottomRightTitleFontSize":8,"quadrantBottomLeftTitleFontColor":"#FFFFFF","quadrantBottomLeftTitleFontFamily":"Courier New"}
