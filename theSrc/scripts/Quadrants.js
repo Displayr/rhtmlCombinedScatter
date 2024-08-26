@@ -7,7 +7,7 @@ async function drawQuadrants (plotly_chart, config, state) {
     const ranges = getRanges(x_range, y_range)
     drawMidpointLines(layout, config, ranges)
     drawQuadrantColors(layout, config, ranges)
-    drawQuadrantTitles(layout, config, x_range, y_range, state)
+    drawQuadrantTitles(layout, config, ranges, state)
     await Plotly.relayout(plotly_chart, layout)
 }
 
@@ -121,13 +121,13 @@ function drawQuadrantColors (layout, config, ranges) {
         })
     }
 }
-function drawQuadrantTitles (layout, config, x_range, y_range, state) {
-    if (!layout.annotations)
-        layout.annotations = [];
+function drawQuadrantTitles (layout, config, ranges, state) {
+    const { x_min, x_max, y_min, y_max } = ranges
+    if (!layout.annotations) layout.annotations = []
     let index = layout.annotations.length
-    if (config.quadrantTopLeftTitle && config.yMidpoint < y_range[1] && 
-        config.xMidpoint > x_range[0]) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+    if (config.quadrantTopLeftTitle && config.yMidpoint < y_max &&
+        config.xMidpoint > x_min) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
             : { ax: 0, ay: 0 }
         layout.annotations.push({
@@ -135,12 +135,12 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             xanchor: 'left',
             xref: 'x',
             ax: initial_offset.ax,
-            x: x_range[0],
+            x: x_min,
             xshift: 50,
             yanchor: 'top',
             yref: 'y',
             ay: initial_offset.ay,
-            y: y_range[1],
+            y: y_max,
             yshift: -50,
             font: {
                 family: config.quadrantTopLeftTitleFontFamily,
@@ -149,10 +149,10 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             },
             arrowcolor: 'transparent' // invisible arrow to allow dragging
         })
-        index++;
+        index++
     }
-    if (config.quadrantTopRightTitle && config.yMidpoint < y_range[1] ) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+    if (config.quadrantTopRightTitle && config.yMidpoint < y_max) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
             : { ax: 0, ay: 0 }
         layout.annotations.push({
@@ -160,12 +160,12 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             xanchor: 'right',
             xref: 'x',
             ax: initial_offset.ax,
-            x: x_range[1],
+            x: x_max,
             xshift: -50,
             yanchor: 'top',
             yref: 'y',
             ay: initial_offset.ay,
-            y: y_range[1],
+            y: y_max,
             yshift: -50,
             font: {
                 family: config.quadrantTopRightTitleFontFamily,
@@ -174,10 +174,11 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             },
             arrowcolor: 'transparent'
         })
+        index++
     }
-    if (config.quadrantBottomLeftTitle && config.yMidpoint > y_range[0] && 
-        config.xMidpoint > x_range[0]) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+    if (config.quadrantBottomLeftTitle && config.yMidpoint > y_min &&
+        config.xMidpoint > x_min) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
             : { ax: 0, ay: 0 }
         layout.annotations.push({
@@ -185,12 +186,12 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             xanchor: 'left',
             xref: 'x',
             ax: initial_offset.ax,
-            x: x_range[0],
+            x: x_min,
             xshift: 50,
             yanchor: 'bottom',
             yref: 'y',
             ay: initial_offset.ay,
-            y: y_range[0],
+            y: y_min,
             yshift: 50,
             font: {
                 family: config.quadrantBottomLeftTitleFontFamily,
@@ -199,11 +200,11 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             },
             arrowcolor: 'transparent' // invisible arrow to allow dragging
         })
-        index++;
+        index++
     }
-    if (config.quadrantBottomRightTitle && config.yMidpoint > y_range[0] && 
-        config.xMidpoint < x_range[1]) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index) 
+    if (config.quadrantBottomRightTitle && config.yMidpoint > y_min &&
+        config.xMidpoint < x_max) {
+        const initial_offset = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
             : { ax: 0, ay: 0 }
         layout.annotations.push({
@@ -211,12 +212,12 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             xanchor: 'right',
             xref: 'x',
             ax: initial_offset.ax,
-            x: x_range[1],
+            x: x_max,
             xshift: -50,
             yanchor: 'bottom',
             yref: 'y',
             ay: initial_offset.ay,
-            y: y_range[0],
+            y: y_min,
             yshift: 50,
             font: {
                 family: config.quadrantBottomRightTitleFontFamily,
@@ -225,7 +226,7 @@ function drawQuadrantTitles (layout, config, x_range, y_range, state) {
             },
             arrowcolor: 'transparent' // invisible arrow to allow dragging
         })
-        index++;
+        index++
     }
 }
 

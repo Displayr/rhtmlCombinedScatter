@@ -184,9 +184,10 @@ class LabeledScatter {
             const is_moved_annot = (Object.keys(data)[0]).match(/annotations\[(\d+)\]/)
             if (is_moved_annot) {
               const index = is_moved_annot[1]
-              this.stateObj.saveToState({ [`quadrantTitle${index}`]: { 
-                'ax': data[`annotations[${index}].ax`], 
-                'ay': data[`annotations[${index}].ay`]} })
+              this.stateObj.saveToState({ [`quadrantTitle${index}`]: {
+                'ax': data[`annotations[${index}].ax`],
+                'ay': data[`annotations[${index}].ay`]
+              } })
             }
           })
         }

@@ -213,7 +213,6 @@ const defaultConfig = {
   quadrantTopRightColor: 'transparent',
   quadrantBottomLeftColor: 'transparent',
   quadrantBottomRightColor: 'transparent',
-  quadrantsShow: false,
   quadrantTopLeftTitle: '',
   quadrantTopLeftTitleFontColor: '#2C2C2C',
   quadrantTopLeftTitleFontFamily: 'Arial',
