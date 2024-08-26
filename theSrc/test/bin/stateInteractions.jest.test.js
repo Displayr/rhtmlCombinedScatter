@@ -378,6 +378,7 @@ describe('state interactions', () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     await scatterPlot.clickMouseOnAnchor()
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
+    await page.close()
   })
 
   test(`${++testId}: Load smallmultiples with saved state `, async function () {
@@ -390,6 +391,34 @@ describe('state interactions', () => {
     })
     await page.mouse.move(200, 200)
     await testSnapshots({ page, testName: 'smallmultiples_after_drag', tolerance: 1 })
+    await page.close()
+  })
+
+  test(`${++testId}: Quadrants with moved quadrant titles`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.functionalTest.quadrants.quadrants',
+      width: 800,
+      height: 500
+    })
+    await scatterPlot.clickPlotlyAnnotation()
+    await page.mouse.down()
+    await page.mouse.move(300, 300)
+    await page.mouse.up()
+    await testState({ page, stateName: 'data.functionalTest.quadrants.quadrant_state.after_drag', tolerance: 0 })
+    await testSnapshots({ page, testName: 'quadrant_title_after_drag' })
+    await page.close()
+  })
+
+  test(`${++testId}: Load quadrant title with saved state `, async function () {
+    const { page } = await loadWidget({
+      browser,
+      configName: 'data.functionalTest.quadrants.quadrants',
+      stateName: 'data.functionalTest.quadrants.quadrant_state.after_drag'
+      width: 800,
+      height: 500
+    })
+    await testSnapshots({ page, testName: 'quadrant_title_after_drag' })
     await page.close()
   })
 })
