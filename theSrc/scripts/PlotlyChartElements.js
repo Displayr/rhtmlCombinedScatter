@@ -594,7 +594,6 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
             }
             if (!has_min_bounds) bounds[0] = dates[0] - min_diff
             if (!has_max_bounds) bounds[1] = dates[dates.length - 1] + min_diff
-    
             // Estimate the extra space we need to add for bubbles
             // This is approximate because we don't know plotWidth yet
             const bubble_offset = !maxBubbleSize ? 0

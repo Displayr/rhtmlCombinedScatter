@@ -89,6 +89,8 @@ class State {
       delete this.stateObj['vb']
       delete this.stateObj['legend.pts']
       delete this.stateObj['userPositionedSmallMultipleLabels']
+      const quadrant_titles = Object.keys(this.stateObj).filter(x => x.match(/^quadrantTitle\d+$/))
+      quadrant_titles.forEach(k => delete this.stateObj[k])
       this.stateObj['hiddenlabel.pts'] = this.initialHiddenLabelPts()
       this.stateChangedCallback(this.stateObj)
     }
@@ -144,6 +146,8 @@ class State {
     if (this.userPositionedLabs.length > 0) return true
     if (this.isStoredInState('userPositionedSmallMultipleLabels') &&
         this.stateObj['userPositionedSmallMultipleLabels'].length > 0) return true
+    const quadrant_titles = Object.keys(this.stateObj).filter(x => x.match(/^quadrantTitle\d+$/))
+    if (quadrant_titles.length > 0) return true
     if (!_.isEqual(this.hiddenLabelPts, this.initialHiddenLabelPts())) return true
     return false
   }
