@@ -209,7 +209,23 @@ CombinedScatter(
   quadrant.top.left.color = "transparent",
   quadrant.top.right.color = "transparent",
   quadrant.bottom.left.color = "transparent",
-  quadrant.bottom.right.color = "transparent"
+  quadrant.bottom.right.color = "transparent",
+  quadrant.top.left.title = "",
+  quadrant.top.left.title.font.family = "Arial",
+  quadrant.top.left.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  quadrant.top.left.title.font.size = 16,
+  quadrant.top.right.title = "",
+  quadrant.top.right.title.font.family = "Arial",
+  quadrant.top.right.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  quadrant.top.right.title.font.size = 16,
+  quadrant.bottom.left.title = "",
+  quadrant.bottom.left.title.font.family = "Arial",
+  quadrant.bottom.left.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  quadrant.bottom.left.title.font.size = 16,
+  quadrant.bottom.right.title = "",
+  quadrant.bottom.right.title.font.family = "Arial",
+  quadrant.bottom.right.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+  quadrant.bottom.right.title.font.size = 16
 )
 }
 \arguments{
@@ -625,6 +641,38 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{quadrant.bottom.left.color}{Color of the bottom left quadrant}
 
 \item{quadrant.bottom.right.color}{Color of the bottom right quadrant}
+
+\item{quadrant.top.left.title}{Optional text to label to top left quadrant}
+
+\item{quadrant.top.left.title.font.family}{Font family of the top left quadrant title}
+
+\item{quadrant.top.left.title.font.color}{Font color of the top left quadrant title}
+
+\item{quadrant.top.left.title.font.size}{Font size of the top left quadrant title}
+
+\item{quadrant.top.right.title}{Optional text to label to top right quadrant}
+
+\item{quadrant.top.right.title.font.family}{Font family of the top right quadrant title}
+
+\item{quadrant.top.right.title.font.color}{Font color of the top right quadrant title}
+
+\item{quadrant.top.right.title.font.size}{Font size of the top right quadrant title}
+
+\item{quadrant.bottom.left.title}{Optional text to label to bottom left quadrant}
+
+\item{quadrant.bottom.left.title.font.family}{Font family of the bottom left quadrant title}
+
+\item{quadrant.bottom.left.title.font.color}{Font color of the bottom left quadrant title}
+
+\item{quadrant.bottom.left.title.font.size}{Font size of the bottom left quadrant title}
+
+\item{quadrant.bottom.right.title}{Optional text to label to bottom right quadrant}
+
+\item{quadrant.bottom.right.title.font.family}{Font family of the bottom right quadrant title}
+
+\item{quadrant.bottom.right.title.font.color}{Font color of the bottom right quadrant title}
+
+\item{quadrant.bottom.right.title.font.size}{Font size of the bottom right quadrant title}
 }
 \description{
 A HTMLWidget that creates a labeled scatter plot.
