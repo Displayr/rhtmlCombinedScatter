@@ -414,7 +414,7 @@ describe('state interactions', () => {
     const { page } = await loadWidget({
       browser,
       configName: 'data.functionalTest.quadrants.quadrants',
-      stateName: 'data.functionalTest.quadrants.quadrant_state.after_drag'
+      stateName: 'data.functionalTest.quadrants.quadrant_state.after_drag',
       width: 800,
       height: 500
     })
