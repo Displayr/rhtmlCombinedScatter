@@ -32,5 +32,9 @@
   "quadrantTopLeftColor": "#FF0000",
   "quadrantTopRightColor": "#00FF00",
   "quadrantBottomLeftColor": "#0000FF",
-  "quadrantBottomRightColor": "#FFFF00"
+  "quadrantBottomRightColor": "#FFFF00",
+  "quadrantTopLeftTitle": "Top Left",
+  "quadrantTopRightTitle": "Top Right",
+  "quadrantBottomLeftTitle": "Bottom Left",
+  "quadrantBottomRightTitle": "Bottom Right"
 }

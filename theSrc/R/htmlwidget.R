@@ -213,6 +213,22 @@
 #' @param quadrant.top.right.color Color of the top right quadrant
 #' @param quadrant.bottom.left.color Color of the bottom left quadrant
 #' @param quadrant.bottom.right.color Color of the bottom right quadrant
+#' @param quadrant.top.left.title Optional text to label to top left quadrant
+#' @param quadrant.top.left.title.font.family Font family of the top left quadrant title
+#' @param quadrant.top.left.title.font.color Font color of the top left quadrant title
+#' @param quadrant.top.left.title.font.size Font size of the top left quadrant title
+#' @param quadrant.top.right.title Optional text to label to top right quadrant
+#' @param quadrant.top.right.title.font.family Font family of the top right quadrant title
+#' @param quadrant.top.right.title.font.color Font color of the top right quadrant title
+#' @param quadrant.top.right.title.font.size Font size of the top right quadrant title
+#' @param quadrant.bottom.left.title Optional text to label to bottom left quadrant
+#' @param quadrant.bottom.left.title.font.family Font family of the bottom left quadrant title
+#' @param quadrant.bottom.left.title.font.color Font color of the bottom left quadrant title
+#' @param quadrant.bottom.left.title.font.size Font size of the bottom left quadrant title
+#' @param quadrant.bottom.right.title Optional text to label to bottom right quadrant
+#' @param quadrant.bottom.right.title.font.family Font family of the bottom right quadrant title
+#' @param quadrant.bottom.right.title.font.color Font color of the bottom right quadrant title
+#' @param quadrant.bottom.right.title.font.size Font size of the bottom right quadrant title
 #' @param debug.mode Boolean toggle to display widget internals for debugging (Default is FALSE)
 #'
 #' @source https://github.com/Displayr/rhtmlCombinedScatter
@@ -425,7 +441,23 @@ CombinedScatter <- function(
     quadrant.top.left.color = 'transparent',
     quadrant.top.right.color = 'transparent',
     quadrant.bottom.left.color = 'transparent',
-    quadrant.bottom.right.color = 'transparent')
+    quadrant.bottom.right.color = 'transparent',
+    quadrant.top.left.title = '',
+    quadrant.top.left.title.font.family = 'Arial',
+    quadrant.top.left.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    quadrant.top.left.title.font.size = 16,
+    quadrant.top.right.title = '',
+    quadrant.top.right.title.font.family = 'Arial',
+    quadrant.top.right.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    quadrant.top.right.title.font.size = 16,
+    quadrant.bottom.left.title = '',
+    quadrant.bottom.left.title.font.family = 'Arial',
+    quadrant.bottom.left.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    quadrant.bottom.left.title.font.size = 16,
+    quadrant.bottom.right.title = '',
+    quadrant.bottom.right.title.font.family = 'Arial',
+    quadrant.bottom.right.title.font.color = rgb(44, 44, 44, maxColorValue = 255),
+    quadrant.bottom.right.title.font.size = 16)
 {
     # Check inputs
     if (is.null(X) || !is.atomic(X) || (is.array(X) && length(dim(X)) > 1L))
@@ -699,7 +731,24 @@ CombinedScatter <- function(
              quadrantTopLeftColor = quadrant.top.left.color,
              quadrantTopRightColor = quadrant.top.right.color,
              quadrantBottomLeftColor = quadrant.bottom.left.color,
-             quadrantBottomRightColor = quadrant.bottom.right.color)
+             quadrantBottomRightColor = quadrant.bottom.right.color,
+             quadrantTopLeftTitle = quadrant.top.left.title,
+             quadrantTopLeftTitleFontFamily = quadrant.top.left.title.font.family,
+             quadrantTopLeftTitleFontColor = quadrant.top.left.title.font.color,
+             quadrantTopLeftTitleFontSize = quadrant.top.left.title.font.size,
+             quadrantTopRightTitle = quadrant.top.right.title,
+             quadrantTopRightTitleFontFamily = quadrant.top.right.title.font.family,
+             quadrantTopRightTitleFontColor = quadrant.top.right.title.font.color,
+             quadrantTopRightTitleFontSize = quadrant.top.right.title.font.size,
+             quadrantBottomLeftTitle = quadrant.bottom.left.title,
+             quadrantBottomLeftTitleFontFamily = quadrant.bottom.left.title.font.family,
+             quadrantBottomLeftTitleFontColor = quadrant.bottom.left.title.font.color,
+             quadrantBottomLeftTitleFontSize = quadrant.bottom.left.title.font.size,
+             quadrantBottomRightTitle = quadrant.bottom.right.title,
+             quadrantBottomRightTitleFontFamily = quadrant.bottom.right.title.font.family,
+             quadrantBottomRightTitleFontColor = quadrant.bottom.right.title.font.color,
+             quadrantBottomRightTitleFontSize = quadrant.bottom.right.title.font.size
+    )
 
     sizing.policy <- htmlwidgets::sizingPolicy(browser.fill = TRUE,
                                                viewer.fill = TRUE,
