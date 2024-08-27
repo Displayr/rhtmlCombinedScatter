@@ -2,8 +2,10 @@ type: multi_widget_single_page
 title: "quadrants"
 width: 400
 height: 400
-rowSize: 4
+rowSize: 3
 widgets:
   - config: data.functionalTest.quadrants.quadrants
   - config: data.functionalTest.quadrants.quadrants|{"xMidpoint":1.2,"title":"x midpoint outside range"}
   - config: data.functionalTest.quadrants.quadrants|{"yMidpoint":3.2,"title":"y midpoint outside range","quadrantBottomRightTitleFontSize":8,"quadrantBottomLeftTitleFontColor":"#FFFFFF","quadrantBottomLeftTitleFontFamily":"Courier New"}
+  - config: data.functionalTest.quadrants.quadrants|{"title":"With plot border","plotBorderShow":true,"plotBorderWidth":5,"plotBorderColor":"#CCCCCC","quadrantTopLeftColor":"#FF000040","quadrantBottomLeftColor":"#0000FF40"}
+  - config: data.functionalTest.quadrants.quadrants|{"title":"With X and Y axis","plotBorderShow":false,"xAxisLineWidth":2,"yAxisLineWidth":2}
