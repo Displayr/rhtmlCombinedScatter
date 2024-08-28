@@ -99,6 +99,7 @@ class LabeledScatter {
       const plot_layout = createPlotlyLayout(config, margin_right, this.height)
       const plot_config = {
         displayModeBar: false,
+        doubleClick: 'reset',
         editable: false,
         edits: { annotationTail: true, legendPosition: false }
       }
@@ -176,19 +177,33 @@ class LabeledScatter {
           await FitLine.draw(this.rootElement, config)
         }
         if (config.quadrantsShow) {
+          const original_x_range = _.cloneDeep(plotlyChart._fullLayout.xaxis.range)
+          const original_y_range = _.cloneDeep(plotlyChart._fullLayout.yaxis.range)
           await drawQuadrants(this.rootElement, config, this.stateObj)
 
           // Modify event handler to save new position
           // when quadrant titles are moved
           plotlyChart.on('plotly_relayout', (data) => {
-            const is_moved_annot = (Object.keys(data)[0]).match(/annotations\[(\d+)\]/)
-            if (is_moved_annot) {
-              const index = is_moved_annot[1]
-              this.stateObj.saveToState({ [`quadrantTitle${index}`]: {
-                'ax': data[`annotations[${index}].ax`],
-                'ay': data[`annotations[${index}].ay`]
-              } })
+            const data_keys = Object.keys(data)
+            if (data_keys.length > 0) {
+              const is_moved_annot = data_keys[0].match(/annotations\[(\d+)\]/)
+              if (is_moved_annot) {
+                const index = is_moved_annot[1]
+                this.stateObj.saveToState({ [`quadrantTitle${index}`]: {
+                  'ax': data[`annotations[${index}].ax`],
+                  'ay': data[`annotations[${index}].ay`]
+                } })
+              }
             }
+          })
+
+          plotlyChart.on('plotly_doubleclick', () => {
+            setImmediate(() => {
+              Plotly.relayout(plotlyChart, {
+                'xaxis.range': original_x_range,
+                'yaxis.range': original_y_range,
+              })
+            })
           })
         }
         this.adjustTitles(plotlyChart._fullLayout, config)
