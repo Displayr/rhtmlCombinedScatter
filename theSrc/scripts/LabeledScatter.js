@@ -202,6 +202,8 @@ class LabeledScatter {
               Plotly.relayout(plotlyChart, {
                 'xaxis.range': original_x_range,
                 'yaxis.range': original_y_range,
+                'xaxis.autorange': false,
+                'yaxis.autorange': false
               })
             })
           })
