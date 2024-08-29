@@ -128,23 +128,29 @@ function drawQuadrantColors (layout, config, ranges) {
 function drawQuadrantTitles (layout, config, ranges, state) {
     const { x_min, x_max, y_min, y_max } = ranges
     if (!layout.annotations) layout.annotations = []
+
+    // Keep track of the index of the annotation because this is
+    // used to link to state saved
     let index = layout.annotations.length
     if (config.quadrantTopLeftTitle && config.yMidpoint < y_max &&
         config.xMidpoint > x_min) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index)
+        const initial_pos = { ax: x_min, ay: y_max }
+        const curr_pos = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
-            : { ax: 0, ay: 0 }
+            : initial_pos
         layout.annotations.push({
             text: config.quadrantTopLeftTitle,
-            xanchor: 'left',
             xref: 'x',
-            ax: initial_offset.ax,
-            x: x_min,
-            xshift: 5,
-            yanchor: 'top',
+            x: initial_pos.ax,
+            axref: 'x',
+            ax: curr_pos.ax,
             yref: 'y',
-            ay: initial_offset.ay,
-            y: y_max,
+            y: initial_pos.ay,
+            ayref: 'y',
+            ay: curr_pos.ay,
+            xanchor: 'left',
+            yanchor: 'top',
+            xshift: 5,
             yshift: -5,
             font: {
                 family: config.quadrantTopLeftTitleFontFamily,
@@ -155,22 +161,27 @@ function drawQuadrantTitles (layout, config, ranges, state) {
         })
         index++
     }
-    if (config.quadrantTopRightTitle && config.yMidpoint < y_max) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index)
+    if (config.quadrantTopRightTitle && config.yMidpoint < y_max && 
+        config.xMidpoint < x_max) {
+        const initial_pos = { ax: x_max, ay: y_max }
+        const curr_pos = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
-            : { ax: 0, ay: 0 }
+            : initial_pos
         layout.annotations.push({
             text: config.quadrantTopRightTitle,
-            xanchor: 'right',
             xref: 'x',
-            ax: initial_offset.ax,
-            x: x_max,
-            xshift: -5,
-            yanchor: 'top',
+            x: initial_pos.ax,
+            axref: 'x',
+            ax: curr_pos.ax,
             yref: 'y',
-            ay: initial_offset.ay,
-            y: y_max,
+            y: initial_pos.ay,
+            ayref: 'y',
+            ay: curr_pos.ay,
+            xanchor: 'right',
+            yanchor: 'top',
+            xshift: -5,
             yshift: -5,
+
             font: {
                 family: config.quadrantTopRightTitleFontFamily,
                 color: config.quadrantTopRightTitleFontColor,
@@ -182,20 +193,23 @@ function drawQuadrantTitles (layout, config, ranges, state) {
     }
     if (config.quadrantBottomLeftTitle && config.yMidpoint > y_min &&
         config.xMidpoint > x_min) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index)
+        const initial_pos = { ax: x_min, ay: y_min }
+        const curr_pos = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
-            : { ax: 0, ay: 0 }
+            : initial_pos
         layout.annotations.push({
             text: config.quadrantBottomLeftTitle,
-            xanchor: 'left',
             xref: 'x',
-            ax: initial_offset.ax,
-            x: x_min,
-            xshift: 5,
-            yanchor: 'bottom',
+            x: initial_pos.ax,
+            axref: 'x',
+            ax: curr_pos.ax,
             yref: 'y',
-            ay: initial_offset.ay,
-            y: y_min,
+            y: initial_pos.ay,
+            ayref: 'y',
+            ay: curr_pos.ay,
+            xanchor: 'left',
+            yanchor: 'bottom',
+            xshift: 5,
             yshift: 5,
             font: {
                 family: config.quadrantBottomLeftTitleFontFamily,
@@ -208,20 +222,23 @@ function drawQuadrantTitles (layout, config, ranges, state) {
     }
     if (config.quadrantBottomRightTitle && config.yMidpoint > y_min &&
         config.xMidpoint < x_max) {
-        const initial_offset = state.isStoredInState('quadrantTitle' + index)
+        const initial_pos = { ax: x_max, ay: y_min }
+        const curr_pos = state.isStoredInState('quadrantTitle' + index)
             ? state.getStored('quadrantTitle' + index)
-            : { ax: 0, ay: 0 }
+            : initial_pos
         layout.annotations.push({
             text: config.quadrantBottomRightTitle,
-            xanchor: 'right',
             xref: 'x',
-            ax: initial_offset.ax,
-            x: x_max,
-            xshift: -5,
-            yanchor: 'bottom',
+            x: initial_pos.ax,
+            axref: 'x',
+            ax: curr_pos.ax,
             yref: 'y',
-            ay: initial_offset.ay,
-            y: y_min,
+            y: initial_pos.ay,
+            ayref: 'y',
+            ay: curr_pos.ay,
+            xanchor: 'right',
+            yanchor: 'bottom',
+            xshift: -5,
             yshift: 5,
             font: {
                 family: config.quadrantBottomRightTitleFontFamily,
