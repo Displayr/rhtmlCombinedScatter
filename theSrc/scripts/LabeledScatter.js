@@ -99,7 +99,6 @@ class LabeledScatter {
       const plot_layout = createPlotlyLayout(config, margin_right, this.height)
       const plot_config = {
         displayModeBar: false,
-        doubleClick: 'reset',
         editable: false,
         edits: { annotationTail: true, legendPosition: false }
       }
@@ -177,9 +176,24 @@ class LabeledScatter {
           await FitLine.draw(this.rootElement, config)
         }
         if (config.quadrantsShow) {
-          const original_x_range = _.cloneDeep(plotlyChart._fullLayout.xaxis.range)
-          const original_y_range = _.cloneDeep(plotlyChart._fullLayout.yaxis.range)
+          // Save range to prevent autorange from adding gap
+          // between plot border to quadrant background color
+          const original_x_min = plotlyChart._fullLayout.xaxis.range[0]
+          const original_x_max = plotlyChart._fullLayout.xaxis.range[1]
+          const original_y_min = plotlyChart._fullLayout.yaxis.range[0]
+          const original_y_max = plotlyChart._fullLayout.yaxis.range[1]
+
           await drawQuadrants(this.rootElement, config, this.stateObj)
+
+          // Modify doubleclick which ignores autorange = false
+          plotlyChart.on('plotly_doubleclick', () => {
+            setImmediate(() => {
+              Plotly.relayout(plotlyChart, {
+                'xaxis.range': [original_x_min, original_x_max],
+                'yaxis.range': [original_y_min, original_y_max]
+              })
+            })
+          })
 
           // Modify event handler to save new position
           // when quadrant titles are moved
@@ -196,16 +210,8 @@ class LabeledScatter {
               }
             }
           })
-
-          plotlyChart.on('plotly_doubleclick', () => {
-            setImmediate(() => {
-              Plotly.relayout(plotlyChart, {
-                'xaxis.range': original_x_range,
-                'yaxis.range': original_y_range,
-              })
-            })
-          })
         }
+
         this.adjustTitles(plotlyChart._fullLayout, config)
         const tmp_layout = {}
         const is_legend_elements_to_right_of_plotly_legend = this.isLegendElementsToRightOfPlotlyLegend(plotlyChart._fullLayout, config)

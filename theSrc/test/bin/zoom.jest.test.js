@@ -97,4 +97,27 @@ describe('zoom', () => {
     await page.mouse.click(500, 300, { clickCount: 2 })
     await testSnapshots({ page, testName: 'shared_axes_before_zoom' })
   })
+
+  test('Zoom with quadrants', async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.legacy_bubble.bubbleplot_life_expectancy_with_quadrants',
+      width: 800,
+      height: 500,
+    })
+    await new Promise(resolve => setTimeout(resolve, 3000))
+
+    await scatterPlot.clickPlotlyAnnotation()
+    await page.mouse.down()
+    await page.mouse.move(300, 300)
+    await page.mouse.up()
+    await testSnapshots({ page, testName: 'dragged_quadrant_title_before_zoom' })
+
+    await scatterPlot.drag({ from: { x: 200, y: 250 }, to: { x: 300, y: 450 } })
+    await testSnapshots({ page, testName: 'dragged_quadrant_title_after_zoom' })
+
+    await page.mouse.click(400, 400)
+    await page.mouse.click(400, 400, { clickCount: 2 })
+    await testSnapshots({ page, testName: 'dragged_quadrant_title_after_zoom_reset' })
+  })
 })
