@@ -8,6 +8,10 @@ async function drawQuadrants (plotly_chart, config, state) {
     drawMidpointLines(layout, config, ranges)
     drawQuadrantColors(layout, config, ranges)
     drawQuadrantTitles(layout, config, ranges, state)
+    layout.xaxis.range = x_range
+    layout.xaxis.autorange = false
+    layout.yaxis.range = y_range
+    layout.yaxis.autorange = false
     await Plotly.relayout(plotly_chart, layout)
 }
 

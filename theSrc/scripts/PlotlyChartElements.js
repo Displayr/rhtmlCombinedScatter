@@ -434,6 +434,7 @@ function createPlotlyLayout (config, margin_right, height) {
         ticksuffix: config.xSuffix,
         tickformat: checkD3Format(config.xFormat, config.X, config.xIsDateTime),
         tickangle: config.xAxisTickAngle,
+        mirror: config.plotBorderShow,
         layer: 'below traces',
         exponentformat: 'SI'
     }
@@ -487,6 +488,7 @@ function createPlotlyLayout (config, margin_right, height) {
         ticksuffix: config.ySuffix,
         tickformat: checkD3Format(config.yFormat, config.Y, config.yIsDateTime),
         automargin: true,
+        mirror: config.plotBorderShow,
         layer: 'below traces'
     }
     // Somehow plotly still draws an axis line even when the width = 0, so we only specify the line settings when width > 0
@@ -763,30 +765,6 @@ function addLines (config) {
                 y1: 0,
                 yref: y,
                 x0: 0,
-                x1: 1,
-                xref: x + ' domain'
-            })
-        }
-        if (config.plotBorderShow) {
-            lines.push({
-                type: 'line',
-                layer: 'below',
-                line: { color: config.plotBorderColor, width: config.plotBorderWidth },
-                y0: 1,
-                y1: 1,
-                yref: y + ' domain',
-                x0: 0,
-                x1: 1,
-                xref: x + ' domain',
-            })
-            lines.push({
-                type: 'line',
-                layer: 'below',
-                line: { color: config.plotBorderColor, width: config.plotBorderWidth },
-                y0: 0,
-                y1: 1,
-                yref: y + ' domain',
-                x0: 1,
                 x1: 1,
                 xref: x + ' domain'
             })
