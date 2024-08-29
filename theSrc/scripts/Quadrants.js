@@ -161,7 +161,7 @@ function drawQuadrantTitles (layout, config, ranges, state) {
         })
         index++
     }
-    if (config.quadrantTopRightTitle && config.yMidpoint < y_max && 
+    if (config.quadrantTopRightTitle && config.yMidpoint < y_max &&
         config.xMidpoint < x_max) {
         const initial_pos = { ax: x_max, ay: y_max }
         const curr_pos = state.isStoredInState('quadrantTitle' + index)
