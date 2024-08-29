@@ -111,6 +111,7 @@ describe('zoom', () => {
     await page.mouse.down()
     await page.mouse.move(300, 300)
     await page.mouse.up()
+    await page.mouse.move(400, 300)
     await testSnapshots({ page, testName: 'dragged_quadrant_title_before_zoom' })
 
     await scatterPlot.drag({ from: { x: 200, y: 250 }, to: { x: 300, y: 450 } })
