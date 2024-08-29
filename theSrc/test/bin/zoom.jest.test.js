@@ -119,8 +119,8 @@ describe('zoom', () => {
     await page.mouse.click(400, 400)
     await page.mouse.click(400, 400, { clickCount: 2 })
     // Move mouse to get reset button to show after doubleclick
-    await page.mouse.move(300, 300)
-    await page.mouse.click(300, 300)
+    await page.mouse.move(400, 300)
+    await page.mouse.click(400, 300)
     await testSnapshots({ page, testName: 'dragged_quadrant_title_before_zoom' })
   })
 })
