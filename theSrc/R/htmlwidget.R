@@ -473,7 +473,7 @@ CombinedScatter <- function(
         stop("Inputs X and Y need to have the same length")
     if (!is.null(Z) && length(X) != length(Z))
         stop("Input Z needs to have the same length as X and Y")
-    if (tooltip.template != NULL)
+    if (is.null(tooltip.template))
         tooltip.text <- NULL
 
     isDateTime <- function(x) { return (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXt"))}
