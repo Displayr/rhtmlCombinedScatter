@@ -4,6 +4,7 @@ context("Input checks")
 
 test_that("Basic working scatterplot", {
     expect_error(CombinedScatter(X = 1:10, Y = 11:20, Z = 0:9,
+                                tooltip.template = paste0("(X:%{x}, Y:%{y})<extra>", LETTERS[1:10], "</extra>"),
                                 label = letters[1:10]), NA)
 
     col.ord <- c(3,2,1,4,5)

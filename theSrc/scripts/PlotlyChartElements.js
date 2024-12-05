@@ -12,30 +12,12 @@ const FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE = 0.8
 const FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE = 0.2
 
 function createPlotlyData (config) {
-    // Create tooltip text
     const indices = _.range(config.X.length)
-    let tooltip_labels = (!config.labelAlt || !Array.isArray(config.labelAlt) || config.labelAlt.length === 0) ? config.label : config.labelAlt
-    if (!Array.isArray(tooltip_labels)) tooltip_labels = indices.map(i => '')
-    const xFormatter = getFormatter(
-        config.xTooltipFormat ? config.xTooltipFormat : config.xFormat,
-        config.X,
-        config.xIsDateTime
-    )
-    const yFormatter = getFormatter(
-        config.yTooltipFormat ? config.yTooltipFormat : config.yFormat,
-        config.Y,
-        config.yIsDateTime
-    )
-    let tooltips = indices.map(
-        i => `${tooltip_labels[i]} (${config.xPrefix}${xFormatter(config.X[i])}${config.xSuffix}, ${config.yPrefix}${yFormatter(config.Y[i])}${config.ySuffix})`
-    )
 
     // Check if this is a bubbleplot
     let marker_opacity = config.transparency
     if (config.normZ) {
         if (marker_opacity === null) marker_opacity = 0.4
-        const z_title = config.zTitle ? config.zTitle + ': ' : ''
-        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
 
@@ -54,7 +36,7 @@ function createPlotlyData (config) {
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
+            plot_data.push(createScatterTraceForMarker(config, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -64,13 +46,9 @@ function createPlotlyData (config) {
         }
     } else if (config.colorScale !== null && config.colorScale.length >= 2) {
         // Numeric colorscale
-        const colorFormatter = getFormatter(config.colorScaleFormat, config.group, config.colorIsDateTime)
-        tooltips = indices.map(i => `${tooltips[i]}<br>${
-            Array.isArray(config.colorLevels) ? config.colorLevels[config.group[i] - 1] : colorFormatter(config.group[i])
-        }`)
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            const trace = createScatterTraceForMarker(config, tooltips, ' ', marker_size, marker_opacity, 0, p, index)
+            const trace = createScatterTraceForMarker(config, ' ', marker_size, marker_opacity, 0, p, index)
             if (p === 0) addColorScale(trace, config)
             // We set the marker colors again since
             // createScatterTraceForMarker is not able to set multiple colors in a trace
@@ -96,7 +74,7 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(createScatterTraceForMarker(config, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -113,11 +91,11 @@ function createPlotlyData (config) {
     return [...plot_data, ...plot_annotation_data]
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createScatterTraceForMarker (config, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
-    const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
+    const indexed_tooltips = data_index ? _.at(config.tooltipTemplate, data_index) : config.tooltipTemplate
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
@@ -125,8 +103,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
         x: X,
         y: Y,
         name: group_name,
-        text: indexed_tooltips,
-        hoverinfo: has_groups ? 'name+text' : 'text',
+        hovertemplate: indexed_tooltips,
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',

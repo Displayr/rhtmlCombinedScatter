@@ -140,7 +140,9 @@
 #' @param axis.font.family Font Family of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.size Font size of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.color Font color of the axis labels. Only used if the values for specific axis is not set.
-#' @param tooltip.text is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)
+#' @param tooltip.text is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line).
+#'  It is not used when tooltip.template is set.
+#' @param tooltip.template a vector of strings in the d3 format representing the tooltips shown on hover. It should contain one value for each data point.
 #' @param tooltip.font.color is the font color of the tooltips
 #' @param tooltip.font.family is the font family of the tooltips
 #' @param tooltip.font.size is the font size of the tooltips
@@ -383,6 +385,7 @@ CombinedScatter <- function(
     tooltip.font.family = "Arial",
     tooltip.font.size = 10,
     tooltip.text = NULL,
+    tooltip.template = NULL,
     trend.lines.line.thickness = 1,
     trend.lines.point.size=2,
     trend.lines.show = FALSE,
@@ -470,6 +473,8 @@ CombinedScatter <- function(
         stop("Inputs X and Y need to have the same length")
     if (!is.null(Z) && length(X) != length(Z))
         stop("Input Z needs to have the same length as X and Y")
+    if (tooltip.template != NULL)
+        tooltip.text <- NULL
 
     isDateTime <- function(x) { return (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXt"))}
     xIsDateTime <- isDateTime(X[1])
@@ -654,7 +659,7 @@ CombinedScatter <- function(
              yAxisZeroLineColor = y.axis.zero.line.color,
              yAxisZeroLineDash = y.axis.zero.line.dash,
              yAxisZeroLineWidth = y.axis.zero.line.width,
-             tooltipText = tooltip.text,
+             tooltipTemplate = tooltip.template,
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,

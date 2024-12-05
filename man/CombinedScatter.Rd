@@ -151,6 +151,7 @@ CombinedScatter(
   tooltip.font.family = "Arial",
   tooltip.font.size = 10,
   tooltip.text = NULL,
+  tooltip.template = NULL,
   trend.lines.line.thickness = 1,
   trend.lines.point.size = 2,
   trend.lines.show = FALSE,
@@ -522,7 +523,10 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{tooltip.font.size}{is the font size of the tooltips}
 
-\item{tooltip.text}{is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)}
+\item{tooltip.text}{is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line).
+It is not used when tooltip.template is set.}
+
+\item{tooltip.template}{a vector of strings in the d3 format representing the tooltips shown on hover. It should contain one value for each data point.}
 
 \item{trend.lines.line.thickness}{An integer for the thickness of the trendlines (Default is 1px)}
 
