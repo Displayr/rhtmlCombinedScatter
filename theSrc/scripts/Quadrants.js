@@ -21,7 +21,7 @@ function drawMidpointLines (layout, config, ranges) {
     if (config.xMidpointLineWidth > 0 && config.xMidpoint >= x_min && config.xMidpoint <= x_max) {
         layout.shapes.push({
             type: 'line',
-            layer: 'above',
+            layer: 'between',
             line: {
                 color: config.xMidpointLineColor,
                 dash: config.xMidpointLineDash,
@@ -29,27 +29,23 @@ function drawMidpointLines (layout, config, ranges) {
             },
             x0: config.xMidpoint,
             x1: config.xMidpoint,
-            xref: 'x',
-            y0: 0,
-            y1: 1,
-            yref: 'y domain'
+            y0: y_min,
+            y1: y_max,
         })
     }
     if (config.yMidpointLineWidth > 0 && config.yMidpoint >= y_min && config.yMidpoint <= y_max) {
         layout.shapes.push({
             type: 'line',
-            layer: 'above',
+            layer: 'between',
             line: {
                 color: config.yMidpointLineColor,
                 dash: config.yMidpointLineDash,
                 width: config.yMidpointLineWidth
             },
-            x0: 0,
-            x1: 1,
-            xref: 'x domain',
+            x0: x_min,
+            x1: x_max,
             y0: config.yMidpoint,
             y1: config.yMidpoint,
-            yref: 'y'
         })
     }
 }
