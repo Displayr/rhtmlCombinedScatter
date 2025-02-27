@@ -92,6 +92,7 @@ CombinedScatter(
   legend.title.font.size = 12,
   legend.title.wrap = TRUE,
   legend.title.wrap.n.char = 30,
+  legend.bubble.title = NULL,
   legend.bubbles.show = TRUE,
   legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
   legend.bubble.font.family = "Arial",
@@ -403,6 +404,8 @@ on the marker.}
 
 \item{legend.title.wrap.n.char}{The number of characters before wrapping the legend title}
 
+\item{legend.bubble.title}{Text shown above the legend bubble. Defaults to z.title when not supplied.}
+
 \item{legend.bubbles.show}{toggle to show the bubble sizes in the legend. Defaults to TRUE}
 
 \item{legend.bubble.font.color}{is the font color of the legend bubble values.}
@@ -614,7 +617,7 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 
 \item{z.suffix}{A string that suffixes all bubble values(eg. "kg")}
 
-\item{z.title}{is the title text given to the bubble size}
+\item{z.title}{is the title text given to the bubble size. This is shown in the tooltips when size data is supplied.}
 
 \item{quadrants.show}{Whether to show quadrants}
 

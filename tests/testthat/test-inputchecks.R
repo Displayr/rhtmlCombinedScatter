@@ -16,6 +16,8 @@ test_that("Basic working scatterplot", {
         color.scale = col.scale, group = Sys.Date() + col.ord), NA)
     expect_error(CombinedScatter(X=iris$Sepal.Length, Y=iris$Sepal.Width,
         label=paste0('N', 1:nrow(iris)), panels = iris$Species), NA)
+    expect_error(CombinedScatter(X=1:5, Y=1:5, Z=1:5, z.title = "z",
+        legend.bubble.title = "Size scale (1:100)"), NA)
 })
 
 test_that("Numeric color scale", {
