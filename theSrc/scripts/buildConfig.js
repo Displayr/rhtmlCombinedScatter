@@ -297,8 +297,8 @@ function buildConfig (userConfig, width, height) {
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
   }
 
-  if (config.legendBubbleTitle == null) {
-    config.legendBubbleTitle = config.zTitle
+  if (!config.legendBubbleTitle) {
+    config.legendBubbleTitle = config.zTitle ? config.zTitle : ''
   }
   if (config.legendBubbleTitleWrap && config.legendBubbleTitleWrapNChar) {
     config.legendBubbleTitle = wrapByNumberOfCharacters(config.legendBubbleTitle, config.legendBubbleTitleWrapNChar).split('<br>')
