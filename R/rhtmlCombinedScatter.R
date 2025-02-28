@@ -65,7 +65,7 @@
 #'      the tick labels are to the axis/grid lines.
 #' @param x.title is the title text given to the x axis
 #' @param y.title is the title text given to the y axis
-#' @param z.title is the title text given to the bubble size
+#' @param z.title is the title text given to the bubble size. This is shown in the tooltips when size data is supplied.
 #' @param title is the title text given to the plot
 #' @param title.font.family is the font family of the plot title
 #' @param title.font.color is the font color of the plot title
@@ -103,6 +103,7 @@
 #' @param legend.bubble.font.color is the font color of the legend bubble values.
 #' @param legend.bubble.font.size is the font size of the legend bubble values
 #' @param legend.bubble.font.family is the font family of the legend bubble values
+#' @param legend.bubble.title Text shown above the legend bubble. Defaults to z.title when not supplied.
 #' @param legend.bubble.title.font.color is the font color of the legend bubble title.
 #' @param legend.bubble.title.font.size is the font size of the legend bubble title
 #' @param legend.bubble.title.font.family is the font family of the legend bubble title
@@ -324,6 +325,7 @@ CombinedScatter <- function(
     legend.title.font.size = 12,
     legend.title.wrap = TRUE,
     legend.title.wrap.n.char = 30,
+    legend.bubble.title = NULL,
     legend.bubbles.show = TRUE,
     legend.bubble.font.color = rgb(44, 44, 44, maxColorValue = 255),
     legend.bubble.font.family = "Arial",
@@ -602,6 +604,7 @@ CombinedScatter <- function(
              legendBubbleFontColor = legend.bubble.font.color,
              legendBubbleFontFamily = legend.bubble.font.family,
              legendBubbleFontSize = legend.bubble.font.size,
+             legendBubbleTitle = legend.bubble.title,
              legendBubbleTitleFontColor = legend.bubble.title.font.color,
              legendBubbleTitleFontFamily = legend.bubble.title.font.family,
              legendBubbleTitleFontSize = legend.bubble.title.font.size,

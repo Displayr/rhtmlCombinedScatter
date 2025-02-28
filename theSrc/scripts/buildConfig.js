@@ -100,6 +100,7 @@ const defaultConfig = {
   legendBubbleFontFamily: 'Arial',
   legendBubbleFontSize: 10,
   legendBubblesShow: true,
+  legendBubbleTitle: null,
   legendBubbleTitleWrap: null,
   legendBubbleTitleWrapNChar: null,
   legendBubbleTitleFontColor: '#2C2C2C',
@@ -296,14 +297,13 @@ function buildConfig (userConfig, width, height) {
         .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
   }
 
-  if (config.zTitle) {
-    if (config.legendBubbleTitleWrap && config.legendBubbleTitleWrapNChar) {
-      config.legendBubbleTitle = wrapByNumberOfCharacters(config.zTitle, config.legendBubbleTitleWrapNChar).split('<br>')
-    } else {
-      config.legendBubbleTitle = [ config.zTitle ]
-    }
+  if (!config.legendBubbleTitle) {
+    config.legendBubbleTitle = config.zTitle ? config.zTitle : ''
+  }
+  if (config.legendBubbleTitleWrap && config.legendBubbleTitleWrapNChar) {
+    config.legendBubbleTitle = wrapByNumberOfCharacters(config.legendBubbleTitle, config.legendBubbleTitleWrapNChar).split('<br>')
   } else {
-      config.legendBubbleTitle = null
+    config.legendBubbleTitle = [ config.legendBubbleTitle ]
   }
 
   if (config.fitX && config.fitY) {
