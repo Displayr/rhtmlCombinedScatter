@@ -20,6 +20,7 @@ class PlotData {
     yLevels,
     group,
     label,
+    originalLabel,
     labelAlt,
     vb,
     legend,
@@ -44,6 +45,7 @@ class PlotData {
     this.yDataType = yDataType
     this.group = group
     this.label = label
+    this.originalLabel = originalLabel
     this.labelAlt = labelAlt
     this.vb = vb
     this.legend = legend
@@ -75,7 +77,7 @@ class PlotData {
       if (Utils.isArrOfNums(this.Z)) { this.normalizeZData() }
       this.normalizeData()
       this.plotColors = new PlotColors(this)
-      this.labelNew = new PlotLabel(this.label, this.labelAlt, this.vb.labelLogoScale)
+      this.labelNew = new PlotLabel(this.label, this.originalLabel, this.labelAlt, this.vb.labelLogoScale)
     } else {
       throw new Error('Inputs X and Y lengths do not match!')
     }

@@ -13,13 +13,13 @@ import DisplayError from './DisplayError'
 // to parse them apart from the regular text labels
 
 class PlotLabel {
-  constructor (givenLabelArray, labelAlt, logoScale) {
+  constructor (givenLabelArray, originalLabel, labelAlt, logoScale) {
     this.givenLabelArray = givenLabelArray
     this.labelAlt = labelAlt
     this.logoScale = logoScale
     this.promiseLabelArray = _.map(this.givenLabelArray, (label, index) => {
-      if (PlotLabel._isStringLinkToImg(label)) {
-        return this._makeImgLabPromise(label, (this.labelAlt && this.labelAlt[index]) || '', this.logoScale[index])
+      if (originalLabel && PlotLabel._isStringLinkToImg(originalLabel[index])) {
+        return this._makeImgLabPromise(originalLabel[index], (this.labelAlt && this.labelAlt[index]) || '', this.logoScale[index])
       } else {
         return this._makeLabPromise(label)
       }

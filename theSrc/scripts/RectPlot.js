@@ -35,6 +35,7 @@ class RectPlot {
     this.Z = config.Z
     this.group = config.group
     this.label = this.combineLabelsAndAnnotations(config)
+    this.originalLabel = config.label
     this.labelAlt = config.labelAlt
     this.svg = svg
     this.rootElement = rootElement
@@ -177,6 +178,7 @@ class RectPlot {
                          this.yLevels,
                          this.group,
                          this.label,
+                         this.originalLabel,
                          this.labelAlt,
                          this.vb,
                          this.legend,
