@@ -354,7 +354,7 @@ class RectPlot {
                  .attr('x', d => d.x)
                  .attr('y', d => d.y)
                  .attr('font-family', d => d.fontFamily)
-                 .text(d => d.text.trim())
+                 .html(d => d.text.trim())
                  .attr('text-anchor', 'middle')
                  .attr('fill', d => d.color)
                  .attr('opacity', d => d.opacity)
