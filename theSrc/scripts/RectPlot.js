@@ -1,5 +1,6 @@
 
 import _ from 'lodash'
+import sanitizeLabel from './sanitizeLabel'
 import 'babel-polyfill'
 import md5 from 'md5'
 import autoBind from 'es6-autobind'
@@ -354,7 +355,7 @@ class RectPlot {
                  .attr('x', d => d.x)
                  .attr('y', d => d.y)
                  .attr('font-family', d => d.fontFamily)
-                 .html(d => d.text.trim())
+                 .html(d => sanitizeLabel(d.text.trim()))
                  .attr('text-anchor', 'middle')
                  .attr('fill', d => d.color)
                  .attr('opacity', d => d.opacity)
