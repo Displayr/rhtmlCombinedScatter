@@ -1,5 +1,6 @@
 
 import _ from 'lodash'
+import DOMPurify from 'dompurify'
 import 'babel-polyfill'
 import md5 from 'md5'
 import autoBind from 'es6-autobind'
@@ -481,7 +482,10 @@ class RectPlot {
     if (config.postLabelAnnotations) {
       labels = labels.map((l, i) => config.postLabelAnnotations[i] ? l + config.postLabelAnnotations[i] : l)
     }
-    return labels
+    // Base labels are already _.escape'd, but annotations are raw HTML. Sanitize
+    // the combined string so annotation markup (spans/styles/entities) is kept
+    // while scripts and event handlers are stripped (RS-22478).
+    return labels.map(l => DOMPurify.sanitize(l))
   }
 }
 
