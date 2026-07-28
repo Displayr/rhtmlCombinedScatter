@@ -455,12 +455,25 @@ function placeTextInMargins (config) {
     return config.linesShow
 }
 
-// Matches the x position and anchor that flipStandardCharts uses for its own title
-// annotations, so that a title lands in the same place under either renderer.
-function titleAlignmentToX (alignment) {
+// The alignment arguments are documented in title case, but flipStandardCharts passes its
+// own lower case spellings straight through, so they are read case insensitively. Returns
+// one of the four documented values.
+function normaliseAlignment (alignment) {
     switch (String(alignment).toLowerCase()) {
-        case 'left': return { x: 0, xanchor: 'left', align: 'left' }
-        case 'right': return { x: 1, xanchor: 'right', align: 'right' }
+        case 'left': return 'Left'
+        case 'right': return 'Right'
+        case 'center': return 'Center'
+        default: return 'Center of plot area'
+    }
+}
+
+// Matches the x position and anchor that flipStandardCharts uses for its own title,
+// subtitle and footer annotations, so that they land in the same place under either
+// renderer.
+function titleAlignmentToX (alignment) {
+    switch (normaliseAlignment(alignment)) {
+        case 'Left': return { x: 0, xanchor: 'left', align: 'left' }
+        case 'Right': return { x: 1, xanchor: 'right', align: 'right' }
         default: return { x: 0.5, xanchor: 'center', align: 'center' }
     }
 }
@@ -655,6 +668,7 @@ function createPlotlyLayout (config, margin_right, height) {
         plot_layout.annotations = [createTitleAnnotation(config)]
     }
     if (config.subtitle.length > 0) {
+        const sa = titleAlignmentToX(config.subtitleAlignment)
         const subtitle_annotation = {
             name: 'subtitle',
             text: config.subtitle,
@@ -663,9 +677,11 @@ function createPlotlyLayout (config, margin_right, height) {
                 color: config.subtitleFontColor,
                 size: config.subtitleFontSize
             },
+            align: sa.align,
             xref: 'paper',
             yref: 'paper',
-            x: 0.5,
+            x: sa.x,
+            xanchor: sa.xanchor,
             y: 1,
             yanchor: 'bottom',
             showarrow: false,
@@ -677,6 +693,7 @@ function createPlotlyLayout (config, margin_right, height) {
         }
     }
     if (config.footer.length > 0) {
+        const fa = titleAlignmentToX(config.footerAlignment)
         const footer_annotation = {
             name: 'footer',
             text: config.footer,
@@ -685,9 +702,11 @@ function createPlotlyLayout (config, margin_right, height) {
                 color: config.footerFontColor,
                 size: config.footerFontSize
             },
+            align: fa.align,
             xref: 'paper',
             yref: 'paper',
-            x: 0.5,
+            x: fa.x,
+            xanchor: fa.xanchor,
             y: 0,
             yanchor: 'top',
             showarrow: false,
@@ -1176,6 +1195,7 @@ function hideAxis (axis) {
 module.exports = {
     createPlotlyData,
     placeTextInMargins,
+    normaliseAlignment,
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,

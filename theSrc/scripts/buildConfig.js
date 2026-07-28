@@ -73,6 +73,7 @@ const defaultConfig = {
   footerFontColor: '#2C2C2C',
   footerFontFamily: 'Arial',
   footerFontSize: 10,
+  footerAlignment: 'Center of plot area',
   grid: true,
   group: null,
   label: null,

@@ -9,6 +9,7 @@ import {
   footerHeight,
   chartHeight,
   placeTextInMargins,
+  normaliseAlignment,
   LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
   FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE,
 } from './PlotlyChartElements'
@@ -615,12 +616,13 @@ class LabeledScatter {
         .select('.cursor-pointer')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('transform', `translate(${this.titleX('Center of plot area')},${this.height - footer_height - footer_padding})`)
+        .attr('transform', `translate(${this.titleX(config.footerAlignment)},${this.height - footer_height - footer_padding})`)
       footer_element
         .select('.annotation-text')
         .attr('x', 0)
         .attr('y', 0)
         .style('alignment-baseline', 'text-before-edge')
+        .style('text-anchor', this.titleAnchor(config.footerAlignment))
       footer_element.selectAll('.annotation-text tspan')
         .attr('x', 0)
         .attr('y', 0)
@@ -665,6 +667,7 @@ class LabeledScatter {
   }
 
   titleX (alignment) {
+    alignment = normaliseAlignment(alignment)
     if (alignment === 'Left') {
       return 0
     } else if (alignment === 'Center') {
@@ -678,6 +681,7 @@ class LabeledScatter {
   }
 
   titleAnchor (alignment) {
+    alignment = normaliseAlignment(alignment)
     if (alignment === 'Left') {
       return 'start'
     } else if (alignment === 'Center' || alignment === 'Center of plot area') {

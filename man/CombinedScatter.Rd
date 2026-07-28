@@ -66,6 +66,7 @@ CombinedScatter(
   footer.font.color = rgb(44, 44, 44, maxColorValue = 255),
   footer.font.family = "Arial",
   footer.font.size = 8,
+  footer.alignment = "Center of plot area",
   grid = TRUE,
   group = NULL,
   height = NULL,
@@ -364,6 +365,10 @@ It should have the same length as the number of levels in `group`}
 \item{footer.font.family}{is the font of the footer text}
 
 \item{footer.font.size}{is the font size of the footer text}
+
+\item{footer.alignment}{One of "Left", "Center", "Center of plot area", "Right". Only
+applied when the footer is placed inside the bottom margin, which is what a line
+chart does; otherwise the footer is centred.}
 
 \item{grid}{Defaults to TRUE. Shows the grid lines.}
 

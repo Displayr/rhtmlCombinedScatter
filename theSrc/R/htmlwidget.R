@@ -89,6 +89,9 @@
 #' @param footer.font.family is the font of the footer text
 #' @param footer.font.color is the font color of the footer text
 #' @param footer.font.size is the font size of the footer text
+#' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right". Only
+#'     applied when the footer is placed inside the bottom margin, which is what a line
+#'     chart does; otherwise the footer is centred.
 #' @param labels.show Toggle for showing labels. Defaults to true if labels array given
 #' @param labels.font.family is the font family of the labels
 #' @param labels.font.color is the font color of the labels. NOTE: This overrides the color if it is set
@@ -324,6 +327,7 @@ CombinedScatter <- function(
     footer.font.color = rgb(44, 44, 44, maxColorValue = 255),
     footer.font.family = "Arial",
     footer.font.size = 8,
+    footer.alignment = 'Center of plot area',
     grid = TRUE,
     group = NULL,
     height = NULL,
@@ -622,6 +626,7 @@ CombinedScatter <- function(
              footer = footer,
              footerFontFamily = footer.font.family,
              footerFontSize = footer.font.size,
+             footerAlignment = footer.alignment,
              footerFontColor = footer.font.color,
              showLabels = labels.show,
              labelsFontFamily = labels.font.family,

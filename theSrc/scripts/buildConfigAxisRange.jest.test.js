@@ -1,4 +1,4 @@
-import { createPlotlyLayout, chartHeight } from './PlotlyChartElements'
+import { createPlotlyLayout, chartHeight, normaliseAlignment } from './PlotlyChartElements'
 import { buildConfig } from './buildConfig'
 
 // A line chart needs the same axis range and tick count as the plotly chart it replaces,
@@ -73,6 +73,39 @@ describe('where the title, subtitle and footer go', () => {
         const base = { X: [1, 2], Y: [1, 2], group: ['A', 'A'], label: ['a', 'b'], footer: 'F' }
         expect(chartHeight(bc(base, 600, 400), 400)).toBeLessThan(400)
         expect(chartHeight(bc(Object.assign({ linesShow: true }, base), 600, 400), 400)).toBe(400)
+    })
+})
+
+describe('subtitle and footer alignment', () => {
+    const named = { title: 'T', subtitle: 'S', footer: 'F' }
+    const annotation = (l, name) => (l.annotations || []).find(a => a.name === name)
+
+    test('both default to the centre, whatever the chart', () => {
+        for (const linesShow of [true, false]) {
+            const l = layout(Object.assign({ linesShow }, named))
+            expect(annotation(l, 'subtitle')).toMatchObject({ x: 0.5, xanchor: 'center' })
+            expect(annotation(l, 'footer')).toMatchObject({ x: 0.5, xanchor: 'center' })
+        }
+    })
+
+    test('both follow the alignment they are given', () => {
+        const l = layout(Object.assign({ subtitleAlignment: 'Left', footerAlignment: 'Right' }, named))
+        expect(annotation(l, 'subtitle')).toMatchObject({ x: 0, xanchor: 'left', align: 'left' })
+        expect(annotation(l, 'footer')).toMatchObject({ x: 1, xanchor: 'right', align: 'right' })
+    })
+
+    // flipStandardCharts spells these in lower case
+    test('the alignment is read case insensitively', () => {
+        const l = layout(Object.assign({ subtitleAlignment: 'left', footerAlignment: 'right' }, named))
+        expect(annotation(l, 'subtitle')).toMatchObject({ x: 0, xanchor: 'left' })
+        expect(annotation(l, 'footer')).toMatchObject({ x: 1, xanchor: 'right' })
+    })
+
+    test('an unrecognised alignment falls back to the centre rather than the right', () => {
+        expect(normaliseAlignment('center')).toBe('Center')
+        expect(normaliseAlignment('Center of plot area')).toBe('Center of plot area')
+        expect(normaliseAlignment(undefined)).toBe('Center of plot area')
+        expect(normaliseAlignment('LEFT')).toBe('Left')
     })
 })
 
