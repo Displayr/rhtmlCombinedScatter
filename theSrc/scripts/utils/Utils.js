@@ -19,6 +19,23 @@ class Utils {
     return this.isArr(arr) && _.every(arr, n => typeof n === 'number')
   }
 
+  // A gap in the data. R has no way to put a NaN on the wire because JSON has no NaN
+  // literal, so missing values arrive either as null or, when jsonlite is left to encode
+  // them itself, as the strings 'NA' and 'NaN'.
+  static isMissingValue (v) {
+    return v === null || v === undefined || v === 'NA' || v === 'NaN' ||
+      (typeof v === 'number' && isNaN(v))
+  }
+
+  // A numeric series with gaps in it is still numeric. Used to classify the axes, where
+  // treating a gap as evidence of a categorical axis would put the values on an ordinal
+  // axis in whatever order they happened to appear.
+  static isArrOfNumTypesIgnoringMissing (arr) {
+    if (!this.isArr(arr)) return false
+    const present = _.reject(arr, v => this.isMissingValue(v))
+    return present.length > 0 && _.every(present, n => typeof n === 'number')
+  }
+
   static isArrOfPositiveNums (arr) {
     return this.isArr(arr) && _.every(arr, n => _.isFinite(n) && n >= 0)
   }

@@ -279,7 +279,7 @@ function buildConfig (userConfig, width, height) {
     config.X = _.map(config.X, (d) => new Date(d))
     config.xDataType = DataTypeEnum.date
     config.xLevels = null
-  } else if (Utils.isArrOfNumTypes(config.X)) {
+  } else if (Utils.isArrOfNumTypesIgnoringMissing(config.X)) {
     config.xDataType = DataTypeEnum.numeric
     config.xLevels = null
   } else {
@@ -291,7 +291,7 @@ function buildConfig (userConfig, width, height) {
     config.yDataType = DataTypeEnum.date
     config.Y = _.map(config.Y, (d) => new Date(d))
     config.yLevels = null
-  } else if (Utils.isArrOfNumTypes(config.Y)) {
+  } else if (Utils.isArrOfNumTypesIgnoringMissing(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
     config.yLevels = null
   } else {

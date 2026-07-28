@@ -292,7 +292,12 @@ class PlotData {
           const group = (this.group != null) ? this.group[i] : ''
           const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
           const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
-          this.pts.push({ x, y, r, label, labelAlt, labelX: this.origX[i].toString(), labelY: this.origY[i].toString(), labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
+          // A gap in the data has no coordinate to show, and calling toString on it
+          // would throw. The exception is swallowed further up, which loses every
+          // label on the chart rather than just this one.
+          const labelX = Utils.isMissingValue(this.origX[i]) ? '' : this.origX[i].toString()
+          const labelY2 = Utils.isMissingValue(this.origY[i]) ? '' : this.origY[i].toString()
+          this.pts.push({ x, y, r, label, labelAlt, labelX: labelX, labelY: labelY2, labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
           this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url, hidePointAndLabel })
         }
         i++

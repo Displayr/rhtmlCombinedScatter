@@ -552,9 +552,12 @@ CombinedScatter <- function(
     label <- if (is.null(label)) NULL else toJSON(as.character(label))
     labelAlt <- if (is.null(label.alt)) NULL else toJSON(as.character(label.alt))
 
-    x = list(X = toJsonOrNull(X),
-             Y = toJsonOrNull(Y),
-             Z = toJsonOrNull(Z),
+    # Coordinates are serialised with na = "null" so that gaps in the data arrive as the
+    # JSON null literal. jsonlite would otherwise encode them as the strings "NA"/"NaN",
+    # which plotly cannot recognise as missing and so cannot break a line at.
+    x = list(X = toJsonOrNull(X, na = "null"),
+             Y = toJsonOrNull(Y, na = "null"),
+             Z = toJsonOrNull(Z, na = "null"),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
              colorIsDateTime = color.is.date.time,
@@ -793,10 +796,10 @@ CombinedScatter <- function(
                               package = 'rhtmlCombinedScatter')
 }
 
-toJsonOrNull <- function(x) {
+toJsonOrNull <- function(x, ...) {
     if (is.null(x)) {
         NULL
     } else {
-        toJSON(x)
+        toJSON(x, ...)
     }
 }
