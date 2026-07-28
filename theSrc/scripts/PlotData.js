@@ -259,10 +259,13 @@ class PlotData {
           } else {
             y = ((1 - this.normY[i]) * this.vb.height) + this.vb.y
           }
-          let r = this.pointRadius
+          // pointRadius holds a radius per point when the caller supplies one, so the
+          // value for this point has to be picked out before it is used: subtracting a
+          // whole array gives NaN, which places the label nowhere.
+          let r = Array.isArray(this.pointRadius) ? this.pointRadius[i] : this.pointRadius
           if (Utils.isArrOfNums(this.Z)) {
             const legendUtils = LegendUtils
-            r = legendUtils.normalizedZtoRadius(this.pointRadius, this.normZ[i])
+            r = legendUtils.normalizedZtoRadius(r, this.normZ[i])
           }
           const fillOpacity = this.plotColors.getFillOpacity(this.transparency)
 
