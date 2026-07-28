@@ -8,6 +8,7 @@ import {
   titleHeight,
   footerHeight,
   chartHeight,
+  placeTextInMargins,
   LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE,
   FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE,
 } from './PlotlyChartElements'
@@ -568,6 +569,11 @@ class LabeledScatter {
   }
 
   adjustTitles (plotly_chart_layout, config) {
+    // A line chart has already placed its title, subtitle and footer inside the margins
+    // reserved for them, matching the plotly line chart it stands in for. Every other
+    // chart is laid out here instead, and is left exactly as it was.
+    if (placeTextInMargins(config)) return
+
     const title_element = d3.select(this.rootElement).select('.gtitle')
     const x = this.titleX(config.titleAlignment)
     const text_anchor = this.titleAnchor(config.titleAlignment)

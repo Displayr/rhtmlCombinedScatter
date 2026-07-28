@@ -25,6 +25,8 @@ CombinedScatter(
   x.axis.tick.color = x.axis.grid.color,
   x.axis.tick.length = 5,
   x.axis.tick.angle = NULL,
+  x.axis.range.mode = "normal",
+  x.axis.tick.maxnum = NULL,
   x.axis.label.wrap = NULL,
   x.axis.label.wrap.n.char = NULL,
   x.axis.zero.line.color = "#000000",
@@ -40,6 +42,9 @@ CombinedScatter(
   y.axis.line.width = 1,
   y.axis.tick.color = x.axis.grid.color,
   y.axis.tick.length = 5,
+  y.axis.tick.angle = NULL,
+  y.axis.range.mode = "normal",
+  y.axis.tick.maxnum = NULL,
   y.axis.zero.line.color = "#000000",
   y.axis.zero.line.dash = "dot",
   y.axis.zero.line.width = 1,
@@ -272,6 +277,12 @@ the tick labels are to the axis/grid lines.}
 
 \item{x.axis.tick.angle}{The angle to rotate the x axis labels}
 
+\item{x.axis.range.mode}{One of 'normal' or 'tozero'. With 'tozero' the axis is
+extended to include zero even when the data does not reach it.}
+
+\item{x.axis.tick.maxnum}{The maximum number of ticks on the x axis. The axis still
+chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.}
+
 \item{x.axis.label.wrap}{Whether to wrap the x-axis labels}
 
 \item{x.axis.label.wrap.n.char}{The number of characters before wrapping the x-axis labels}
@@ -303,6 +314,14 @@ of the plot area when `plot.border.show = TRUE`.}
 
 \item{y.axis.tick.length}{Length of tick lines on the y axis. This also adjust how close
 the tick labels are to the axis/grid lines.}
+
+\item{y.axis.tick.angle}{The angle to rotate the y axis labels}
+
+\item{y.axis.range.mode}{One of 'normal' or 'tozero'. With 'tozero' the axis is
+extended to include zero even when the data does not reach it.}
+
+\item{y.axis.tick.maxnum}{The maximum number of ticks on the y axis. The axis still
+chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.}
 
 \item{y.axis.zero.line.color}{Line color of the zero line on the y-axis. Shown when `origin` is TRUE.}
 

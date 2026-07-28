@@ -114,6 +114,11 @@ const defaultConfig = {
   legendTitle: null,
   legendTitleWrap: null,
   legendTitleWrapNChar: null,
+  yAxisTickAngle: null,
+  xAxisRangeMode: 'normal',
+  yAxisRangeMode: 'normal',
+  xAxisTickMaxnum: null,
+  yAxisTickMaxnum: null,
   linesShow: false,
   lineColors: null, // falls back to colors
   lineThickness: [3],

@@ -51,6 +51,10 @@
 #' @param x.axis.tick.color Color of tick lines on the x axis.
 #' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
 #'      the tick labels are to the axis/grid lines.
+#' @param x.axis.range.mode One of 'normal' or 'tozero'. With 'tozero' the axis is
+#'     extended to include zero even when the data does not reach it.
+#' @param x.axis.tick.maxnum The maximum number of ticks on the x axis. The axis still
+#'     chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.
 #' @param x.axis.tick.angle The angle to rotate the x axis labels
 #' @param x.axis.label.wrap Whether to wrap the x-axis labels
 #' @param x.axis.label.wrap.n.char The number of characters before wrapping the x-axis labels
@@ -63,6 +67,11 @@
 #' @param y.axis.tick.color Color of tick lines on the y axis.
 #' @param y.axis.tick.length Length of tick lines on the y axis. This also adjust how close
 #'      the tick labels are to the axis/grid lines.
+#' @param y.axis.tick.angle The angle to rotate the y axis labels
+#' @param y.axis.range.mode One of 'normal' or 'tozero'. With 'tozero' the axis is
+#'     extended to include zero even when the data does not reach it.
+#' @param y.axis.tick.maxnum The maximum number of ticks on the y axis. The axis still
+#'     chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.
 #' @param x.title is the title text given to the x axis
 #' @param y.title is the title text given to the y axis
 #' @param z.title is the title text given to the bubble size. This is shown in the tooltips when size data is supplied.
@@ -275,6 +284,8 @@ CombinedScatter <- function(
     x.axis.tick.color = x.axis.grid.color,
     x.axis.tick.length = 5,
     x.axis.tick.angle = NULL,
+    x.axis.range.mode = 'normal',
+    x.axis.tick.maxnum = NULL,
     x.axis.label.wrap = NULL,
     x.axis.label.wrap.n.char = NULL,
     x.axis.zero.line.color = '#000000',
@@ -290,6 +301,9 @@ CombinedScatter <- function(
     y.axis.line.width = 1,
     y.axis.tick.color = x.axis.grid.color,
     y.axis.tick.length = 5,
+    y.axis.tick.angle = NULL,
+    y.axis.range.mode = 'normal',
+    y.axis.tick.maxnum = NULL,
     y.axis.zero.line.color = '#000000',
     y.axis.zero.line.dash = 'dot',
     y.axis.zero.line.width = 1,
@@ -664,6 +678,8 @@ CombinedScatter <- function(
              xAxisTickColor = x.axis.tick.color,
              xAxisTickLength = x.axis.tick.length,
              xAxisTickAngle = x.axis.tick.angle,
+             xAxisRangeMode = x.axis.range.mode,
+             xAxisTickMaxnum = x.axis.tick.maxnum,
              xAxisLabelWrap = x.axis.label.wrap,
              xAxisLabelWrapNChar = x.axis.label.wrap.n.char,
              xAxisZeroLineColor = x.axis.zero.line.color,
@@ -679,6 +695,9 @@ CombinedScatter <- function(
              yAxisLineWidth = y.axis.line.width,
              yAxisTickColor = y.axis.tick.color,
              yAxisTickLength = y.axis.tick.length,
+             yAxisTickAngle = y.axis.tick.angle,
+             yAxisRangeMode = y.axis.range.mode,
+             yAxisTickMaxnum = y.axis.tick.maxnum,
              yAxisZeroLineColor = y.axis.zero.line.color,
              yAxisZeroLineDash = y.axis.zero.line.dash,
              yAxisZeroLineWidth = y.axis.zero.line.width,

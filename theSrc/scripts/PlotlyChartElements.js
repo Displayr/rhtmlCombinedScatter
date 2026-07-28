@@ -436,6 +436,59 @@ function getPanelYAxisSuffix (panel, config) {
     return '' + (panel + 1)
 }
 
+// Giving plotly a title with empty text is not the same as giving it no title: it
+// reserves the height of the title font for one it never draws, which is a margin that
+// nothing accounts for. Only line charts skip it, so that they can reserve the same
+// margins as the plotly line chart they stand in for. Applying it to every chart would
+// be the real fix, but it would move the plot area of every existing scatter plot.
+function omitEmptyAxisTitle (config, title) {
+    return placeTextInMargins(config) && !title
+}
+
+// Where the title, subtitle and footer go. By default this widget lays them out itself,
+// pinning the title to the top of the chart and hanging the subtitle beneath it, with the
+// footer below a shortened plot. A line chart instead places them the way the plotly line
+// chart it stands in for does: inside the margins that have been reserved for them, with
+// the title centred vertically in the top margin. Turning automatic data label placement
+// on would otherwise move all three.
+function placeTextInMargins (config) {
+    return config.linesShow
+}
+
+// Matches the x position and anchor that flipStandardCharts uses for its own title
+// annotations, so that a title lands in the same place under either renderer.
+function titleAlignmentToX (alignment) {
+    switch (String(alignment).toLowerCase()) {
+        case 'left': return { x: 0, xanchor: 'left', align: 'left' }
+        case 'right': return { x: 1, xanchor: 'right', align: 'right' }
+        default: return { x: 0.5, xanchor: 'center', align: 'center' }
+    }
+}
+
+// The title annotation as flipStandardCharts positions it: anchored to the top of the
+// plot area and shifted up by half the top margin, so that it sits in the middle of it.
+function createTitleAnnotation (config) {
+    const a = titleAlignmentToX(config.titleAlignment)
+    return {
+        name: 'title',
+        text: config.title,
+        font: {
+            family: config.titleFontFamily,
+            color: config.titleFontColor,
+            size: config.titleFontSize
+        },
+        align: a.align,
+        xref: 'paper',
+        yref: 'paper',
+        x: a.x,
+        xanchor: a.xanchor,
+        y: 1,
+        yanchor: 'middle',
+        yshift: (config.marginTop || 0) * 0.5,
+        showarrow: false,
+    }
+}
+
 function createPlotlyLayout (config, margin_right, height) {
     const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
     let grid = null
@@ -456,7 +509,7 @@ function createPlotlyLayout (config, margin_right, height) {
                              config.width,
                              config.fixedAspectRatio)
     const x_axis = {
-        title: (npanel > 1 && config.panelShareAxes) ? null : {
+        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle) ? null : {
             text: config.xTitle,
             font: {
                 family: config.xTitleFontFamily,
@@ -486,7 +539,7 @@ function createPlotlyLayout (config, margin_right, height) {
         range: x_range,
         autorange: getAutoRange(x_range),
         autorangeoptions: getAutoRangeOptions(x_range),
-        rangemode: 'normal',
+        rangemode: config.xAxisRangeMode,
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
         ticksuffix: config.xSuffix,
@@ -512,7 +565,7 @@ function createPlotlyLayout (config, margin_right, height) {
                              config.width,
                              config.fixedAspectRatio)
     const y_axis = {
-        title: (npanel > 1 && config.panelShareAxes) ? null : {
+        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle) ? null : {
             text: config.yTitle,
             font: {
                 family: config.yTitleFontFamily,
@@ -540,7 +593,8 @@ function createPlotlyLayout (config, margin_right, height) {
         range: y_range,
         autorange: getAutoRange(y_range),
         autorangeoptions: getAutoRangeOptions(y_range),
-        rangemode: 'normal',
+        rangemode: config.yAxisRangeMode,
+        tickangle: config.yAxisTickAngle,
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
         ticksuffix: config.ySuffix,
@@ -560,7 +614,7 @@ function createPlotlyLayout (config, margin_right, height) {
 
     const plot_layout = {
         grid: grid,
-        title: {
+        title: placeTextInMargins(config) ? { text: '' } : {
             text: config.title,
             font: {
                 family: config.titleFontFamily,
@@ -591,9 +645,17 @@ function createPlotlyLayout (config, margin_right, height) {
         plot_bgcolor: config.plotAreaBackgroundColor,
         height: chartHeight(config, height)
     }
+    // Only set when asked for: plotly reads nticks as a hint, and giving it a null would
+    // override the axis choosing a tick count for itself
+    if (config.xAxisTickMaxnum !== null) x_axis.nticks = config.xAxisTickMaxnum
+    if (config.yAxisTickMaxnum !== null) y_axis.nticks = config.yAxisTickMaxnum
+
     addAxesToGrid(plot_layout, x_axis, y_axis, npanel, config.panelNumRows, config.panelShareAxes)
+    if (placeTextInMargins(config) && config.title.length > 0) {
+        plot_layout.annotations = [createTitleAnnotation(config)]
+    }
     if (config.subtitle.length > 0) {
-        plot_layout.annotations = [{
+        const subtitle_annotation = {
             name: 'subtitle',
             text: config.subtitle,
             font: {
@@ -607,7 +669,12 @@ function createPlotlyLayout (config, margin_right, height) {
             y: 1,
             yanchor: 'bottom',
             showarrow: false,
-        }]
+        }
+        if (!plot_layout.annotations) {
+            plot_layout.annotations = [subtitle_annotation]
+        } else {
+            plot_layout.annotations.push(subtitle_annotation)
+        }
     }
     if (config.footer.length > 0) {
         const footer_annotation = {
@@ -1017,6 +1084,9 @@ function footerHeight (config) {
 }
 
 function chartHeight (config, height) {
+    // The footer sits inside the bottom margin that has been reserved for it, so there is
+    // no room to make for it below the plot
+    if (placeTextInMargins(config)) return height
     if (config.footer && config.footer.length > 0) {
         // We shrink the height so that elements are moved up for the footer
         return height - footerHeight(config) - config.footerFontSize * (FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE + FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE)
@@ -1105,6 +1175,7 @@ function hideAxis (axis) {
 
 module.exports = {
     createPlotlyData,
+    placeTextInMargins,
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,
