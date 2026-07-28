@@ -29,6 +29,11 @@ function createPlotlyData (config) {
     let tooltips = indices.map(
         i => `${tooltip_labels[i]} (${config.xPrefix}${xFormatter(config.X[i])}${config.xSuffix}, ${config.yPrefix}${yFormatter(config.Y[i])}${config.ySuffix})`
     )
+    // Caller-supplied tooltip text replaces the generated text. Any extra dimensions
+    // (bubble size, color scale) are still appended to it below.
+    if (Array.isArray(config.tooltipText) && config.tooltipText.length === config.X.length) {
+        tooltips = config.tooltipText
+    }
 
     // Check if this is a bubbleplot
     let marker_opacity = config.transparency
@@ -41,6 +46,10 @@ function createPlotlyData (config) {
 
     const plot_data = []
     const plot_annotation_data = []
+    // Joining lines are drawn before the markers so that they appear underneath them.
+    // They emit js-line paths rather than .point elements, so they do not disturb the
+    // DOM ordering of the markers that addMarkerClickHandler relies on.
+    const plot_line_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
     }
@@ -49,12 +58,20 @@ function createPlotlyData (config) {
     const indices_by_panel = n_panels > 1 ? _.groupBy(indices, i => config.panels[i]) : {}
     const panel_nm = Object.keys(indices_by_panel)
     config.wrappedX = isXAxisLabelsWrapping(config) ? config.X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : config.X
-    const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
+    // pointRadius may be a per-point array, so it cannot be scaled with a plain multiply
+    const marker_size = config.normZ !== null
+        ? config.normZ
+        : (Array.isArray(config.pointRadius)
+            ? config.pointRadius.map(r => r * 2)
+            : config.pointRadius * 2)
 
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
+            if (config.linesShow) {
+                plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, false, false))
+            }
+            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, true, false, config.linesShow))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -96,7 +113,10 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                if (config.linesShow) {
+                    plot_line_data.push(createLineTrace(config, tooltips, g_name_to_show, g, p, gp_index, g_add, true))
+                }
+                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, config.linesShow))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -110,10 +130,10 @@ function createPlotlyData (config) {
     // Add the annotation traces last so that they don't interfere with the
     // order of the marker points in the DOM, which is relied upon by
     // code that handles marker label toggling.
-    return [...plot_data, ...plot_annotation_data]
+    return [...plot_line_data, ...plot_data, ...plot_annotation_data]
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, lines_show = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -121,12 +141,14 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
+    // When joining lines are drawn, the line trace owns the legend entry and the
+    // tooltip, so that both keep working for points whose marker is not shown.
     return {
         x: X,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
-        hoverinfo: has_groups ? 'name+text' : 'text',
+        hoverinfo: lines_show ? 'skip' : (has_groups ? 'name+text' : 'text'),
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',
@@ -139,6 +161,42 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
+        legendgroup: group_name,
+        showlegend: lines_show ? false : showlegend,
+        cliponaxis: false,
+        xaxis: 'x' + x_axis,
+        yaxis: 'y' + y_axis
+    }
+}
+
+// Joins the points of a group with a line, in the order they were supplied.
+// Per-group styling is recycled by group index in the same way as config.colors.
+function createLineTrace (config, tooltips, group_name, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
+    const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
+    const line_color = config.lineColors[group_index % config.lineColors.length]
+    const x_axis = getPanelXAxisSuffix(panel_index, config)
+    const y_axis = getPanelYAxisSuffix(panel_index, config)
+    const line = {
+        color: line_color,
+        width: config.lineThickness[group_index % config.lineThickness.length],
+        dash: config.lineType[group_index % config.lineType.length],
+        shape: config.lineShape
+    }
+    // plotly only honours smoothing for splines, and warns if it is set otherwise
+    if (config.lineShape === 'spline') line.smoothing = config.lineSmoothing
+    return {
+        x: X,
+        y: Y,
+        name: group_name,
+        text: indexed_tooltips,
+        hoverinfo: has_groups ? 'name+text' : 'text',
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(line_color) } },
+        type: 'scatter',
+        mode: 'lines',
+        connectgaps: false,
+        line: line,
         legendgroup: group_name,
         showlegend: showlegend,
         cliponaxis: false,

@@ -114,6 +114,12 @@ const defaultConfig = {
   legendTitle: null,
   legendTitleWrap: null,
   legendTitleWrapNChar: null,
+  linesShow: false,
+  lineColors: null, // falls back to colors
+  lineThickness: [3],
+  lineType: ['solid'],
+  lineShape: 'linear',
+  lineSmoothing: 1,
   legendTitleFontColor: '#2C2C2C',
   legendTitleFontFamily: 'Arial',
   legendTitleFontSize: 12,
@@ -240,6 +246,13 @@ function buildConfig (userConfig, width, height) {
   if (userConfig.colors) {
     config.colors = userConfig.colors
   }
+
+  // Same reasoning as colors above: these are per-group arrays that must be taken
+  // verbatim from userConfig rather than merged element-wise with the defaults.
+  for (const k of ['lineColors', 'lineThickness', 'lineType']) {
+    if (userConfig[k]) config[k] = userConfig[k]
+  }
+  if (config.lineColors === null) config.lineColors = config.colors
 
   if (_.isNull(config.pointRadius)) {
     config.pointRadius = (_.isArray(config.Z) && config.Z.length)

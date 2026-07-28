@@ -116,6 +116,22 @@
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
 #' @param legend.wrap Whether to wrap the legend group names
 #' @param legend.wrap.n.char The number of characters before wrapping the legend group names
+#' @param lines.show Whether to join the points in each group with a line, in the order
+#'     supplied in \code{X} and \code{Y}. Used to draw line charts with automatically
+#'     placed data labels.
+#' @param line.colors The color of the joining line in each group. Either a single value
+#'     or a vector with one value per group, recycled in the same way as \code{colors}.
+#'     Accepts rgba() strings, so opacity can be applied per group. Defaults to
+#'     \code{colors} when NULL.
+#' @param line.thickness The width of the joining lines in pixels. Either a single value
+#'     or a vector with one value per group.
+#' @param line.type The dash type of the joining lines, one of 'solid', 'dot', 'dash',
+#'     'longdash', 'dashdot' or 'longdashdot'. Either a single value or a vector with one
+#'     value per group.
+#' @param line.shape Either 'linear' for straight lines between points or 'spline' for
+#'     curved lines.
+#' @param line.smoothing Numeric between 0 and 1.3; the amount of smoothing applied when
+#'     \code{line.shape} is 'spline'.
 #' @param margin.top The top margin in pixels
 #' @param margin.bottom The bottom margin in pixels
 #' @param margin.left The left margin in pixels
@@ -346,6 +362,12 @@ CombinedScatter <- function(
     legend.y.anchor = NULL,
     legend.wrap = TRUE,
     legend.wrap.n.char = 30,
+    lines.show = FALSE,
+    line.colors = NULL,
+    line.thickness = 3,
+    line.type = 'solid',
+    line.shape = 'linear',
+    line.smoothing = 1,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -677,6 +699,12 @@ CombinedScatter <- function(
              yBoundsMaximum = y.bounds.maximum,
              xBoundsUnitsMajor = x.bounds.units.major,
              yBoundsUnitsMajor = y.bounds.units.major,
+             linesShow = lines.show,
+             lineColors = toJsonOrNull(line.colors),
+             lineThickness = toJsonOrNull(line.thickness),
+             lineType = toJsonOrNull(line.type),
+             lineShape = line.shape,
+             lineSmoothing = line.smoothing,
              trendLines = trend.lines.show,
              trendLinesLineThickness = trend.lines.line.thickness,
              trendLinesPointSize = trend.lines.point.size,
