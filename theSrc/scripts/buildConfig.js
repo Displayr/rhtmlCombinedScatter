@@ -283,7 +283,7 @@ function buildConfig (userConfig, width, height) {
   if (config.labelsFontSize === 0 && config.panels !== null) { config.label = null }
 
   if (config.xIsDateTime) {
-    config.X = _.map(config.X, (d) => new Date(d))
+    config.X = _.map(config.X, (d) => Utils.isMissingValue(d) ? null : new Date(d))
     config.xDataType = DataTypeEnum.date
     config.xLevels = null
   } else if (Utils.isArrOfNumTypesIgnoringMissing(config.X)) {
@@ -296,7 +296,7 @@ function buildConfig (userConfig, width, height) {
 
   if (config.yIsDateTime) {
     config.yDataType = DataTypeEnum.date
-    config.Y = _.map(config.Y, (d) => new Date(d))
+    config.Y = _.map(config.Y, (d) => Utils.isMissingValue(d) ? null : new Date(d))
     config.yLevels = null
   } else if (Utils.isArrOfNumTypesIgnoringMissing(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
@@ -314,7 +314,8 @@ function buildConfig (userConfig, width, height) {
     const z = config.bubbleSizesAsDiameter ? config.Z.map(v => v * v) : config.Z
     const maxZ = _.max(z)
     config.normZ = LegendUtils.normalizeZValues(z, maxZ)
-        .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+        .map((z, i) => 2 * LegendUtils.normalizedZtoRadius(
+            Array.isArray(config.pointRadius) ? config.pointRadius[i] : config.pointRadius, z))
   }
 
   if (!config.legendBubbleTitle) {

@@ -375,15 +375,20 @@ class PlotData {
     return (this.pts[index].hideLabel)
   }
 
+  // Maps the position of a marker in the document back to the row it came from. Clicking
+  // a marker toggles its label, so the two have to line up. plotly draws no marker for a
+  // row with a missing coordinate, so those rows are left out here as well; counting them
+  // would shift every marker after the first gap onto the wrong row.
   mapMarkerIndexToDataIndex () {
+    const isDrawn = i => !Utils.isMissingValue(this.X[i]) && !Utils.isMissingValue(this.Y[i])
     if (!Array.isArray(this.group)) {
-      return Array(this.len).fill().map((element, index) => index)
+      return Array(this.len).fill().map((element, index) => index).filter(isDrawn)
     }
     const uniq_groups = _.uniq(this.group)
     const result = []
     for (const g of uniq_groups) {
       for (let i = 0; i < this.group.length; i++) {
-        if (this.group[i] === g) {
+        if (this.group[i] === g && isDrawn(i)) {
           result.push(i)
         }
       }

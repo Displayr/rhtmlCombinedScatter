@@ -69,7 +69,10 @@ function createPlotlyData (config) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             if (config.linesShow) {
-                plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, false, false))
+                // The marker trace gives up its legend entry to the line, so the line has
+                // to take it, or an ungrouped chart asked to show a legend shows an empty
+                // one. Only the first panel, otherwise every panel repeats the entry.
+                plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, p === 0, false))
             }
             plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, true, false, config.linesShow))
             if (hasMarkerBorder(config, index)) {
@@ -385,13 +388,18 @@ function setTraceMarkerColorsFromConfig (trace, config, panel_index) {
 
 // Returns a function that can be applied later
 function getFormatter (format, values, value_is_date) {
-    if (!value_is_date && !_.isNumber(values[0])) return function (x) { return x }
+    // A series may begin with a gap, so the type is decided from the first value that is
+    // there. Reading values[0] would fall back to returning the value unformatted, and
+    // the requested hover format would be lost for the whole series.
+    const present = _.reject(values, v => Utils.isMissingValue(v))
+    if (!value_is_date && !_.isNumber(present[0])) return function (x) { return x }
     if (value_is_date) {
-        if (!format) format = getDefaultDateFormat(values)
+        if (!format) format = getDefaultDateFormat(present)
         const formatter = d3.time.format(format)
-        return function (x) { return formatter(new Date(x)) }
+        return function (x) { return Utils.isMissingValue(x) ? '' : formatter(new Date(x)) }
     }
-    return d3.format(checkD3Format(format, values, value_is_date))
+    const formatter = d3.format(checkD3Format(format, present, value_is_date))
+    return function (x) { return Utils.isMissingValue(x) ? '' : formatter(x) }
 }
 
 function checkD3Format (format, values, value_is_date) {
@@ -411,7 +419,8 @@ function checkD3Format (format, values, value_is_date) {
 }
 
 function getDefaultDateFormat (dates) {
-    const dvals = dates.map(x => new Date(x).getTime()) // all values in milliseconds
+    // all values in milliseconds, gaps left out so they do not read as the epoch
+    const dvals = _.reject(dates, d => Utils.isMissingValue(d)).map(x => new Date(x).getTime())
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin
@@ -497,7 +506,7 @@ function createTitleAnnotation (config) {
         xanchor: a.xanchor,
         y: 1,
         yanchor: 'middle',
-        yshift: (config.marginTop || 0) * 0.5,
+        yshift: marginTop(config) * 0.5,
         showarrow: false,
     }
 }
@@ -737,7 +746,7 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
         const has_min_bounds = minBounds !== null && minBounds
         const has_max_bounds = maxBounds !== null && maxBounds
         if (!has_min_bounds || !has_max_bounds) {
-            const dates = values.map(d => d.getTime())
+            const dates = _.reject(values, d => Utils.isMissingValue(d)).map(d => d.getTime())
             dates.sort()
             let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
             for (let i = 1; i < dates.length; i++) {

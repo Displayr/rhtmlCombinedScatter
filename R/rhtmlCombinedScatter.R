@@ -89,9 +89,7 @@
 #' @param footer.font.family is the font of the footer text
 #' @param footer.font.color is the font color of the footer text
 #' @param footer.font.size is the font size of the footer text
-#' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right". Only
-#'     applied when the footer is placed inside the bottom margin, which is what a line
-#'     chart does; otherwise the footer is centred.
+#' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right".
 #' @param labels.show Toggle for showing labels. Defaults to true if labels array given
 #' @param labels.font.family is the font family of the labels
 #' @param labels.font.color is the font color of the labels. NOTE: This overrides the color if it is set
