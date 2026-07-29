@@ -313,10 +313,18 @@ history. It is only needed for review, so squashing on merge is acceptable.
 - The puppeteer/jest pairing is load-bearing and non-obvious. A future dependency bump that
   moves either one can silently break the visual suite; the loadability test is what
   catches it.
-- `acceptNewSnapshots` defaults to `true`, which passes `--ci=0` to jest. A snapshot with
-  no existing baseline is therefore written and **passes** rather than failing. Renaming a
-  test silently creates a new baseline instead of erroring. Not a blocker, but it means a
-  green visual job does not by itself prove every baseline was actually compared.
+- `acceptNewSnapshots` defaults to `true`, which appends `--ci=0` to the jest command. That
+  made a snapshot with no baseline get **written and passed** rather than failed, and since
+  the commit-back step only runs under `update_snapshots`, the new baseline was then
+  discarded with the runner -- so a new snapshot would have looked green forever and never
+  actually been regression-tested. **Closed:** the normal test step passes
+  `--acceptNewSnapshots=false`, so `--ci=0` is omitted, jest infers `ci: true` from the
+  runner's `CI=true` (`jest-cli` defaults `ci` to `is-ci`), and
+  `jest-config/build/normalize.js:1171` yields `updateSnapshot: 'none'` -- which makes
+  jest-image-snapshot fail with "New snapshot was not written". New snapshots and mismatches
+  now behave identically: red, and accepted via an `update_snapshots` dispatch. The
+  regenerate step keeps the default plus `-u` (`updateSnapshot: 'all'`), so it still writes
+  everything.
 - Node 22 is unverified for the compile step and `gulp testVisual`. There is a known pattern of
   older rhtml* toolchains failing on Node 22 (gulp 3 / `natives` / `graceful-fs`), but this
   repo is on gulp 4 and its unit tests pass on Node 22, so the risk is modest. If the build

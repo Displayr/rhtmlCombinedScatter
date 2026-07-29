@@ -121,15 +121,29 @@ jobs:
       # shelljs (/bin/sh -c), so a value with shell metacharacters would still
       # be interpreted there. Acceptable: workflow_dispatch already requires
       # write access, and anyone with that could edit this file directly.
+      #
+      # --acceptNewSnapshots=false is what makes a MISSING baseline fail rather
+      # than pass. rhtmlBuildUtils defaults that option to true, which appends
+      # --ci=0 to the jest command; jest then computes
+      #   updateSnapshot = ci && !updateSnapshot ? 'none' : ... : 'new'
+      # (jest-config/build/normalize.js:1171), so 'new' means jest-image-snapshot
+      # writes the baseline and the test PASSES. Combined with the commit-back
+      # step running only on update_snapshots, that baseline would then be
+      # discarded with the runner -- a new snapshot would look green forever and
+      # never actually be regression-tested. Omitting --ci=0 lets jest infer
+      # ci=true from CI=true (jest-cli defaults ci to is-ci), giving
+      # updateSnapshot='none', which fails with "New snapshot was not written".
+      # New snapshots and mismatches then behave identically: red, and accepted
+      # via an update_snapshots dispatch.
       - name: Visual regression tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' && !inputs.update_snapshots }}
         env:
           TEST_FILTER: ${{ inputs.test_filter }}
         run: |
           if [ -n "$TEST_FILTER" ]; then
-            npx gulp testVisual -t "$TEST_FILTER"
+            npx gulp testVisual --acceptNewSnapshots=false -t "$TEST_FILTER"
           else
-            npx gulp testVisual
+            npx gulp testVisual --acceptNewSnapshots=false
           fi
 
       # Same no---env and env:-passthrough reasoning as the step above. -u makes
