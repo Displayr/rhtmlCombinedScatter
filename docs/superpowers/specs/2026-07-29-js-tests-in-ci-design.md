@@ -132,7 +132,9 @@ Some visual tests are flaky, so one failure must not hide the rest. Three levels
   that is the only place the failure is observable. This is the regression guard for a
   future version bump silently reintroducing the problem.
 - Fix the three deprecated `page.waitFor(1000)` calls in `theSrc/test/bin/resize.jest.test.js`
-  to `await new Promise(r => setTimeout(r, 1000))`. Puppeteer 13 still supports the method,
+  (lines 44, 70, 91) and the `page.waitFor(3000)` call in
+  `theSrc/test/bin/stateInteractions.jest.test.js:361`, replacing each with
+  `await new Promise(r => setTimeout(r, <ms>))`. Puppeteer 13 still supports the method,
   so this is hygiene rather than necessity; rhtmlBuildUtils' own call site is left alone.
 - Add `args: ['--no-sandbox', '--disable-dev-shm-usage']` to `snapshotTesting.puppeteer` in
   `build/config/widget.config.js`.

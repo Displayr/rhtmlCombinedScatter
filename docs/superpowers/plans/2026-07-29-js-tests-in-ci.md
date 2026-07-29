@@ -35,7 +35,7 @@ These were checked empirically. Do not re-litigate them.
 - In puppeteer 13 the `Page` class is not exported from the package root. It is at `puppeteer/lib/cjs/puppeteer/common/Page.js`.
 
 **Other:**
-- The only `page.waitFor` call sites are `theSrc/test/bin/resize.jest.test.js:44,70,91` and `node_modules/rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:106`. Puppeteer 13 still supports the method, so the rhtmlBuildUtils one is fine as-is.
+- The only `page.waitFor` call sites are `theSrc/test/bin/resize.jest.test.js:44,70,91`, `theSrc/test/bin/stateInteractions.jest.test.js:361`, and `node_modules/rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:106`. Puppeteer 13 still supports the method, so the rhtmlBuildUtils one is fine as-is.
 - Snapshot path is `basePath / snapshotDirectory / env / branch / <collection>`, resolved by `_.defaultsDeep({basePath}, {snapshotTesting: <CLI args>}, build/config/widget.config.js, default.widget.config.js)`.
 - `gulp testSpecs` roots at `theSrc/scripts` only. `gulp testVisual` roots at `.tmp` and `theSrc/test/bin`.
 - Baseline: 8 suites / 86 tests pass via `npx gulp testSpecs` on Node 22.
@@ -715,9 +715,26 @@ Expected:
 
 Run: `gh run view --log-failed`
 
-Expected: `toMatchImageSnapshot` failures citing pixel differences.
+Individual visual tests will report **green** even when every image mismatches:
+`node_modules/rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:132-147` wraps
+`expect(image).toMatchImageSnapshot(...)` in a try/catch, writes the rendered image to
+`new_snapshots/`, and never rethrows. So the per-test list in the log is not the signal —
+the job still fails, but only because jest's aggregate `snapshotState.unmatched` count
+becomes non-zero, which jest turns into a snapshot failure and a non-zero exit.
 
-**Stop and fix before continuing** if you instead see: `page.waitFor is not a function` (shim not loaded — check `jest.setupFiles` resolves), a browser launch failure (check the `--no-sandbox` args reached `puppeteer.launch`), `Invalid values: Argument: env` (an `--env` flag leaked into a command), or a missing-Chrome error (check the puppeteer cache step and that `PUPPETEER_SKIP_DOWNLOAD` is not set on this job).
+Expected: read jest's aggregate summary line (`N snapshot(s) failed`), not the per-test
+list, plus the presence of `__diff_output__/` and `new_snapshots/` directories and the
+uploaded `snapshot-diffs` artifact (see Step 4).
+
+**Stop and fix before continuing** if you instead see: `Failed to launch the browser
+process` or `error while loading shared libraries` (missing Chromium runtime lib or
+launch failure — check the `--no-sandbox` args and the Chromium runtime libs install
+step), `page.waitFor is not a function` (shim not loaded — check `jest.setupFiles`
+resolves), a `beforeEach`/`beforeAll` failure or a puppeteer module-resolution error
+(something broke before any snapshot comparison ran, so this is genuine infrastructure
+breakage rather than an image mismatch), `Invalid values: Argument: env` (an `--env` flag
+leaked into a command), or a missing-Chrome error (check the puppeteer cache step and
+that `PUPPETEER_SKIP_DOWNLOAD` is not set on this job).
 
 - [ ] **Step 4: Confirm the diff artifact uploaded**
 
@@ -727,7 +744,12 @@ Expected: present, containing `__diff_output__` PNGs. If absent, the glob in the
 
 - [ ] **Step 5: Confirm one failure did not hide the others**
 
-In the failed `visual` job log, confirm the run reports many failing tests rather than stopping at the first. Jest does not `--bail` by default and nothing sets it.
+The per-test PASS/FAIL list cannot answer this, since every `toMatchImageSnapshot`
+assertion reports PASS regardless of mismatch (see Step 3). Instead, read jest's
+aggregate summary line and the artifact: confirm the failed-snapshot count in the
+aggregate line, and the images under the `snapshot-diffs` artifact's `__diff_output__/`
+and `new_snapshots/` directories, reflect a full run across all ~427 snapshots rather
+than stopping at the first. Jest does not `--bail` by default and nothing sets it.
 
 In the `unit` job, confirm `Lint`, `Unit tests` and `Build widget bundle` all executed.
 
