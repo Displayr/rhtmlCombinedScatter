@@ -145,7 +145,12 @@ local installs; `overrides` and `resolutions` coexist.
 
 - Fonts installed explicitly: `fonts-liberation`, `fonts-dejavu-core`,
   `fonts-noto-color-emoji`, so text metrics don't drift with the base image.
-- Cache `~/.cache/puppeteer` alongside the npm cache from `actions/setup-node`.
+- **No puppeteer browser cache.** v13 downloads into
+  `node_modules/puppeteer/.local-chromium/`, not `~/.cache/puppeteer` (the v19+
+  `@puppeteer/browsers` location), and `npm ci` wipes `node_modules` every run regardless, so
+  a cache there cannot survive. Making it work would mean relocating the download via
+  `PUPPETEER_DOWNLOAD_PATH` and caching that. Skipped deliberately: a pure optimisation whose
+  misconfiguration fails the job confusingly. Chromium re-downloads each run.
 - Node pinned to 22, matching local development. Satisfies `engines` (`>=18.15.0`).
   Unit tests are confirmed passing on Node 22 locally (v22.18.0, 8 suites / 86 tests).
   `gulp core compileWidgetEntryPoint` and `gulp testVisual` on Node 22 are not yet
@@ -194,14 +199,21 @@ without a local repro.
 `gulp testVisual` **cannot be run locally on Windows at all.** rhtmlBuildUtils'
 `compileRenderContentPage` builds the widget path with `path.join('..', widgetFactory)` and
 mustache writes it unescaped into `const WidgetFactory = require('{{{widget_definition_path}}}')`.
-On Windows the separators are backslashes, so `	` becomes a TAB and `` a carriage
+On Windows the separators are backslashes, so `	` becomes a TAB and `
+` a carriage
 return, corrupting the path before browserify resolves it. There is no WSL or Docker on the
 dev machine, so CI is the only place the visual suite can run. (The upstream fix is a
 one-liner — use POSIX separators — but rhtmlBuildUtils is out of scope here.)
 
 To confirm the harness works without waiting on all 427 snapshots, the workflow takes a
 `test_filter` dispatch input that maps to jest's `-t`. It is passed to the run step through
-`env:` rather than interpolated into the script, so a dispatch input cannot inject shell.
+`env:` rather than interpolated into the script, so the value is not substituted into the
+shell command in the workflow.
+
+This is mitigation at the YAML layer only. rhtmlBuildUtils splices the `-t` value unescaped
+into a second command string it executes via shelljs (`/bin/sh -c`), so a value containing
+shell metacharacters would still be interpreted there. Accepted: `workflow_dispatch`
+requires write access to the repo, and anyone with that could edit the workflow directly.
 
 It composes with `update_snapshots`:
 

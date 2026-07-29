@@ -393,7 +393,8 @@ for a full run, the workflow accepts a filter that maps to jest's `-t`. This mat
 because `gulp testVisual` cannot be run locally on Windows at all: rhtmlBuildUtils'
 `compileRenderContentPage` interpolates a `path.join`-built path into
 `const WidgetFactory = require('{{{widget_definition_path}}}')`, and on Windows the
-backslashes become escape sequences (`	` → TAB, `` → CR), corrupting the path before
+backslashes become escape sequences (`	` → TAB, `
+` → CR), corrupting the path before
 browserify runs. CI is therefore the only place the visual suite can be exercised.
 
 Replace the `on:` block in `.github/workflows/js-tests.yaml`:
@@ -435,11 +436,13 @@ Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (
             fonts-liberation fonts-dejavu-core fonts-noto-color-emoji
           sudo fc-cache -f
 
-      - name: Cache puppeteer browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/puppeteer
-          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      # No puppeteer browser cache. puppeteer 13 downloads into
+      # node_modules/puppeteer/.local-chromium/, not ~/.cache/puppeteer (that is
+      # the v19+ @puppeteer/browsers location), and `npm ci` wipes node_modules
+      # every run anyway -- so a cache there cannot survive. Making it work would
+      # mean relocating the download via PUPPETEER_DOWNLOAD_PATH and caching that.
+      # Deliberately skipped: it is a pure optimisation, and a misconfigured
+      # download path fails the job confusingly. Chromium re-downloads each run.
 
       - name: Install dependencies
         id: install
@@ -449,8 +452,13 @@ Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (
       # so 'ci' comes from build/config/widget.config.js instead. --branch is
       # likewise omitted, defaulting to master, so every branch compares
       # against master's baselines.
-      # TEST_FILTER goes through env, not directly into the run script, so a
-      # dispatch input cannot inject shell.
+      # TEST_FILTER goes through env: rather than being interpolated into the
+      # run script, so the input is not substituted into the shell command here.
+      # NB this is mitigation at the YAML layer only -- rhtmlBuildUtils splices
+      # the -t value unescaped into a second command string that it runs via
+      # shelljs (/bin/sh -c), so a value with shell metacharacters would still
+      # be interpreted there. Acceptable: workflow_dispatch already requires
+      # write access, and anyone with that could edit this file directly.
       - name: Visual regression tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
@@ -498,8 +506,11 @@ git commit -F - <<'EOF'
 Add CI job for puppeteer visual regression tests
 
 Runs in parallel with the unit job. Installs fonts explicitly so text
-metrics do not drift with the base image, and caches the puppeteer
-browser download.
+metrics do not drift with the base image.
+
+No puppeteer browser cache: v13 downloads into
+node_modules/puppeteer/.local-chromium, not ~/.cache/puppeteer, and
+npm ci wipes node_modules each run regardless.
 
 Runs gulp testVisual with no --env flag; the ci env comes from
 build/config/widget.config.js. Uploads __diff_output__ images so a red
