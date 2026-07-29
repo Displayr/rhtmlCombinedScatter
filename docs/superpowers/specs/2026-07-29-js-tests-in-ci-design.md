@@ -131,7 +131,8 @@ local installs; `overrides` and `resolutions` coexist.
 ### Baselines
 
 - Regenerate under a new env name: `--env=ci`, writing to `theSrc/test/snapshots/ci/master/`.
-- Delete `theSrc/test/snapshots/travis/`.
+- `theSrc/test/snapshots/travis/` is **renamed** to `ci/`, not deleted, and the rename must
+  be its own commit with no content change. See "Reviewing the regenerated baselines".
 - No `--branch` flag, matching CircleCI, so every branch compares against master's
   baselines.
 - `theSrc/test/snapshots/local/` is untouched and remains the local dev loop.
@@ -144,6 +145,32 @@ the feature branch creates the whole set for review in the PR diff.
 
 On failure, upload `**/__diff_output__/**` as an artifact so a red run is diagnosable
 without a local repro.
+
+### Reviewing the regenerated baselines
+
+Git detects renames by similarity rather than storing them. A pure `git mv` is 100%
+similar and always detected, but regenerated PNGs are not similar to their originals —
+lossless compression rewrites most bytes even for a small visual shift, putting them well
+under git's 50% rename threshold. So commit ordering determines whether the 427 images are
+reviewable at all:
+
+- Rename and regenerate in one commit → 427 unpaired deletions plus 427 additions, no
+  comparison UI.
+- Rename in one commit, regenerate in the next → the regeneration is a true modify at a
+  stable path, which GitHub renders with its image diff viewer (2-up, swipe, onion skin).
+
+Required ordering, therefore:
+
+1. `git mv theSrc/test/snapshots/travis theSrc/test/snapshots/ci`, committed alone with no
+   other change.
+2. Config changes (workflow, `overrides`, `waitFor` fixes, puppeteer args).
+3. Regenerated baselines from the `update_snapshots` dispatch, committed alone.
+
+Caveat: the PR's cumulative **Files changed** tab compares `master...head` and will still
+show add/delete pairs. Review the regeneration commit individually via the Commits tab.
+
+This also means the branch must not be squash-merged if the paired diff is to survive in
+history. It is only needed for review, so squashing on merge is acceptable.
 
 ## Out of scope
 
