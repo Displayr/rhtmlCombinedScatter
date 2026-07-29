@@ -111,6 +111,8 @@ jobs:
             npx gulp testVisual
           fi
 
+      # Same no---env and env:-passthrough reasoning as the step above. -u makes
+      # jest-image-snapshot write baselines instead of failing on mismatch.
       - name: Regenerate baselines
         if: ${{ !cancelled() && steps.install.outcome == 'success' && inputs.update_snapshots }}
         env:
@@ -127,15 +129,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: snapshot-diffs
-          path: theSrc/test/snapshots/ci/**/__diff_output__/**
+          path: |
+            theSrc/test/snapshots/ci/**/__diff_output__/**
+            theSrc/test/snapshots/ci/**/new_snapshots/**
           if-no-files-found: ignore
           retention-days: 14
 
       # Deliberately runs even if the regeneration step exited non-zero: a
       # partial regeneration is still worth capturing, and the uploaded diffs
       # show what failed. Review the commit before merging.
+      # Guarded on ref_type: a dispatch against a tag would push to an existing
+      # refs/tags/<name>, which git rejects, failing the job after a full
+      # regeneration. Baselines are only ever committed back to a branch.
       - name: Commit regenerated baselines
-        if: ${{ !cancelled() && inputs.update_snapshots }}
+        if: ${{ !cancelled() && inputs.update_snapshots && github.ref_type == 'branch' }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
