@@ -3,6 +3,11 @@ name: JS tests
 on:
   push:
   workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Run only tests matching this name pattern (jest -t). Leave blank for all.'
+        type: string
+        default: ''
 
 jobs:
   unit:
@@ -44,3 +49,60 @@ jobs:
       - name: Compile widget bundle
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npx gulp core compileWidgetEntryPoint
+
+  visual:
+    name: Visual regression tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Pinned explicitly so text metrics do not drift with the base image.
+      # Label placement is what this widget is for, and the pixel threshold is
+      # 0.0001%, so a font change invalidates every baseline.
+      - name: Install fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fonts-liberation fonts-dejavu-core fonts-noto-color-emoji
+          sudo fc-cache -f
+
+      - name: Cache puppeteer browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        id: install
+        run: npm ci
+
+      # No --env flag: rhtmlBuildUtils constrains --env to ['local', 'travis'],
+      # so 'ci' comes from build/config/widget.config.js instead. --branch is
+      # likewise omitted, defaulting to master, so every branch compares
+      # against master's baselines.
+      # TEST_FILTER goes through env, not directly into the run script, so a
+      # dispatch input cannot inject shell.
+      - name: Visual regression tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        env:
+          TEST_FILTER: ${{ inputs.test_filter }}
+        run: |
+          if [ -n "$TEST_FILTER" ]; then
+            npx gulp testVisual -t "$TEST_FILTER"
+          else
+            npx gulp testVisual
+          fi
+
+      - name: Upload snapshot diffs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-diffs
+          path: theSrc/test/snapshots/ci/**/__diff_output__/**
+          if-no-files-found: ignore
+          retention-days: 14
