@@ -199,9 +199,7 @@ without a local repro.
 `gulp testVisual` **cannot be run locally on Windows at all.** rhtmlBuildUtils'
 `compileRenderContentPage` builds the widget path with `path.join('..', widgetFactory)` and
 mustache writes it unescaped into `const WidgetFactory = require('{{{widget_definition_path}}}')`.
-On Windows the separators are backslashes, so `	` becomes a TAB and `
-` a carriage
-return, corrupting the path before browserify resolves it. There is no WSL or Docker on the
+On Windows the separators are backslashes, so `\t` becomes a TAB and `\r` a carriage return, corrupting the path before browserify resolves it. There is no WSL or Docker on the
 dev machine, so CI is the only place the visual suite can run. (The upstream fix is a
 one-liner — use POSIX separators — but rhtmlBuildUtils is out of scope here.)
 

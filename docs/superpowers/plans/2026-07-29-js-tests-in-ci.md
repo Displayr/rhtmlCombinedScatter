@@ -393,8 +393,7 @@ for a full run, the workflow accepts a filter that maps to jest's `-t`. This mat
 because `gulp testVisual` cannot be run locally on Windows at all: rhtmlBuildUtils'
 `compileRenderContentPage` interpolates a `path.join`-built path into
 `const WidgetFactory = require('{{{widget_definition_path}}}')`, and on Windows the
-backslashes become escape sequences (`	` → TAB, `
-` → CR), corrupting the path before
+backslashes become escape sequences (`\t` -> TAB, `\r` -> CR), corrupting the path before
 browserify runs. CI is therefore the only place the visual suite can be exercised.
 
 Replace the `on:` block in `.github/workflows/js-tests.yaml`:
