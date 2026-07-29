@@ -474,7 +474,9 @@ Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (
         uses: actions/upload-artifact@v4
         with:
           name: snapshot-diffs
-          path: theSrc/test/snapshots/ci/**/__diff_output__/**
+          path: |
+            theSrc/test/snapshots/ci/**/__diff_output__/**
+            theSrc/test/snapshots/ci/**/new_snapshots/**
           if-no-files-found: ignore
           retention-days: 14
 ```
@@ -584,6 +586,8 @@ In the `visual` job, change the existing test step's condition to exclude regene
 Then insert this immediately after it, before the artifact upload:
 
 ```yaml
+      # Same no---env and env:-passthrough reasoning as the step above. -u makes
+      # jest-image-snapshot write baselines instead of failing on mismatch.
       - name: Regenerate baselines
         if: ${{ !cancelled() && steps.install.outcome == 'success' && inputs.update_snapshots }}
         env:
@@ -610,8 +614,11 @@ Add at the end of the `visual` job's steps, after the artifact upload:
       # NB this push will NOT start a new workflow run: GitHub suppresses runs
       # for pushes made with the default GITHUB_TOKEN, to avoid recursion. After
       # a regeneration, start a run explicitly to verify the new baselines.
+      # Guarded on ref_type: a dispatch against a tag would push to an existing
+      # refs/tags/<name>, which git rejects, failing the job after a full
+      # regeneration. Baselines are only ever committed back to a branch.
       - name: Commit regenerated baselines
-        if: ${{ !cancelled() && inputs.update_snapshots }}
+        if: ${{ !cancelled() && inputs.update_snapshots && github.ref_type == 'branch' }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
