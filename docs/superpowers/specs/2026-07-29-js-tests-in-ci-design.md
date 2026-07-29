@@ -37,7 +37,7 @@ Note `testVisual` never runs `compileWidgetEntryPoint`: it renders through the i
 www server, not the `inst/` bundle. CircleCI's separate `npm run build` was verifying that
 the widget bundle compiles, which is a distinct check worth keeping deliberately.
 
-## Key constraint: puppeteer 3.3.0
+## Key constraint: puppeteer 3.3.0, and the jest ceiling above it
 
 `rhtmlBuildUtils` (pinned here at `#7.2.6`) declares `puppeteer: ^3.3.0`, so the visual
 tests drive Chromium ~83 (May 2020). Running that on a supported image is the hard part:
@@ -55,18 +55,41 @@ Given regeneration is happening anyway, and given the pinned dependencies exist 
 because the tests were hard to get running (not because anything depends on those exact
 versions), modernising puppeteer is cheaper than Chromium-83 archaeology.
 
-### Sizing the upgrade
+### Choosing the version: the jest ceiling
 
-Every puppeteer API the harness uses is still current: `puppeteer.launch`,
-`browser.newPage/pages/close`, `page.goto/close/evaluate/click/type/$/$$/mouse.*/screenshot/waitForFunction`.
+The first attempt targeted puppeteer 24 via `overrides`. **That does not work**, and the
+reason constrains the whole design.
 
-Exactly one removed API, `page.waitFor(ms)`, at four call sites:
+The project's actually-resolved jest is **25.5.4**, not the 26.6.3 rhtmlBuildUtils
+declares. `jest-image-snapshot@3.1.0` sets `peerDependencies: { "jest": ">=20 <=25" }`,
+which caps it; rhtmlBuildUtils' own jest 26.6.3 ends up nested and shadowed. Since
+`getJestPath()` prefers the project root, 25.5.4 is what actually runs both suites.
 
-- `theSrc/test/bin/resize.jest.test.js:44,70,91` — repo-local, trivial
-- `rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:106` — the only one outside this repo
+Jest 25's resolver predates package.json `exports` maps. Under it, `require('puppeteer')`
+from v24 returns an object whose `launch` is `undefined` — verified by probe. Every visual
+test calls `puppeteer.launch(...)`, so the entire suite would break, not merely the
+`waitFor` call.
 
-`build/config/widget.config.js` overrides `consoleLogHandler` and uses `msg.args()` (still
-current), so the default handler's internal `msg._text` is not a problem.
+This is only visible from inside jest. Under plain `node`, puppeteer 24 loads perfectly,
+which is why an out-of-jest smoke check would hide it.
+
+**puppeteer 13.7.0 is the chosen target**, verified by probe:
+
+- No `exports` field and no `node:` specifiers, so jest 25.5.4 loads it — `pp.launch` is a
+  function.
+- Bundles Chromium 982053 (~Chrome 101, 2022), which is recent enough to run on
+  `ubuntu-24.04` with `--no-sandbox`, unlike Chromium 83.
+- **`Page.prototype.waitFor` still exists**, so rhtmlBuildUtils' call site works untouched
+  and no shim is required.
+
+Consequences: no `Page.prototype.waitFor` shim, no jest setup file, and no `jest` key in
+`package.json`. Note that in puppeteer 13 the `Page` class is not exported from the package
+root; it lives at `puppeteer/lib/cjs/puppeteer/common/Page.js`.
+
+The alternative — overriding jest to 29+ and jest-image-snapshot to 6 so puppeteer 24 works
+— was rejected. jest-image-snapshot's peer cap exists for a reason, and a v6 upgrade risks
+changing pixel-diff semantics, which would compromise the baseline regeneration this change
+already depends on.
 
 ## Design
 
@@ -100,34 +123,17 @@ Some visual tests are flaky, so one failure must not hide the rest. Three levels
    it, so all comparisons run. A suite-level error (e.g. browser fails to launch in
    `beforeAll`) fails that suite and continues to the others.
 
-### Puppeteer modernisation
+### Puppeteer change
 
-- Add `"overrides": { "puppeteer": "^24" }` to `package.json` and regenerate
+- Add `"overrides": { "puppeteer": "^13" }` to `package.json` and regenerate
   `package-lock.json`. npm `overrides` applies transitively, so rhtmlBuildUtils resolves to
-  the new version without a fork.
-- Fix the three `page.waitFor(1000)` calls in `theSrc/test/bin/resize.jest.test.js` to
-  `await new Promise(r => setTimeout(r, 1000))`.
-- The fourth call site is inside rhtmlBuildUtils, which we are **not** modifying. Instead,
-  restore the removed method locally by defining `Page.prototype.waitFor` in a jest setup
-  file when it is absent. Keeps the change entirely within this repo, and leaves the other
-  rhtml* widgets untouched.
-
-  Only the numeric form (`page.waitFor(1000)`) is used, so the shim only needs to handle
-  that; it should no-op rather than overwrite if a future puppeteer reinstates the method.
-
-  This requires a jest config, since the gulp tasks currently invoke jest with only
-  `--roots` and `--testMatch` and no config file. Add a `jest` key to `package.json` with
-  `setupFiles`, which jest picks up from the project root automatically. Note this applies
-  to `testSpecs` as well as `testVisual`, so the setup file must tolerate puppeteer being
-  irrelevant there — guard the require rather than assuming it loads.
-
-  The shim cannot live in the test files themselves: the offending call is reached through
-  buildUtils' `testSnapshots`, invoked from `.tmp/takeSnapshots.jest.test.js`, which is
-  generated by `copySnapshotJestRunnerToProject` and so cannot be edited.
-
-  To verify during implementation: that `require('puppeteer').Page` is actually exported in
-  the installed version. If it is not, patch the instance via a wrapper around
-  `puppeteer.launch` instead.
+  it without a fork.
+- Add a jest test asserting puppeteer loads and exposes `launch` **from inside jest**, since
+  that is the only place the failure is observable. This is the regression guard for a
+  future version bump silently reintroducing the problem.
+- Fix the three deprecated `page.waitFor(1000)` calls in `theSrc/test/bin/resize.jest.test.js`
+  to `await new Promise(r => setTimeout(r, 1000))`. Puppeteer 13 still supports the method,
+  so this is hygiene rather than necessity; rhtmlBuildUtils' own call site is left alone.
 - Add `args: ['--no-sandbox', '--disable-dev-shm-usage']` to `snapshotTesting.puppeteer` in
   `build/config/widget.config.js`.
 
@@ -228,9 +234,13 @@ history. It is only needed for review, so squashing on merge is acceptable.
   own commit, separate from the config changes.
 - Modern Chrome may render differently enough that some tests fail for real layout reasons
   rather than needing new baselines. Expect to triage a handful.
-- The `overrides` approach is unverified until installed against the real dependency tree.
-  If puppeteer 24 breaks something in rhtmlBuildUtils beyond `waitFor`, the fallback is
-  stepping back a major version.
+- Chromium ~101 is still three years old. It runs on `ubuntu-24.04` with `--no-sandbox`,
+  but the old Chromium download must still resolve from Google's storage at install time.
+  If it does not, the fallback is `PUPPETEER_DOWNLOAD_HOST` or a newer puppeteer paired
+  with a jest upgrade.
+- The puppeteer/jest pairing is load-bearing and non-obvious. A future dependency bump that
+  moves either one can silently break the visual suite; the loadability test is what
+  catches it.
 - `acceptNewSnapshots` defaults to `true`, which passes `--ci=0` to jest. A snapshot with
   no existing baseline is therefore written and **passes** rather than failing. Renaming a
   test silently creates a new baseline instead of erroring. Not a blocker, but it means a

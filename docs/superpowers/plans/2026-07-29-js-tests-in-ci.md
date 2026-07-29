@@ -4,9 +4,9 @@
 
 **Goal:** Make GitHub Actions run the JS unit tests and the puppeteer visual regression suite alongside the existing nix R build, gating merges to master.
 
-**Architecture:** A new `.github/workflows/js-tests.yaml` with two parallel jobs — a fast `unit` job (lint, jest unit tests, bundle build) and a slow `visual` job (puppeteer image-snapshot regression). The existing `build-r-package.yaml` is untouched. Puppeteer is upgraded from 3.3.0 to 24 via an npm `overrides` entry so a modern Chrome runs on a supported runner image; the one API this removes, `page.waitFor`, is restored by a local prototype shim rather than by modifying the shared rhtmlBuildUtils repo. Snapshot baselines are regenerated on the runner and committed back by a manual `workflow_dispatch`.
+**Architecture:** A new `.github/workflows/js-tests.yaml` with two parallel jobs — a fast `unit` job (lint, jest unit tests, bundle build) and a slow `visual` job (puppeteer image-snapshot regression). The existing `build-r-package.yaml` is untouched. Puppeteer is moved from 3.3.0 to 13 via an npm `overrides` entry so a reasonably modern Chrome runs on a supported runner image, chosen as the newest version the project's jest 25 resolver can actually load. Snapshot baselines are regenerated on the runner and committed back by a manual `workflow_dispatch`.
 
-**Tech Stack:** GitHub Actions, Node 22, npm `overrides`, gulp 4 (via rhtmlBuildUtils 7.2.6), jest 26, puppeteer 24, jest-image-snapshot 3.1.0.
+**Tech Stack:** GitHub Actions, Node 22, npm `overrides`, gulp 4 (via rhtmlBuildUtils 7.2.6), jest 25.5.4 (capped by jest-image-snapshot 3.1.0), puppeteer 13, jest-image-snapshot 3.1.0.
 
 **Spec:** `docs/superpowers/specs/2026-07-29-js-tests-in-ci-design.md`
 
@@ -25,60 +25,66 @@
 
 ## Verified Facts
 
-These were checked empirically against puppeteer 24.43.1 while writing this plan. Do not re-litigate them.
+These were checked empirically. Do not re-litigate them.
 
-- `require('puppeteer').Page` **is** exported.
-- `Page.prototype.waitFor` is `undefined` (removed). So is `waitForTimeout`.
-- `CdpPage extends Page`, and assigning `Page.prototype.waitFor` **is** inherited by `CdpPage` instances.
-- `Page.prototype.close` and `Page.prototype.mouse` are `undefined` on the abstract base — they are implemented on `CdpPage`. This is expected and is **not** a problem.
-- Still present: `Page.prototype.{goto,evaluate,click,type,$,$$,waitForFunction,screenshot}`, `Browser.prototype.pages`, `ElementHandle.prototype.screenshot`.
-- puppeteer 24 requires Node `>=18`.
-- The only `page.waitFor` call sites are `theSrc/test/bin/resize.jest.test.js:44,70,91` and `node_modules/rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:106`.
+**The jest constraint (this is the load-bearing one):**
+- The project resolves **jest 25.5.4** at `node_modules/jest`, not the 26.6.3 rhtmlBuildUtils declares. `jest-image-snapshot@3.1.0` sets `peerDependencies: { "jest": ">=20 <=25" }`, capping it; rhtmlBuildUtils' jest 26.6.3 is nested and shadowed. `getJestPath()` prefers the project root, so 25.5.4 runs.
+- Jest 25's resolver predates `exports` maps. Under it, puppeteer 24 loads as an object with `typeof launch === 'undefined'`. Every visual test calls `puppeteer.launch(...)`, so the suite breaks entirely. Verified by probe.
+- **puppeteer 13.7.0 works**: no `exports` field, no `node:` specifiers, `pp.launch` is a function under jest 25.5.4, bundles Chromium 982053 (~Chrome 101), and `Page.prototype.waitFor` still exists. Verified by probe.
+- Consequence: **no shim, no `jest` key in `package.json`, no `setupFiles`.** Earlier drafts of this plan called for all three; they are obsolete.
+- In puppeteer 13 the `Page` class is not exported from the package root. It is at `puppeteer/lib/cjs/puppeteer/common/Page.js`.
+
+**Other:**
+- The only `page.waitFor` call sites are `theSrc/test/bin/resize.jest.test.js:44,70,91` and `node_modules/rhtmlBuildUtils/src/lib/renderExamplePageTest.helper.js:106`. Puppeteer 13 still supports the method, so the rhtmlBuildUtils one is fine as-is.
 - Snapshot path is `basePath / snapshotDirectory / env / branch / <collection>`, resolved by `_.defaultsDeep({basePath}, {snapshotTesting: <CLI args>}, build/config/widget.config.js, default.widget.config.js)`.
 - `gulp testSpecs` roots at `theSrc/scripts` only. `gulp testVisual` roots at `.tmp` and `theSrc/test/bin`.
 - Baseline: 8 suites / 86 tests pass via `npx gulp testSpecs` on Node 22.
+- **Reported but unverified:** two pre-existing Windows-only bugs break `gulp testVisual` (a `path.join` backslash path interpolated into a JS string literal in `compileRenderContentPage`) and `gulp build` (`makeDocs` uses a bash `<<<` herestring). Neither should affect the Linux runner; both prevent full local verification on the dev machine.
 
 ## File Structure
 
 | File | Status | Responsibility |
 |---|---|---|
-| `package.json` | Modify | puppeteer `overrides`; `jest.setupFiles` config; remove the dead `circleCITest` script |
+| `package.json` | Modify | puppeteer `overrides` (^13); remove the dead `circleCITest` script |
 | `package-lock.json` | Modify | regenerated by `npm install` |
-| `theSrc/test/jest.setup.js` | Create | restores `Page.prototype.waitFor` when absent |
-| `theSrc/test/bin/resize.jest.test.js` | Modify | three `page.waitFor(1000)` call sites |
+| `theSrc/test/bin/puppeteerLoads.jest.test.js` | Create | guards that puppeteer loads under the project jest |
+| `theSrc/test/bin/resize.jest.test.js` | Modify | three deprecated `page.waitFor(1000)` call sites |
 | `build/config/widget.config.js` | Modify | `snapshotTesting.env: 'ci'`; `snapshotTesting.puppeteer.args` |
 | `.github/workflows/js-tests.yaml` | Create | the two CI jobs |
 | `theSrc/test/snapshots/ci/master/**` | Modify | regenerated baselines (Task 6, own commit) |
 
 ---
 
-### Task 1: Upgrade puppeteer and restore `page.waitFor`
+### Task 1: Move puppeteer to a version the project's jest can load
 
-Foundational — nothing else can be verified until the browser launches. Delivers a working visual-test toolchain locally.
+Foundational — nothing else can be verified until the browser launches.
+
+**Background (read this, it explains why the task is shaped this way):** an earlier attempt at this task used `overrides: { puppeteer: "^24" }`. That does not work. The project's actually-resolved jest is **25.5.4**, not the 26.6.3 that rhtmlBuildUtils declares: `jest-image-snapshot@3.1.0` sets `peerDependencies: { "jest": ">=20 <=25" }`, which caps it, and rhtmlBuildUtils' own jest 26.6.3 ends up nested and shadowed. `getJestPath()` prefers the project root, so 25.5.4 is what runs. Jest 25's resolver predates `exports` maps, so under it `require('puppeteer')` from v24 yields an object whose `launch` is `undefined`. Every visual test calls `puppeteer.launch(...)`, so the whole suite breaks.
+
+puppeteer **13.7.0** is the chosen target: no `exports` field, no `node:` specifiers, loads correctly under jest 25.5.4, bundles Chromium 982053 (~Chrome 101), and **still has `page.waitFor`**. That last point means no shim, no jest setup file, and no `jest` key in `package.json` — do not add any of those.
 
 **Files:**
 - Modify: `package.json`
 - Modify: `package-lock.json` (generated)
-- Create: `theSrc/test/jest.setup.js`
+- Create: `theSrc/test/bin/puppeteerLoads.jest.test.js`
 - Modify: `theSrc/test/bin/resize.jest.test.js:44,70,91`
 - Modify: `build/config/widget.config.js`
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `theSrc/test/jest.setup.js` (no exports; side-effect module registered via `jest.setupFiles`). `build/config/widget.config.js` gains `snapshotTesting.env === 'ci'` and `snapshotTesting.puppeteer.args`, both consumed by Task 4's workflow.
+- Produces: `build/config/widget.config.js` gains `snapshotTesting.env === 'ci'` and `snapshotTesting.puppeteer.args`, both relied on by the workflow in Tasks 3 and 4.
 
-- [ ] **Step 1: Add the puppeteer override and jest setup config to `package.json`**
+- [ ] **Step 1: Add the puppeteer override to `package.json`**
 
-Add a top-level `overrides` key (sibling of `resolutions`, not inside it) and a top-level `jest` key:
+Add a top-level `overrides` key (sibling of `resolutions`, not inside it):
 
 ```json
   "overrides": {
-    "puppeteer": "^24"
-  },
-  "jest": {
-    "setupFiles": ["<rootDir>/theSrc/test/jest.setup.js"]
+    "puppeteer": "^13"
   },
 ```
+
+Do **not** add a `jest` key. Do **not** add `setupFiles`. There is no shim in this design.
 
 In the same file, **delete** the `circleCITest` script line entirely:
 
@@ -86,88 +92,69 @@ In the same file, **delete** the `circleCITest` script line entirely:
     "circleCITest": "gulp testSpecs && gulp testVisual --env=travis",
 ```
 
-CircleCI is gone, `--env=travis` would now be rejected as a directory that no longer exists, and the workflow invokes `gulp testSpecs` / `gulp testVisual` directly rather than through an npm script. Replacing it with an equivalent `ciTest` script would leave dead code with no caller.
+CircleCI is gone, `--env=travis` would now name a directory that no longer exists, and the workflow invokes `gulp testSpecs` / `gulp testVisual` directly rather than through an npm script.
 
 Leave the existing `resolutions` block alone — it drives `npm-force-resolutions` for local non-CI installs and coexists with `overrides`.
 
-- [ ] **Step 2: Install and confirm puppeteer resolved to 24**
+- [ ] **Step 2: Install and confirm the resolved versions**
 
 Run:
 ```bash
 npm install
-node -e "console.log(require('puppeteer/package.json').version)"
+node -e "console.log('puppeteer', require('puppeteer/package.json').version); console.log('jest', require('jest/package.json').version)"
 ```
-Expected: a `24.x` version. If it prints `3.3.0`, the `overrides` key is misplaced — check it is a top-level key.
+Expected: puppeteer `13.x`, jest `25.5.4`. If puppeteer prints `3.3.0`, the `overrides` key is misplaced — check it is top-level.
 
-- [ ] **Step 3: Write the failing test for the shim**
+- [ ] **Step 3: Write the failing test**
 
-The shim has to be exercised through a real page, because the bug it fixes is `page.waitFor` being called on a `CdpPage` instance from inside rhtmlBuildUtils. Create a temporary scratch check in `.tmp/`, which is already gitignored:
+This test is the regression guard for the exact bug that derailed the first attempt: a puppeteer that cannot be loaded by the project's jest. It must run *inside* jest to be meaningful — checking from plain `node` is what hid the problem last time.
 
-```bash
-mkdir -p .tmp
-cat > .tmp/shim-check.js <<'EOF'
-const puppeteer = require('puppeteer')
-require('../theSrc/test/jest.setup.js')
-;(async () => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] })
-  const page = await browser.newPage()
-  const start = Date.now()
-  await page.waitFor(300)
-  const elapsed = Date.now() - start
-  await browser.close()
-  if (elapsed < 250) throw new Error(`waitFor returned too early: ${elapsed}ms`)
-  console.log(`OK: page.waitFor(300) waited ${elapsed}ms`)
-})().catch(e => { console.error('FAIL:', e.message); process.exit(1) })
-EOF
-node .tmp/shim-check.js
-```
-Expected: FAIL with `Cannot find module '../theSrc/test/jest.setup.js'`, because the shim does not exist yet.
-
-- [ ] **Step 4: Write the shim**
-
-Create `theSrc/test/jest.setup.js`:
+Create `theSrc/test/bin/puppeteerLoads.jest.test.js`:
 
 ```js
-// rhtmlBuildUtils 7.2.6 calls page.waitFor(ms) in
-// src/lib/renderExamplePageTest.helper.js, an API puppeteer removed. We pin
-// puppeteer forward via an overrides entry rather than modifying that shared
-// repo, so restore the method here instead.
+// Guards the puppeteer/jest compatibility that the visual suite depends on.
 //
-// Only the numeric form is used. Defined on Page.prototype, which CdpPage
-// inherits from. No-ops if a future puppeteer reinstates the method.
-//
-// This file is also loaded for `gulp testSpecs`, where puppeteer is
-// irrelevant, so the require is guarded.
-let Page
-try {
-  ;({ Page } = require('puppeteer'))
-} catch (e) {
-  Page = null
-}
+// The project resolves jest 25.5.4, because jest-image-snapshot@3.1.0 caps it
+// via peerDependencies { jest: '>=20 <=25' }. Jest 25's resolver predates
+// package.json "exports" maps, so a puppeteer new enough to use one loads as
+// an object whose launch is undefined -- and every visual test calls
+// puppeteer.launch. This must be asserted from inside jest; from plain node
+// a modern puppeteer loads fine and the breakage is invisible.
+const puppeteer = require('puppeteer')
 
-if (Page && typeof Page.prototype.waitFor !== 'function') {
-  Page.prototype.waitFor = function (milliseconds) {
-    if (typeof milliseconds !== 'number') {
-      throw new TypeError(
-        `waitFor shim supports only the numeric form, got ${typeof milliseconds}. ` +
-        'Use waitForSelector or waitForFunction instead.'
-      )
-    }
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-  }
-}
+describe('puppeteer loads under the project jest', () => {
+  it('exposes launch', () => {
+    expect(typeof puppeteer.launch).toBe('function')
+  })
+
+  it('still provides page.waitFor, which rhtmlBuildUtils calls', () => {
+    const { Page } = require('puppeteer/lib/cjs/puppeteer/common/Page.js')
+    expect(typeof Page.prototype.waitFor).toBe('function')
+  })
+})
 ```
 
-- [ ] **Step 5: Run the shim check to verify it passes**
+- [ ] **Step 4: Run the test to verify it fails**
 
-Run: `node .tmp/shim-check.js`
-Expected: `OK: page.waitFor(300) waited ~300ms`
+The test lives in `theSrc/test/bin`, a jest root for `testVisual`, but running the full visual pipeline just to check this is slow. Invoke jest directly:
 
-Then delete it: `rm .tmp/shim-check.js`
+```bash
+./node_modules/.bin/jest --roots=theSrc/test/bin --testMatch='**/puppeteerLoads.jest.test.js'
+```
 
-- [ ] **Step 6: Fix the three repo-local `waitFor` calls**
+To see it genuinely fail first, temporarily set the override to `"puppeteer": "^24"`, run `npm install`, then run the command above.
+Expected: FAIL — `expected 'function', received 'undefined'` for `launch`.
 
-In `theSrc/test/bin/resize.jest.test.js`, at lines 44, 70 and 91, replace each occurrence of:
+Then set the override back to `"^13"`, run `npm install` again, and continue. Record both outputs in your report.
+
+- [ ] **Step 5: Run the test to verify it passes**
+
+Run: `./node_modules/.bin/jest --roots=theSrc/test/bin --testMatch='**/puppeteerLoads.jest.test.js'`
+Expected: PASS, 2 tests.
+
+- [ ] **Step 6: Fix the three deprecated `waitFor` calls**
+
+`page.waitFor` exists in puppeteer 13 but is deprecated. Our own code should not depend on it. In `theSrc/test/bin/resize.jest.test.js`, at lines 44, 70 and 91, replace each occurrence of:
 
 ```js
     await page.waitFor(1000)
@@ -179,7 +166,9 @@ with:
     await new Promise(resolve => setTimeout(resolve, 1000))
 ```
 
-These are our own code, so fix them properly rather than leaning on the shim. The shim exists only for the call inside rhtmlBuildUtils.
+One of the three sits inside a commented-out test block; fix it too, so the block is correct if it is ever re-enabled.
+
+Leave rhtmlBuildUtils' own `page.waitFor` call alone — it is in `node_modules/` and puppeteer 13 still supports it.
 
 - [ ] **Step 7: Set the snapshot env and Chrome sandbox flags**
 
@@ -200,50 +189,64 @@ In `build/config/widget.config.js`, inside the existing `snapshotTesting` object
     env: 'ci',
 ```
 
-- [ ] **Step 8: Verify unit tests still pass under the new jest config**
+- [ ] **Step 8: Verify the unit suite is unaffected**
 
 Run: `npx gulp testSpecs`
-Expected: PASS, 8 suites / 86 tests. This proves the new `jest` key in `package.json` and the guarded require did not disturb the unit suite.
+Expected: PASS, 8 suites / 86 tests.
 
-- [ ] **Step 9: Verify the visual harness launches and reaches a snapshot comparison**
+- [ ] **Step 9: Attempt local visual verification, and record the outcome honestly**
 
-Run a single interaction test against the **local** baselines, so nothing under `ci/` is touched:
-
+Run:
 ```bash
 npx gulp testVisual --env=local -t "basic resize"
 ```
 
-Expected: the browser launches and the test reaches an image comparison. Console shows a `snapshotDirectory .../snapshots/local/master/resize` line.
+There are two acceptable outcomes, and you must report which you got:
 
-**Reading the result:** an image *mismatch* is a PASS for this step — different Chrome, different machine. What must **not** appear is `TypeError: page.waitFor is not a function`, a browser launch failure, or a missing-module error. Those mean the shim or the puppeteer upgrade is broken.
+1. It reaches an image comparison. An image *mismatch* is fine — different Chrome, different machine. What matters is that the browser launched.
+2. It fails on a **known pre-existing Windows-only bug**: `compileRenderContentPage` interpolates a `path.join`-built path into a JS string literal, and on Windows the backslashes are consumed as escape sequences, corrupting the path before any browser code runs. This is unrelated to your change.
 
-- [ ] **Step 10: Confirm no snapshots were accidentally written**
+If you hit outcome 2, confirm it is pre-existing by checking whether the failure mentions a mangled path, and say so in your report. **Do not attempt to fix it** — it is out of scope and does not affect the Linux CI runner.
+
+What must NOT appear in either case: `puppeteer.launch is not a function`, or a module-resolution error for puppeteer. Those mean the version choice is wrong.
+
+- [ ] **Step 10: Confirm no snapshots were written**
 
 Run: `git status --short`
-Expected: no changes under `theSrc/test/snapshots/`. If any appear, `git checkout -- theSrc/test/snapshots/` and re-check that Step 9 used `--env=local` without `-u`.
+Expected: no changes under `theSrc/test/snapshots/`. If any appear, run `git checkout -- theSrc/test/snapshots/` and check Step 9 used `--env=local` with no `-u`.
 
-- [ ] **Step 11: Verify the bundle builds on Node 22**
+- [ ] **Step 11: Attempt the bundle build, and record the outcome honestly**
 
 Run: `npx gulp build`
-Expected: completes without error. This is the main unverified risk of choosing Node 22. If it fails with a `graceful-fs` or `natives` error, add `"graceful-fs": "^4"` to the `resolutions` block, re-run `npm install`, and retry.
+
+Again two acceptable outcomes:
+
+1. It succeeds.
+2. It fails in `makeDocs`, which shells out using a bash `<<<` herestring that Windows `cmd.exe` cannot parse. This is pre-existing and Windows-only.
+
+If you hit outcome 2, report it and move on. **Do not fix it.** Confirm the failure is in `makeDocs` and not in `compileWidgetEntryPoint` — a failure in the latter would be a real bundling problem and you should report it as a concern.
 
 - [ ] **Step 12: Commit**
 
 ```bash
-git add package.json package-lock.json theSrc/test/jest.setup.js \
+git add package.json package-lock.json theSrc/test/bin/puppeteerLoads.jest.test.js \
         theSrc/test/bin/resize.jest.test.js build/config/widget.config.js
 git commit -F - <<'EOF'
-Upgrade puppeteer to 24 and restore page.waitFor locally
+Move puppeteer to 13 so the project's jest can load it
 
 The visual tests drove Chromium 83 via rhtmlBuildUtils' puppeteer
-^3.3.0, which is impractical to run on a supported runner image. An
-npm overrides entry pins puppeteer forward without forking that shared
-repo.
+^3.3.0, which is impractical on a supported runner image.
 
-puppeteer removed page.waitFor, which rhtmlBuildUtils still calls. A
-jest setup file restores it on Page.prototype, inherited by CdpPage.
-Our own three call sites in resize.jest.test.js are fixed properly
-rather than relying on the shim.
+Upgrading to puppeteer 24 does not work: the project resolves jest
+25.5.4, because jest-image-snapshot@3.1.0 caps it via peerDependencies
+{ jest: '>=20 <=25' }. Jest 25's resolver predates "exports" maps, so
+puppeteer 24 loads as an object whose launch is undefined, breaking
+every visual test.
+
+puppeteer 13.7.0 has no exports map, loads under jest 25, bundles
+Chromium ~101, and still has page.waitFor, so no shim is needed. A new
+test asserts the loadability from inside jest, where the breakage is
+actually visible.
 
 Also sets snapshotTesting.env to ci, since --env=ci cannot be passed:
 rhtmlBuildUtils constrains the option to choices ['local', 'travis'].
