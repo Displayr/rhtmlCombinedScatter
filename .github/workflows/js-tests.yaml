@@ -8,6 +8,10 @@ on:
         description: 'Run only tests matching this name pattern (jest -t). Leave blank for all.'
         type: string
         default: ''
+      update_snapshots:
+        description: 'Regenerate visual baselines and commit them to this branch'
+        type: boolean
+        default: false
 
 jobs:
   unit:
@@ -53,6 +57,8 @@ jobs:
   visual:
     name: Visual regression tests
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -95,7 +101,7 @@ jobs:
       # be interpreted there. Acceptable: workflow_dispatch already requires
       # write access, and anyone with that could edit this file directly.
       - name: Visual regression tests
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && !inputs.update_snapshots }}
         env:
           TEST_FILTER: ${{ inputs.test_filter }}
         run: |
@@ -103,6 +109,17 @@ jobs:
             npx gulp testVisual -t "$TEST_FILTER"
           else
             npx gulp testVisual
+          fi
+
+      - name: Regenerate baselines
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && inputs.update_snapshots }}
+        env:
+          TEST_FILTER: ${{ inputs.test_filter }}
+        run: |
+          if [ -n "$TEST_FILTER" ]; then
+            npx gulp testVisual -u -t "$TEST_FILTER"
+          else
+            npx gulp testVisual -u
           fi
 
       - name: Upload snapshot diffs
@@ -113,3 +130,19 @@ jobs:
           path: theSrc/test/snapshots/ci/**/__diff_output__/**
           if-no-files-found: ignore
           retention-days: 14
+
+      # Deliberately runs even if the regeneration step exited non-zero: a
+      # partial regeneration is still worth capturing, and the uploaded diffs
+      # show what failed. Review the commit before merging.
+      - name: Commit regenerated baselines
+        if: ${{ !cancelled() && inputs.update_snapshots }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add theSrc/test/snapshots/ci
+          if git diff --cached --quiet; then
+            echo 'No baseline changes to commit'
+            exit 0
+          fi
+          git commit -m 'Regenerate visual regression baselines'
+          git push origin HEAD:${{ github.ref_name }}
