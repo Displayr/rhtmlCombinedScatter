@@ -41,7 +41,7 @@ describe('resize', () => {
       window.resizeHook(750, 750)
     })
 
-    await page.waitFor(1000)
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     await testSnapshots({ page, testName: 'basic_after_resize' })
 
@@ -67,7 +67,7 @@ describe('resize', () => {
       window.resizeHook(750, 750)
     })
 
-    await page.waitFor(1000)
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     await testSnapshots({ page, testName: 'user_interaction_after_resize' })
 
@@ -88,7 +88,7 @@ describe('resize', () => {
       window.resizeHook(500, 500)
     })
 
-    await page.waitFor(1000)
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     await testSnapshots({ page, testName: 'plot_after_resize_to_normal_height' })
 
