@@ -531,6 +531,13 @@ EOF
 
 ### Task 4: Add the `update_snapshots` dispatch
 
+> **Superseded in part.** The commit-back and auto-dispatch steps described below were
+> implemented, then removed. A bot-authored head commit cannot produce push-triggered checks,
+> and `workflow_dispatch` check runs are excluded from a PR's status rollup, so the PR showed
+> no checks and the R build never ran on it. The shipped workflow uploads a
+> `regenerated-baselines` artifact instead, and the `visual` job's permissions are
+> `contents: read`. See the spec's Baselines section and Task 6.
+
 Lets CI regenerate baselines and commit them back, since Windows-generated snapshots can never match a Linux runner.
 
 **Files:**
@@ -759,80 +766,89 @@ No commit — this task changes no files.
 
 ### Task 6: Regenerate the baselines
 
-Must be the **last** task, and the resulting commit must contain nothing but PNGs.
+Must be the **last** task. CI produces the baselines; a human commits them.
 
 **Files:**
-- Modify: `theSrc/test/snapshots/ci/master/**` (written by CI, not by hand)
-
-**Interfaces:**
-- Consumes: the `update_snapshots` dispatch from Task 4.
-- Produces: a green `visual` job.
+- Modify: `theSrc/test/snapshots/ci/master/**` (produced by CI, committed by hand)
 
 - [ ] **Step 1: Trigger regeneration**
 
 ```bash
-gh workflow run js-tests.yaml --ref cc-fix-ci -f update_snapshots=true
+gh workflow run js-tests.yaml --ref <branch> -f update_snapshots=true
 ```
 
-- [ ] **Step 2: Wait for it and confirm the commit landed**
+Optionally add `-f test_filter=<pattern>` first, to rehearse on a handful of snapshots
+instead of all ~427.
 
-Run:
+- [ ] **Step 2: Wait for it, then download the artifact**
+
 ```bash
 gh run watch
-git fetch origin cc-fix-ci
-git log --oneline origin/cc-fix-ci -3
+gh run download <run-id> -n regenerated-baselines -D .tmp/newbaselines
 ```
-Expected: a `Regenerate visual regression baselines` commit authored by `github-actions[bot]`.
 
-- [ ] **Step 3: Verify the commit contains only images**
+The run may report failure while still producing usable baselines — `-u` writes each one as
+its test completes, so a later test failing does not discard earlier work. Check what
+actually failed before discarding the artifact.
+
+- [ ] **Step 3: Review the images before committing**
+
+The artifact is the new baselines; compare them against what is committed. GitHub cannot
+render hundreds of binary diffs on one page ("Unable to render code block"), so review
+locally. A generated side-by-side page works well: extract the current baselines and the
+artifact into two trees and diff them visually.
+
+**This is the real gate on the whole change.** These images become the definition of correct,
+so a rendering regression accepted here is invisible afterwards. Confirm axes, labels,
+legends and colours are all present, and no plot is blank or clipped.
+
+- [ ] **Step 4: Commit them yourself**
 
 ```bash
-git show --stat origin/cc-fix-ci | grep -v '\.png' | head -20
+cp -r .tmp/newbaselines/. theSrc/test/snapshots/ci/
+git add theSrc/test/snapshots/ci
+git commit -m "Regenerate visual regression baselines"
+git push
 ```
-Expected: only the commit header and the summary line — no non-PNG files. If anything else was swept in, reset that commit and narrow the `git add` in the workflow.
 
-- [ ] **Step 4: Pull and confirm git paired the images as modifications**
+Commit them **alone**, with no other change, so git pairs them as modifications rather than
+add/delete — that is what makes them reviewable with GitHub's image diff viewer. See
+"Reviewing the regenerated baselines".
+
+Because this is your push rather than a bot's, it triggers both `js-tests.yaml` and
+`build-r-package.yaml` normally, and the PR shows the full check set. That is the entire
+reason CI does not commit these itself.
+
+- [ ] **Step 5: Confirm CI is green**
 
 ```bash
-git pull --ff-only origin cc-fix-ci
-git show --stat HEAD | tail -3
-```
-Expected: the summary reports `changed` files with insertions and deletions, **not** `create mode` / `delete mode` lines. Modifications are what make GitHub's image diff viewer work.
-
-- [ ] **Step 5: Spot-check the regenerated images**
-
-Open the regeneration commit on GitHub (Commits tab, not Files changed — the cumulative PR diff cannot pair them) and review a sample with the image diff viewer. Confirm the charts render correctly: axes, labels, legends and colours all present, no blank or clipped plots.
-
-**This is the real gate on the whole change.** The baselines are being accepted as the new definition of correct, so a rendering regression baked in here becomes invisible afterwards.
-
-- [ ] **Step 6: Confirm CI is now green**
-
-**The commit-back push does NOT retrigger the workflow.** GitHub deliberately suppresses
-workflow runs for pushes made with the default `GITHUB_TOKEN`, to prevent recursive
-triggering. So after the bot commits, no new run starts on its own and the last visible run
-is the (failing) regeneration one.
-
-Start a run explicitly against the new commit:
-
-```bash
-gh workflow run js-tests.yaml --ref cc-fix-ci
 gh run watch
 ```
 
-Expected: `unit` and `visual` both pass.
+Expected: `unit` and `visual` both pass, and `gh pr checks <pr>` lists them.
 
-If `visual` still fails, the remaining failures are likely genuine layout differences under modern Chrome rather than pixel noise. Triage them individually against the uploaded diffs — do **not** re-run regeneration to paper over them.
+If `visual` still fails, the remaining failures are genuine differences rather than pixel
+noise — triage them individually against the `snapshot-diffs` artifact. Do **not** re-run
+regeneration to paper over them.
 
-- [ ] **Step 7: Verify the local dev loop still works**
+Note the failure mode to expect: individual visual tests report **green** even when images
+mismatch, because rhtmlBuildUtils catches the matcher throw
+(`renderExamplePageTest.helper.js:132-147`). The job goes red only via jest's aggregate
+`N snapshot(s) failed`. Read that line and the artifact, not the per-test list. Genuine
+infrastructure breakage looks different: `Failed to launch the browser process`,
+`error while loading shared libraries`, or a `beforeAll` failure.
 
-Confirm the env change did not hijack local runs:
+- [ ] **Step 6: Verify the local dev loop still works**
 
 ```bash
 npx gulp testVisual --env=local -t "basic resize" 2>&1 | grep snapshotDirectory
 ```
-Expected: a path under `snapshots/local/master/`, **not** `snapshots/ci/`. Then `git status --short` should show no snapshot changes.
 
-No commit — CI produced the only one.
+Expected: a path under `snapshots/local/master/`, **not** `snapshots/ci/`. Then
+`git status --short` should show no snapshot changes.
+
+(On Windows this cannot run at all — see the `compileRenderContentPage` path bug — so treat
+a mangled-path failure as expected there.)
 
 ---
 

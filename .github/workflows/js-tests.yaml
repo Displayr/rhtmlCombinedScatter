@@ -73,11 +73,10 @@ jobs:
     name: Visual regression tests
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    # Read-only: this job neither pushes nor dispatches. Regenerated baselines
+    # are uploaded as an artifact for a human to commit -- see the last step.
     permissions:
-      contents: write
-      # actions: write is needed only to dispatch the follow-up verification
-      # run after committing regenerated baselines (see the last step).
-      actions: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -173,45 +172,32 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      # Deliberately runs even if the regeneration step exited non-zero: a
-      # partial regeneration is still worth capturing, and the uploaded diffs
-      # show what failed. Review the commit before merging.
-      # Guarded on ref_type: a dispatch against a tag would push to an existing
-      # refs/tags/<name>, which git rejects, failing the job after a full
-      # regeneration. Baselines are only ever committed back to a branch.
-      - name: Commit regenerated baselines
-        id: commit_baselines
-        if: ${{ !cancelled() && inputs.update_snapshots && github.ref_type == 'branch' }}
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add theSrc/test/snapshots/ci
-          if git diff --cached --quiet; then
-            echo 'No baseline changes to commit'
-            echo "committed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git commit -m 'Regenerate visual regression baselines'
-          git push origin "HEAD:$REF_NAME"
-          echo "committed=true" >> "$GITHUB_OUTPUT"
-
-      # The push above does NOT start a run: GitHub suppresses workflow runs for
-      # pushes made with the default GITHUB_TOKEN, to prevent recursion. A
-      # workflow_dispatch through the API is not suppressed, so dispatch one
-      # explicitly -- otherwise the newly committed baselines are never verified
-      # and the newest visible run stays the (failing) regeneration one.
+      # Regenerated baselines are uploaded for a human to commit, NOT committed
+      # by CI. Two GitHub behaviours make a bot-authored head commit unusable:
       #
-      # This terminates rather than looping: the run started here leaves
-      # update_snapshots at its default of false, so it only tests. It neither
-      # commits nor dispatches anything further.
+      #   1. A push made with the default GITHUB_TOKEN does not trigger any
+      #      workflow (anti-recursion), so build-r-package.yaml -- which triggers
+      #      only on push -- never runs on that commit.
+      #   2. workflow_dispatch check runs are excluded from a pull request's
+      #      status rollup. They exist on the commit and go green, but the PR
+      #      reports "no checks reported" and branch protection cannot see them.
       #
-      # Gated on the commit actually happening, so a no-op regeneration does not
-      # burn a run.
-      - name: Verify the regenerated baselines
-        if: ${{ !cancelled() && steps.commit_baselines.outputs.committed == 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REF_NAME: ${{ github.ref_name }}
-        run: gh workflow run js-tests.yaml --ref "$REF_NAME"
+      # Net effect of committing from CI was a PR that looked untested. Uploading
+      # instead means the human's own push produces the full check set.
+      #
+      # Runs even if regeneration exited non-zero: a partial regeneration is
+      # still worth inspecting alongside the diffs.
+      - name: Upload regenerated baselines
+        if: ${{ !cancelled() && inputs.update_snapshots }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: regenerated-baselines
+          # Exclude the diagnostic directories; they are uploaded separately as
+          # snapshot-diffs and are gitignored, so they must not be mistaken for
+          # baselines when this artifact is extracted over a working tree.
+          path: |
+            theSrc/test/snapshots/ci
+            !theSrc/test/snapshots/ci/**/__diff_output__
+            !theSrc/test/snapshots/ci/**/new_snapshots
+          if-no-files-found: error
+          retention-days: 14

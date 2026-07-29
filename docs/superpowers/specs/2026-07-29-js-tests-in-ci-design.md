@@ -123,12 +123,12 @@ New `.github/workflows/js-tests.yaml`. `build-r-package.yaml` is untouched.
   group: js-tests-${{ github.ref }}${{ inputs.update_snapshots && '-regen' || '' }}
   ```
 
-  Without that suffix, a routine push to the branch would cancel an in-flight regeneration —
-  and because the commit-back step is gated on `!cancelled()` (false once the concurrency
-  manager cancels a run), ~90 minutes of work and 427 regenerated baselines would be
-  discarded silently, showing only "cancelled" in the Actions UI. On a `push` event the
-  `inputs` context is empty, so the suffix evaluates to `''` and ordinary pushes still
-  supersede each other.
+  Without that suffix, a routine push to the branch would cancel an in-flight regeneration,
+  discarding ~90 minutes of work and the `regenerated-baselines` artifact with it — the
+  upload step is gated on `!cancelled()`, which is false once the concurrency manager cancels
+  a run, so nothing would be produced and the Actions UI would show only "cancelled". On a
+  `push` event the `inputs` context is empty, so the suffix evaluates to `''` and ordinary
+  pushes still supersede each other.
 
 ### Keep running after a failure
 
@@ -210,20 +210,38 @@ local installs; `overrides` and `resolutions` coexist.
 
 Regeneration is CI-driven, since Windows-generated snapshots can never match a Linux
 runner. `workflow_dispatch` takes an `update_snapshots` boolean; when true, the visual job
-runs with `-u` and commits regenerated PNGs back to the triggering branch
-(`permissions: contents: write`). This is also the bootstrap path: the first dispatch on
-the feature branch creates the whole set for review in the PR diff.
+runs with `-u` and **uploads** the regenerated PNGs as a `regenerated-baselines` artifact.
+A human downloads it, commits the result, and pushes.
+
+**CI deliberately does not commit them itself.** That was tried and it does not work, for two
+compounding reasons:
+
+1. A push made with the default `GITHUB_TOKEN` triggers no workflow at all (GitHub's
+   anti-recursion rule). `build-r-package.yaml` triggers only on `push`, so the existing R
+   check never runs on a bot-authored commit.
+2. `workflow_dispatch` check runs are **excluded from a pull request's status rollup**. This
+   was verified on the real PR: commit `00ed810` carried two green check runs
+   (`Unit tests and lint`, `Visual regression tests`) whose suite even reported
+   `pull_requests: 1`, yet `gh pr checks` returned "no checks reported" and the rollup was
+   `[]`. Dispatching a follow-up verification run therefore cannot rescue the situation.
+
+Net effect of committing from CI was a PR that looked entirely untested, and a required R
+check that could never be satisfied. Uploading instead means the human's own push produces
+the full check set, which is what branch protection needs.
+
+The bootstrap path is the same: the first dispatch produces the whole set as an artifact.
 
 On failure, upload `**/__diff_output__/**` as an artifact so a red run is diagnosable
 without a local repro.
 
-`__diff_output__` is added to `.gitignore`, because the commit-back step stages all of
-`theSrc/test/snapshots/ci` and a failed regeneration writes diff images alongside the
-baselines. They must never be committed as if they were baselines.
+`__diff_output__` and `new_snapshots` are added to `.gitignore`. A failed run writes diff
+and as-rendered images alongside the baselines, and committing the regenerated set means
+running `git add theSrc/test/snapshots/ci` — which would otherwise sweep them in as if they
+were baselines.
 
-Note the bot's push does **not** start a new workflow run: GitHub suppresses runs for pushes
-made with the default `GITHUB_TOKEN`, to prevent recursion. After a regeneration, a run must
-be started explicitly to verify the new baselines.
+The `regenerated-baselines` artifact excludes both directories for the same reason, so that
+extracting it over a working tree cannot introduce diagnostic images as if they were
+baselines.
 
 ### Smoke-testing the harness on a subset
 
@@ -315,9 +333,9 @@ history. It is only needed for review, so squashing on merge is acceptable.
   catches it.
 - `acceptNewSnapshots` defaults to `true`, which appends `--ci=0` to the jest command. That
   made a snapshot with no baseline get **written and passed** rather than failed, and since
-  the commit-back step only runs under `update_snapshots`, the new baseline was then
-  discarded with the runner -- so a new snapshot would have looked green forever and never
-  actually been regression-tested. **Closed:** the normal test step passes
+  baselines only leave the runner under `update_snapshots`, the new one was then discarded
+  with the runner -- so a new snapshot would have looked green forever and never actually
+  been regression-tested. **Closed:** the normal test step passes
   `--acceptNewSnapshots=false`, so `--ci=0` is omitted, jest infers `ci: true` from the
   runner's `CI=true` (`jest-cli` defaults `ci` to `is-ci`), and
   `jest-config/build/normalize.js:1171` yields `updateSnapshot: 'none'` -- which makes
