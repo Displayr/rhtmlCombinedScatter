@@ -663,6 +663,10 @@ function createPlotlyLayout (config, margin_right, height) {
     if (config.xAxisTickMaxnum !== null) x_axis.nticks = config.xAxisTickMaxnum
     if (config.yAxisTickMaxnum !== null) y_axis.nticks = config.yAxisTickMaxnum
 
+    // Only set when hover is turned off, so that a chart which shows a tooltip keeps
+    // whatever plotly would choose for it
+    if (!config.tooltipShow) plot_layout.hovermode = false
+
     addAxesToGrid(plot_layout, x_axis, y_axis, npanel, config.panelNumRows, config.panelShareAxes)
     if (placeTextInMargins(config) && config.title.length > 0) {
         plot_layout.annotations = [createTitleAnnotation(config)]

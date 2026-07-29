@@ -109,6 +109,17 @@ describe('subtitle and footer alignment', () => {
     })
 })
 
+describe('tooltip', () => {
+    test('hover is left to plotly when the tooltip is shown', () => {
+        expect(layout().hovermode).toBeUndefined()
+        expect(layout({ tooltipShow: true }).hovermode).toBeUndefined()
+    })
+
+    test('hover is turned off when the tooltip is not shown', () => {
+        expect(layout({ tooltipShow: false }).hovermode).toBe(false)
+    })
+})
+
 describe('empty axis titles', () => {
     // An empty title is not the same as no title: plotly reserves the title font height
     // for a title it never draws. Line charts have to match the margins of the plotly

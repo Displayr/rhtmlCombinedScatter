@@ -163,6 +163,7 @@ CombinedScatter(
   tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
   tooltip.font.family = "Arial",
   tooltip.font.size = 10,
+  tooltip.show = TRUE,
   tooltip.text = NULL,
   trend.lines.line.thickness = 1,
   trend.lines.point.size = 2,
@@ -576,6 +577,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{tooltip.font.family}{is the font family of the tooltips}
 
 \item{tooltip.font.size}{is the font size of the tooltips}
+
+\item{tooltip.show}{Whether to show a tooltip on mouse hover. Defaults to TRUE.}
 
 \item{tooltip.text}{is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)}
 

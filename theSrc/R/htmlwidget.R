@@ -169,6 +169,7 @@
 #' @param axis.font.family Font Family of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.size Font size of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.color Font color of the axis labels. Only used if the values for specific axis is not set.
+#' @param tooltip.show Whether to show a tooltip on mouse hover. Defaults to TRUE.
 #' @param tooltip.text is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)
 #' @param tooltip.font.color is the font color of the tooltips
 #' @param tooltip.font.family is the font family of the tooltips
@@ -424,6 +425,7 @@ CombinedScatter <- function(
     tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
     tooltip.font.family = "Arial",
     tooltip.font.size = 10,
+    tooltip.show = TRUE,
     tooltip.text = NULL,
     trend.lines.line.thickness = 1,
     trend.lines.point.size=2,
@@ -706,6 +708,7 @@ CombinedScatter <- function(
              yAxisZeroLineColor = y.axis.zero.line.color,
              yAxisZeroLineDash = y.axis.zero.line.dash,
              yAxisZeroLineWidth = y.axis.zero.line.width,
+             tooltipShow = tooltip.show,
              tooltipText = tooltip.text,
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,

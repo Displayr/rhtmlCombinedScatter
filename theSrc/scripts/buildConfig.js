@@ -179,6 +179,7 @@ const defaultConfig = {
   tooltipFontColor: '#2C2C2C',
   tooltipFontFamily: 'Arial',
   tooltipFontSize: 10,
+  tooltipShow: true,
   tooltipText: [],
   transparency: null, // TODO rename to color transparency
   trendLines: false,
