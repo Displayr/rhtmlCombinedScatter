@@ -194,6 +194,14 @@ the feature branch creates the whole set for review in the PR diff.
 On failure, upload `**/__diff_output__/**` as an artifact so a red run is diagnosable
 without a local repro.
 
+`__diff_output__` is added to `.gitignore`, because the commit-back step stages all of
+`theSrc/test/snapshots/ci` and a failed regeneration writes diff images alongside the
+baselines. They must never be committed as if they were baselines.
+
+Note the bot's push does **not** start a new workflow run: GitHub suppresses runs for pushes
+made with the default `GITHUB_TOKEN`, to prevent recursion. After a regeneration, a run must
+be started explicitly to verify the new baselines.
+
 ### Smoke-testing the harness on a subset
 
 `gulp testVisual` **cannot be run locally on Windows at all.** rhtmlBuildUtils'

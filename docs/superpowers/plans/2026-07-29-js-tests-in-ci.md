@@ -606,6 +606,10 @@ Add at the end of the `visual` job's steps, after the artifact upload:
       # Deliberately runs even if the regeneration step exited non-zero: a
       # partial regeneration is still worth capturing, and the uploaded diffs
       # show what failed. Review the commit before merging.
+      #
+      # NB this push will NOT start a new workflow run: GitHub suppresses runs
+      # for pushes made with the default GITHUB_TOKEN, to avoid recursion. After
+      # a regeneration, start a run explicitly to verify the new baselines.
       - name: Commit regenerated baselines
         if: ${{ !cancelled() && inputs.update_snapshots }}
         run: |
@@ -774,7 +778,17 @@ Open the regeneration commit on GitHub (Commits tab, not Files changed — the c
 
 - [ ] **Step 6: Confirm CI is now green**
 
-The commit-back push retriggers the workflow. Run: `gh run watch`
+**The commit-back push does NOT retrigger the workflow.** GitHub deliberately suppresses
+workflow runs for pushes made with the default `GITHUB_TOKEN`, to prevent recursive
+triggering. So after the bot commits, no new run starts on its own and the last visible run
+is the (failing) regeneration one.
+
+Start a run explicitly against the new commit:
+
+```bash
+gh workflow run js-tests.yaml --ref cc-fix-ci
+gh run watch
+```
 
 Expected: `unit` and `visual` both pass.
 
