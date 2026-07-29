@@ -84,7 +84,7 @@ New `.github/workflows/js-tests.yaml`. `build-r-package.yaml` is untouched.
 | Job | Steps |
 |---|---|
 | `unit` | `npm ci` → `gulp lint` → `gulp testSpecs` → `gulp build` |
-| `visual` | `npm ci` → apt fonts → `gulp testVisual --env=ci` |
+| `visual` | `npm ci` → apt fonts → `gulp testVisual` (no `--env`; see below) |
 
 ### Keep running after a failure
 
@@ -117,9 +117,9 @@ Some visual tests are flaky, so one failure must not hide the rest. Three levels
 
   This requires a jest config, since the gulp tasks currently invoke jest with only
   `--roots` and `--testMatch` and no config file. Add a `jest` key to `package.json` with
-  `setupFilesAfterEach`, which jest picks up from the project root automatically. Note this
-  applies to `testSpecs` as well as `testVisual`, so the setup file must tolerate puppeteer
-  being irrelevant there — guard the require rather than assuming it loads.
+  `setupFiles`, which jest picks up from the project root automatically. Note this applies
+  to `testSpecs` as well as `testVisual`, so the setup file must tolerate puppeteer being
+  irrelevant there — guard the require rather than assuming it loads.
 
   The shim cannot live in the test files themselves: the offending call is reached through
   buildUtils' `testSnapshots`, invoked from `.tmp/takeSnapshots.jest.test.js`, which is
@@ -147,7 +147,26 @@ local installs; `overrides` and `resolutions` coexist.
 
 ### Baselines
 
-- Regenerate under a new env name: `--env=ci`, writing to `theSrc/test/snapshots/ci/master/`.
+- Regenerate under a new env name, writing to `theSrc/test/snapshots/ci/master/`.
+
+  **`--env=ci` cannot be passed on the command line.** rhtmlBuildUtils constrains the
+  option: `yargs.option('env', { choices: ['local', 'travis'] })`, so `--env=ci` is
+  rejected outright. Since we are not modifying that repo, set the env through config
+  instead:
+
+  - `build/config/widget.config.js` sets `snapshotTesting.env: 'ci'`.
+  - The CI job runs `npx gulp testVisual` with **no** `--env` flag.
+
+  This works because the snapshot path is
+  `snapshotDirectory / env / branch / <collection>`, resolved by
+  `_.defaultsDeep(CLI args → build/config/widget.config.js → default.widget.config.js)`,
+  and yargs options declared without a default are absent from the parsed args when not
+  supplied — the parser's own header comment states this is deliberate. So omitting
+  `--env` lets the repo config win, bypassing the `choices` whitelist.
+
+  `npm run localTest` already passes `--env=local` explicitly, so the local dev loop keeps
+  using `theSrc/test/snapshots/local/` and is unaffected. `--branch` is likewise omitted,
+  falling through to the default `master`.
 - `theSrc/test/snapshots/travis/` is **renamed** to `ci/`, not deleted, and the rename must
   be its own commit with no content change. See "Reviewing the regenerated baselines".
 - No `--branch` flag, matching CircleCI, so every branch compares against master's
@@ -209,10 +228,13 @@ history. It is only needed for review, so squashing on merge is acceptable.
   own commit, separate from the config changes.
 - Modern Chrome may render differently enough that some tests fail for real layout reasons
   rather than needing new baselines. Expect to triage a handful.
-- The `overrides` approach is unverified until installed. If puppeteer 24 breaks something
-  in rhtmlBuildUtils beyond `waitFor`, the fallback is stepping back a major version.
-- Which puppeteer release removed `page.waitFor` is from recollection, not checked. Verify
-  empirically during implementation rather than trusting it.
+- The `overrides` approach is unverified until installed against the real dependency tree.
+  If puppeteer 24 breaks something in rhtmlBuildUtils beyond `waitFor`, the fallback is
+  stepping back a major version.
+- `acceptNewSnapshots` defaults to `true`, which passes `--ci=0` to jest. A snapshot with
+  no existing baseline is therefore written and **passes** rather than failing. Renaming a
+  test silently creates a new baseline instead of erroring. Not a blocker, but it means a
+  green visual job does not by itself prove every baseline was actually compared.
 - Node 22 is unverified for `gulp build` and `gulp testVisual`. There is a known pattern of
   older rhtml* toolchains failing on Node 22 (gulp 3 / `natives` / `graceful-fs`), but this
   repo is on gulp 4 and its unit tests pass on Node 22, so the risk is modest. If the build
