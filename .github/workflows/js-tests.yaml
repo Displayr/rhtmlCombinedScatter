@@ -15,8 +15,16 @@ on:
 
 # One in-flight run per branch; a new push supersedes the previous run rather
 # than stacking another full ~427-snapshot visual job behind it.
+#
+# Regeneration dispatches get their OWN group, so a routine push cannot cancel
+# one. That matters because the commit-back step is gated on !cancelled(), which
+# is false once the concurrency manager cancels a run -- an interrupted
+# regeneration would therefore discard ~90 minutes of work and 427 baselines
+# silently, showing only "cancelled" in the Actions UI. On a push event the
+# inputs context is empty, so the suffix evaluates to '' and pushes still
+# supersede each other as intended.
 concurrency:
-  group: js-tests-${{ github.ref }}
+  group: js-tests-${{ github.ref }}${{ inputs.update_snapshots && '-regen' || '' }}
   cancel-in-progress: true
 
 jobs:

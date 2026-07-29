@@ -109,6 +109,27 @@ New `.github/workflows/js-tests.yaml`. `build-r-package.yaml` is untouched.
 | `unit` | `npm ci` → `gulp lint` → `gulp testSpecs` → `gulp core compileWidgetEntryPoint` |
 | `visual` | `npm ci` → apt fonts → `gulp testVisual` (no `--env`; see below) |
 
+### Run economy and cancellation
+
+- `timeout-minutes: 20` on `unit`, `90` on `visual`. The default ceiling is 360 minutes, and
+  the visual suite relaunches a browser for each of ~427 snapshots, so a hang would otherwise
+  burn six hours of runner time.
+- A `concurrency` group supersedes an in-flight run when a new push lands, rather than
+  stacking another full visual job behind it.
+- **Regeneration dispatches get their own group.** The group key carries a `-regen` suffix
+  when `update_snapshots` is set:
+
+  ```yaml
+  group: js-tests-${{ github.ref }}${{ inputs.update_snapshots && '-regen' || '' }}
+  ```
+
+  Without that suffix, a routine push to the branch would cancel an in-flight regeneration —
+  and because the commit-back step is gated on `!cancelled()` (false once the concurrency
+  manager cancels a run), ~90 minutes of work and 427 regenerated baselines would be
+  discarded silently, showing only "cancelled" in the Actions UI. On a `push` event the
+  `inputs` context is empty, so the suffix evaluates to `''` and ordinary pushes still
+  supersede each other.
+
 ### Keep running after a failure
 
 Some visual tests are flaky, so one failure must not hide the rest. Three levels:
