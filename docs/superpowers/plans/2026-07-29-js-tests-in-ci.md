@@ -386,7 +386,30 @@ EOF
 - Consumes: `snapshotTesting.env: 'ci'` and `snapshotTesting.puppeteer.args` from Task 1.
 - Produces: a `visual` job. Task 4 adds the `update_snapshots` conditional steps to it.
 
-- [ ] **Step 1: Append the visual job**
+- [ ] **Step 1: Add the `test_filter` dispatch input**
+
+The visual suite is ~427 snapshots and slow. To confirm the harness works without waiting
+for a full run, the workflow accepts a filter that maps to jest's `-t`. This matters
+because `gulp testVisual` cannot be run locally on Windows at all: rhtmlBuildUtils'
+`compileRenderContentPage` interpolates a `path.join`-built path into
+`const WidgetFactory = require('{{{widget_definition_path}}}')`, and on Windows the
+backslashes become escape sequences (`	` → TAB, `` → CR), corrupting the path before
+browserify runs. CI is therefore the only place the visual suite can be exercised.
+
+Replace the `on:` block in `.github/workflows/js-tests.yaml`:
+
+```yaml
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Run only tests matching this name pattern (jest -t). Leave blank for all.'
+        type: string
+        default: ''
+```
+
+- [ ] **Step 2: Append the visual job**
 
 Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (no `needs:`, so the two run in parallel):
 
@@ -426,9 +449,18 @@ Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (
       # so 'ci' comes from build/config/widget.config.js instead. --branch is
       # likewise omitted, defaulting to master, so every branch compares
       # against master's baselines.
+      # TEST_FILTER goes through env, not directly into the run script, so a
+      # dispatch input cannot inject shell.
       - name: Visual regression tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npx gulp testVisual
+        env:
+          TEST_FILTER: ${{ inputs.test_filter }}
+        run: |
+          if [ -n "$TEST_FILTER" ]; then
+            npx gulp testVisual -t "$TEST_FILTER"
+          else
+            npx gulp testVisual
+          fi
 
       - name: Upload snapshot diffs
         if: ${{ !cancelled() }}
@@ -440,7 +472,7 @@ Add to `.github/workflows/js-tests.yaml`, as a sibling of `unit` under `jobs:` (
           retention-days: 14
 ```
 
-- [ ] **Step 2: Validate the YAML and job independence**
+- [ ] **Step 3: Validate the YAML and job independence**
 
 Run:
 ```bash
@@ -451,12 +483,14 @@ if(!/^  visual:/m.test(s)) throw new Error('visual job missing');
 if(/^\s+needs:/m.test(s)) throw new Error('jobs must run in parallel, no needs:');
 if(s.includes('--env=ci')) throw new Error('--env=ci is rejected by yargs');
 if(s.includes('continue-on-error')) throw new Error('jobs must be able to fail');
+if(!s.includes('TEST_FILTER')) throw new Error('test_filter must reach the run step via env');
+if(/-t \$\{\{/.test(s)) throw new Error('never interpolate a dispatch input straight into run:');
 console.log('OK');
 "
 ```
 Expected: `OK`
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add .github/workflows/js-tests.yaml
@@ -469,7 +503,11 @@ browser download.
 
 Runs gulp testVisual with no --env flag; the ci env comes from
 build/config/widget.config.js. Uploads __diff_output__ images so a red
-run is diagnosable without a local repro.
+run is diagnosable without a local repro, which matters because
+gulp testVisual cannot run on Windows at all.
+
+Adds a test_filter dispatch input so the harness can be smoke-tested
+on a handful of snapshots rather than all 427.
 
 Expected to fail until the baselines are regenerated.
 
@@ -492,18 +530,27 @@ Lets CI regenerate baselines and commit them back, since Windows-generated snaps
 
 - [ ] **Step 1: Add the dispatch input**
 
-Replace the `on:` block at the top of `.github/workflows/js-tests.yaml`:
+Add `update_snapshots` **alongside** the `test_filter` input that Task 3 added — do not
+replace it. The `on:` block becomes:
 
 ```yaml
 on:
   push:
   workflow_dispatch:
     inputs:
+      test_filter:
+        description: 'Run only tests matching this name pattern (jest -t). Leave blank for all.'
+        type: string
+        default: ''
       update_snapshots:
         description: 'Regenerate visual baselines and commit them to this branch'
         type: boolean
         default: false
 ```
+
+The two compose deliberately: `test_filter` alone smoke-tests the harness against existing
+baselines, and the pair together regenerates just that subset — a dress rehearsal for the
+full regeneration in Task 6, with a handful of images to review instead of 427.
 
 - [ ] **Step 2: Grant the visual job write access**
 
@@ -529,7 +576,14 @@ Then insert this immediately after it, before the artifact upload:
 ```yaml
       - name: Regenerate baselines
         if: ${{ !cancelled() && steps.install.outcome == 'success' && inputs.update_snapshots }}
-        run: npx gulp testVisual -u
+        env:
+          TEST_FILTER: ${{ inputs.test_filter }}
+        run: |
+          if [ -n "$TEST_FILTER" ]; then
+            npx gulp testVisual -u -t "$TEST_FILTER"
+          else
+            npx gulp testVisual -u
+          fi
 ```
 
 On a `push` event the `inputs` context is empty, so `inputs.update_snapshots` is null and `!inputs.update_snapshots` is true — the normal test step runs and the regeneration step does not.

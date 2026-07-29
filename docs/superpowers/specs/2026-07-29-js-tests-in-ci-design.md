@@ -189,6 +189,27 @@ the feature branch creates the whole set for review in the PR diff.
 On failure, upload `**/__diff_output__/**` as an artifact so a red run is diagnosable
 without a local repro.
 
+### Smoke-testing the harness on a subset
+
+`gulp testVisual` **cannot be run locally on Windows at all.** rhtmlBuildUtils'
+`compileRenderContentPage` builds the widget path with `path.join('..', widgetFactory)` and
+mustache writes it unescaped into `const WidgetFactory = require('{{{widget_definition_path}}}')`.
+On Windows the separators are backslashes, so `	` becomes a TAB and `` a carriage
+return, corrupting the path before browserify resolves it. There is no WSL or Docker on the
+dev machine, so CI is the only place the visual suite can run. (The upstream fix is a
+one-liner — use POSIX separators — but rhtmlBuildUtils is out of scope here.)
+
+To confirm the harness works without waiting on all 427 snapshots, the workflow takes a
+`test_filter` dispatch input that maps to jest's `-t`. It is passed to the run step through
+`env:` rather than interpolated into the script, so a dispatch input cannot inject shell.
+
+It composes with `update_snapshots`:
+
+- `test_filter` alone — run a handful of tests against existing baselines. Proves the
+  browser launches and the comparison path works, even though it reports mismatches.
+- `test_filter` **and** `update_snapshots` — regenerate just that subset. A dress rehearsal
+  for the full regeneration, with a few images to review instead of 427.
+
 ### Reviewing the regenerated baselines
 
 Git detects renames by similarity rather than storing them. A pure `git mv` is 100%
