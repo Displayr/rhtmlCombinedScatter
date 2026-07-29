@@ -75,6 +75,9 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
+      # actions: write is needed only to dispatch the follow-up verification
+      # run after committing regenerated baselines (see the last step).
+      actions: write
     steps:
       - uses: actions/checkout@v4
 
@@ -177,6 +180,7 @@ jobs:
       # refs/tags/<name>, which git rejects, failing the job after a full
       # regeneration. Baselines are only ever committed back to a branch.
       - name: Commit regenerated baselines
+        id: commit_baselines
         if: ${{ !cancelled() && inputs.update_snapshots && github.ref_type == 'branch' }}
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -186,7 +190,28 @@ jobs:
           git add theSrc/test/snapshots/ci
           if git diff --cached --quiet; then
             echo 'No baseline changes to commit'
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m 'Regenerate visual regression baselines'
           git push origin "HEAD:$REF_NAME"
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # The push above does NOT start a run: GitHub suppresses workflow runs for
+      # pushes made with the default GITHUB_TOKEN, to prevent recursion. A
+      # workflow_dispatch through the API is not suppressed, so dispatch one
+      # explicitly -- otherwise the newly committed baselines are never verified
+      # and the newest visible run stays the (failing) regeneration one.
+      #
+      # This terminates rather than looping: the run started here leaves
+      # update_snapshots at its default of false, so it only tests. It neither
+      # commits nor dispatches anything further.
+      #
+      # Gated on the commit actually happening, so a no-op regeneration does not
+      # burn a run.
+      - name: Verify the regenerated baselines
+        if: ${{ !cancelled() && steps.commit_baselines.outputs.committed == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
+        run: gh workflow run js-tests.yaml --ref "$REF_NAME"
