@@ -119,7 +119,7 @@ CombinedScatter(
   legend.y.anchor = NULL,
   legend.wrap = TRUE,
   legend.wrap.n.char = 30,
-  lines.show = FALSE,
+  line.show = FALSE,
   line.colors = NULL,
   line.thickness = 3,
   line.type = "solid",
@@ -476,7 +476,7 @@ When automatic, the legend is only shown when there is more than one group. Defa
 
 \item{legend.wrap.n.char}{The number of characters before wrapping the legend group names}
 
-\item{lines.show}{Whether to join the points in each group with a line, in the order
+\item{line.show}{Whether to join the points in each group with a line, in the order
 supplied in \code{X} and \code{Y}. Used to draw line charts with automatically
 placed data labels.}
 
@@ -542,9 +542,14 @@ curved lines.}
 
 \item{plot.background.color}{The color of the plot area background}
 
-\item{point.radius}{Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
-When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
-\code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).}
+\item{point.radius}{Radius of the points in pixels when bubble parameter \code{Z} is not
+supplied. Defaults to 2, or to 4 when \code{Z} is supplied. Either a single value or a
+vector with one value per point, which is how a chart shows a marker on some points and
+not others; a radius of 0 draws no marker. A vector requires \code{Z} to be NULL, since
+the bubble legend has only one radius to size its reference bubbles from.
+When \code{Z} is supplied, the points are scaled so that the largest has a radius of
+\code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
+(37.6 pixels for the default of 4).}
 
 \item{point.border.color}{Colors of borders around points and bubbles}
 

@@ -126,7 +126,7 @@
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
 #' @param legend.wrap Whether to wrap the legend group names
 #' @param legend.wrap.n.char The number of characters before wrapping the legend group names
-#' @param lines.show Whether to join the points in each group with a line, in the order
+#' @param line.show Whether to join the points in each group with a line, in the order
 #'     supplied in \code{X} and \code{Y}. Used to draw line charts with automatically
 #'     placed data labels.
 #' @param line.colors The color of the joining line in each group. Either a single value
@@ -184,9 +184,14 @@
 #' @param x.hover.format A string that is interpreted for the format of the x axis values in the tooltips.
 #' @param y.format A string that is interpreted for the format of the y axis labels. Default is NULL.
 #' @param y.hover.format A string that is interpreted for the format of the y axis values in the tooltips.
-#' @param point.radius Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
-#'     When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
-#'     \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).
+#' @param point.radius Radius of the points in pixels when bubble parameter \code{Z} is not
+#'     supplied. Defaults to 2, or to 4 when \code{Z} is supplied. Either a single value or a
+#'     vector with one value per point, which is how a chart shows a marker on some points and
+#'     not others; a radius of 0 draws no marker. A vector requires \code{Z} to be NULL, since
+#'     the bubble legend has only one radius to size its reference bubbles from.
+#'     When \code{Z} is supplied, the points are scaled so that the largest has a radius of
+#'     \code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
+#'     (37.6 pixels for the default of 4).
 #' @param point.border.color Colors of borders around points and bubbles
 #' @param point.border.width Widths of borders around points and bubbles in pixels
 #' @param x.bounds.minimum Integer or NULL; set minimum of range for plotting on the x axis
@@ -379,7 +384,7 @@ CombinedScatter <- function(
     legend.y.anchor = NULL,
     legend.wrap = TRUE,
     legend.wrap.n.char = 30,
-    lines.show = FALSE,
+    line.show = FALSE,
     line.colors = NULL,
     line.thickness = 3,
     line.type = 'solid',
@@ -512,6 +517,10 @@ CombinedScatter <- function(
         stop("Inputs X and Y need to have the same length")
     if (!is.null(Z) && length(X) != length(Z))
         stop("Input Z needs to have the same length as X and Y")
+    # With a radius per point the area of a bubble is proportional to Z * point.radius^2,
+    # so there is no single Z-to-size mapping left for the bubble legend to draw.
+    if (!is.null(Z) && length(point.radius) > 1)
+        stop("point.radius must be a single value when Z is supplied")
 
     isDateTime <- function(x) { return (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXt"))}
     xIsDateTime <- isDateTime(X[1])
@@ -727,7 +736,7 @@ CombinedScatter <- function(
              yBoundsMaximum = y.bounds.maximum,
              xBoundsUnitsMajor = x.bounds.units.major,
              yBoundsUnitsMajor = y.bounds.units.major,
-             linesShow = lines.show,
+             lineShow = line.show,
              lineColors = toJsonOrNull(line.colors),
              lineThickness = toJsonOrNull(line.thickness),
              lineType = toJsonOrNull(line.type),

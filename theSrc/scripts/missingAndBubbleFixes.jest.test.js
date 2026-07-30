@@ -14,7 +14,7 @@ describe('the legend entry of a line chart with one series', () => {
     // The marker trace gives its legend entry up to the line trace when lines are drawn,
     // so the line trace has to take it, or the legend comes out empty.
     test('a line trace asks to be in the legend', () => {
-        const shown = createPlotlyData(cfg({ linesShow: true }))
+        const shown = createPlotlyData(cfg({ lineShow: true }))
             .filter(t => t.showlegend === true)
         expect(shown.length).toBe(1)
         expect(shown[0].mode).toBe('lines')
@@ -22,14 +22,14 @@ describe('the legend entry of a line chart with one series', () => {
     })
 
     test('the marker trace stays out of it, so the entry is not duplicated', () => {
-        const data = createPlotlyData(cfg({ linesShow: true }))
+        const data = createPlotlyData(cfg({ lineShow: true }))
         expect(data.filter(t => t.mode === 'markers' && t.showlegend === true))
             .toHaveLength(0)
     })
 
     test('only one entry when the chart is split into panels', () => {
         const config = cfg({
-            linesShow: true,
+            lineShow: true,
             panels: [1, 1, 2, 2],
             panelLabels: ['one', 'two'],
         })
@@ -37,7 +37,7 @@ describe('the legend entry of a line chart with one series', () => {
     })
 
     test('a chart with groups still gets one entry per group', () => {
-        const config = cfg({ linesShow: true, group: ['A', 'A', 'B', 'B'] })
+        const config = cfg({ lineShow: true, group: ['A', 'A', 'B', 'B'] })
         expect(createPlotlyData(config).filter(t => t.showlegend === true).map(t => t.name))
             .toEqual(['A', 'B'])
     })
@@ -47,7 +47,7 @@ describe('the title of a line chart that does not ask for a top margin', () => {
     // The title is centred in the top margin, so the shift has to be half of the margin
     // the layout actually uses, which is worked out when the caller has not given one.
     test('is shifted by half of the margin the layout reserves', () => {
-        const config = cfg({ linesShow: true, title: 'A title' })
+        const config = cfg({ lineShow: true, title: 'A title' })
         const l = createPlotlyLayout(config, 0, 400)
         expect(config.marginTop).toBeNull()
         expect(l.margin.t).toBeGreaterThan(0)
@@ -56,13 +56,21 @@ describe('the title of a line chart that does not ask for a top margin', () => {
     })
 
     test('and by half of the margin it was given, when it was given one', () => {
-        const config = cfg({ linesShow: true, title: 'A title', marginTop: 60 })
+        const config = cfg({ lineShow: true, title: 'A title', marginTop: 60 })
         expect(createPlotlyLayout(config, 0, 400)
             .annotations.find(a => a.name === 'title').yshift).toBe(30)
     })
 })
 
 describe('bubble sizes with a radius for each point', () => {
+    // CombinedScatter rejects this combination, because the bubble legend has only one
+    // radius to size its reference bubbles from. buildConfig still resolves the radius
+    // per bubble so that a caller reaching it directly gets sizes rather than NaN, and
+    // says why.
+    let warn
+    beforeEach(() => { warn = jest.spyOn(console, 'warn').mockImplementation(() => {}) })
+    afterEach(() => { warn.mockRestore() })
+
     test('each bubble is scaled by its own radius', () => {
         const config = cfg({ Z: [1, 2, 3, 4], pointRadius: [1, 2, 3, 4] })
         expect(config.normZ.every(v => Number.isFinite(v))).toBe(true)
@@ -70,9 +78,15 @@ describe('bubble sizes with a radius for each point', () => {
         expect(config.normZ[3]).toBeGreaterThan(config.normZ[0])
     })
 
-    test('a single radius still applies to them all', () => {
+    test('but the caller is told that the bubble legend cannot be drawn from it', () => {
+        cfg({ Z: [1, 2, 3, 4], pointRadius: [1, 2, 3, 4] })
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('pointRadius must be a single value'))
+    })
+
+    test('a single radius still applies to them all, and is not warned about', () => {
         const config = cfg({ Z: [1, 2, 3, 4], pointRadius: 4 })
         expect(config.normZ.every(v => Number.isFinite(v))).toBe(true)
+        expect(warn).not.toHaveBeenCalled()
     })
 })
 

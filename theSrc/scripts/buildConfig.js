@@ -120,7 +120,7 @@ const defaultConfig = {
   yAxisRangeMode: 'normal',
   xAxisTickMaxnum: null,
   yAxisTickMaxnum: null,
-  linesShow: false,
+  lineShow: false,
   lineColors: null, // falls back to colors
   lineThickness: [3],
   lineType: ['solid'],
@@ -311,6 +311,12 @@ function buildConfig (userConfig, width, height) {
   // Normalize bubble sizes to compute diameter in pixels
   config.normZ = null
   if (Array.isArray(config.Z)) {
+    // The R layer rejects this combination outright, because the bubble legend has only
+    // one radius to draw its reference bubbles from. A caller reaching buildConfig
+    // directly is warned instead, since it would otherwise get NaN legend geometry.
+    if (Array.isArray(config.pointRadius)) {
+      console.warn('pointRadius must be a single value when Z is supplied; the bubble legend cannot be sized from a radius per point')
+    }
     const z = config.bubbleSizesAsDiameter ? config.Z.map(v => v * v) : config.Z
     const maxZ = _.max(z)
     config.normZ = LegendUtils.normalizeZValues(z, maxZ)

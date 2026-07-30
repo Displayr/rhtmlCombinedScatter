@@ -10,7 +10,7 @@ function lineUserConfig (overrides = {}) {
         group: ['A', 'A', 'A', 'B', 'B', 'B'],
         label: ['1', '2', '3', '4', '5', '6'],
         colors: ['#ff0000', '#00ff00'],
-        linesShow: true,
+        lineShow: true,
     }, overrides)
 }
 
@@ -23,8 +23,8 @@ function markerTraces (data) {
 }
 
 describe('joining lines', () => {
-    test('are not drawn unless lines.show is set', () => {
-        const config = buildConfig(lineUserConfig({ linesShow: false }), 600, 400)
+    test('are not drawn unless line.show is set', () => {
+        const config = buildConfig(lineUserConfig({ lineShow: false }), 600, 400)
         expect(lineTraces(createPlotlyData(config))).toHaveLength(0)
     })
 
@@ -87,7 +87,7 @@ describe('joining lines', () => {
     })
 
     test('leave the legend and tooltip on the markers when no lines are drawn', () => {
-        const data = createPlotlyData(buildConfig(lineUserConfig({ linesShow: false }), 600, 400))
+        const data = createPlotlyData(buildConfig(lineUserConfig({ lineShow: false }), 600, 400))
         expect(markerTraces(data).map(t => t.showlegend)).toEqual([true, true])
         expect(markerTraces(data).every(t => t.hoverinfo === 'name+text')).toBe(true)
     })

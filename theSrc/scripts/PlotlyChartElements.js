@@ -68,13 +68,13 @@ function createPlotlyData (config) {
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            if (config.linesShow) {
+            if (config.lineShow) {
                 // The marker trace gives up its legend entry to the line, so the line has
                 // to take it, or an ungrouped chart asked to show a legend shows an empty
                 // one. Only the first panel, otherwise every panel repeats the entry.
                 plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, p === 0, false))
             }
-            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, true, false, config.linesShow))
+            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -116,10 +116,10 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                if (config.linesShow) {
+                if (config.lineShow) {
                     plot_line_data.push(createLineTrace(config, tooltips, g_name_to_show, g, p, gp_index, g_add, true))
                 }
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, config.linesShow))
+                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -136,7 +136,7 @@ function createPlotlyData (config) {
     return [...plot_line_data, ...plot_data, ...plot_annotation_data]
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, lines_show = false) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -151,7 +151,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
-        hoverinfo: lines_show ? 'skip' : (has_groups ? 'name+text' : 'text'),
+        hoverinfo: config.lineShow ? 'skip' : (has_groups ? 'name+text' : 'text'),
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',
@@ -165,7 +165,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
             }
         },
         legendgroup: group_name,
-        showlegend: lines_show ? false : showlegend,
+        showlegend: config.lineShow ? false : showlegend,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
         yaxis: 'y' + y_axis
@@ -461,7 +461,7 @@ function omitEmptyAxisTitle (config, title) {
 // the title centred vertically in the top margin. Turning automatic data label placement
 // on would otherwise move all three.
 function placeTextInMargins (config) {
-    return config.linesShow
+    return config.lineShow
 }
 
 // The alignment arguments are documented in title case, but flipStandardCharts passes its
