@@ -834,10 +834,16 @@ function createLegendSettings (config) {
             color: config.legendFontColor,
             size: config.legendFontSize
         },
-        itemsizing: 'constant',
         tracegroupgap: 0,
         orientation: config.legendOrientation === 'Horizontal' ? 'h' : 'v',
         bgcolor: 'rgba(0,0,0,0)'
+    }
+    // itemsizing: 'constant' exists so that bubble charts do not show legend markers of
+    // wildly different sizes. Without it, plotly's default ('trace') lets the swatch mirror
+    // the trace's own line width / marker size - which is what every other chart wants, and
+    // what a bubble chart's legend does not, since its marker sizes are meaningful data.
+    if (_.isArray(config.Z) && config.Z.length) {
+        settings.itemsizing = 'constant'
     }
     if (config.legendX !== null) {
         settings.x = Math.max(-2, Math.min(3, config.legendX))

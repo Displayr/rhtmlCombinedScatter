@@ -11,7 +11,5 @@
   "lineThickness": [3, 4],
   "lineType": ["solid", "dash"],
   "pointRadius": [6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-  "pointSymbol": ["square", "square", "square", "square", "square", "diamond", "diamond", "diamond", "diamond", "diamond"],
-  "pointBorderColor": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"],
-  "pointBorderWidth": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  "pointSymbol": ["square", "square", "square", "square", "square", "diamond", "diamond", "diamond", "diamond", "diamond"]
 }
