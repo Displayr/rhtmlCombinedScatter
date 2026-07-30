@@ -31,7 +31,7 @@ describe('joining lines', () => {
         expect(lineTraces(createPlotlyData(config))).toHaveLength(0)
     })
 
-    test('draw one line trace per group', () => {
+    test('draw one trace per group, carrying that group of points', () => {
         const config = buildConfig(lineUserConfig(), 600, 400)
         const traces = lineTraces(createPlotlyData(config))
         expect(traces.map(t => t.name)).toEqual(['A', 'B'])
@@ -39,11 +39,9 @@ describe('joining lines', () => {
         expect(traces[1].y).toEqual([4, 5, 6])
     })
 
-    test('are ordered before the marker traces so they render underneath', () => {
+    test('are drawn by the same trace as the markers, so plotly puts them underneath', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
-        const last_line = data.map(t => t.mode).lastIndexOf('lines')
-        const first_marker = data.map(t => t.mode).indexOf('markers')
-        expect(last_line).toBeLessThan(first_marker)
+        expect(seriesTraces(data).map(t => t.mode)).toEqual(['lines+markers', 'lines+markers'])
     })
 
     test('apply per-group thickness, dash and color', () => {
@@ -81,12 +79,13 @@ describe('joining lines', () => {
         expect(spline[0].line).toMatchObject({ shape: 'spline', smoothing: 1.3 })
     })
 
-    test('take over the legend entry and tooltip from the markers', () => {
+    test('carry the legend entry and the tooltip on the merged trace', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
-        expect(lineTraces(data).map(t => t.showlegend)).toEqual([true, true])
-        expect(markerTraces(data).every(t => t.showlegend === false)).toBe(true)
-        expect(markerTraces(data).every(t => t.hoverinfo === 'skip')).toBe(true)
-        expect(lineTraces(data).every(t => t.hoverinfo === 'name+text')).toBe(true)
+        const traces = seriesTraces(data)
+        expect(traces.map(t => t.showlegend)).toEqual([true, true])
+        expect(traces.every(t => t.hoverinfo === 'name+text')).toBe(true)
+        // The tooltip font colour is still judged from the line colour, not the marker's
+        expect(traces[0].hoverlabel.font.color).toBeDefined()
     })
 
     test('leave the legend and tooltip on the markers when no lines are drawn', () => {
