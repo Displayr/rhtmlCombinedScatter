@@ -1,0 +1,18 @@
+# These are the corpus's only line charts, added to give rendering coverage to the
+# main line-chart code path (lineShow / lineColors / lineThickness / lineType), which
+# previously had none. Covers the two trace modes the R wrapper can emit:
+#   - line_chart_with_symbols: merged "lines+markers" trace (visible markers with
+#     per-series pointSymbol shapes and a pointBorderColor/pointBorderWidth border).
+#   - line_chart_hidden_markers: the default labeledLine chart, i.e. the markerless
+#     "lines" fallback (pointRadius all zero) that the new markerless-mode gate
+#     protects; its legend swatch must render as a plain line with no marker dot.
+type: multi_widget_multi_page
+width: 576
+height: 512
+configs:
+  - config: data.line.line_chart_with_symbols
+    width: 700
+    height: 500
+  - config: data.line.line_chart_hidden_markers
+    width: 700
+    height: 500
