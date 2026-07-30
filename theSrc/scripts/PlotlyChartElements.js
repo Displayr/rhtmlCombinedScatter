@@ -839,10 +839,12 @@ function createLegendSettings (config) {
         bgcolor: 'rgba(0,0,0,0)'
     }
     // itemsizing: 'constant' exists so that bubble charts do not show legend markers of
-    // wildly different sizes. Without it, plotly's default ('trace') lets the swatch mirror
-    // the trace's own line width / marker size - which is what every other chart wants, and
-    // what a bubble chart's legend does not, since its marker sizes are meaningful data.
-    if (_.isArray(config.Z) && config.Z.length) {
+    // wildly different sizes. Line charts are the case where the legend must mirror the
+    // series instead: a chart specifying marker sizes 1, 2, 3, 4 across four series should
+    // show four different legend markers, with the swatch line matching the series line
+    // width rather than plotly's substituted 5px. So it is set for every chart except one
+    // that draws joining lines; plotly's own default ('trace') applies when omitted.
+    if (!config.lineShow) {
         settings.itemsizing = 'constant'
     }
     if (config.legendX !== null) {
