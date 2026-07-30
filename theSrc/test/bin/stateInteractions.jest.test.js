@@ -311,26 +311,25 @@ describe('state interactions', () => {
     await page.close()
   })
 
-  // Disabling as this works locally but not in CircleCI (clicking on a marker doesn't toggle the label)
-  // test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
-  //   const { page, scatterPlot } = await loadWidget({
-  //     browser,
-  //     configName: 'data.bdd.bubbleplot_maxlabels',
-  //     width: 600,
-  //     height: 600,
-  //   })
+  test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.bdd.bubbleplot_maxlabels',
+      width: 600,
+      height: 600,
+    })
 
-  //   await testSnapshots({ page, testName: 'bubble_maxlabels' })
+    await testSnapshots({ page, testName: 'bubble_maxlabels' })
 
-  //   await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
-  //   await scatterPlot.clickMouseOnAnchor()
-  //   await testSnapshots({ page, testName: 'labels_after_toggling' })
+    await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
+    await scatterPlot.clickMouseOnAnchor()
+    await testSnapshots({ page, testName: 'labels_after_toggling' })
 
-  //   await scatterPlot.clickResetButton()
-  //   await testSnapshots({ page, testName: 'labels_after_reset' })
+    await scatterPlot.clickResetButton()
+    await testSnapshots({ page, testName: 'labels_after_reset' })
 
-  //   await page.close()
-  // })
+    await page.close()
+  })
 
   test(`${++testId}: Load saved state and see a user hidden label`, async function () {
     const { page } = await loadWidget({
