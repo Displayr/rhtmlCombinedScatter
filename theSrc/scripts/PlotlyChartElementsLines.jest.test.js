@@ -102,6 +102,48 @@ describe('joining lines', () => {
         const config = buildConfig(lineUserConfig(), 600, 400)
         expect(lineTraces(createPlotlyData(config)).every(t => t.connectgaps === false)).toBe(true)
     })
+
+    // marker.show defaults to FALSE for a line chart, so flipStandardCharts sends
+    // point.radius = rep(0, n). A merged lines+markers trace would still make plotly draw
+    // a swatch marker in the legend (and, in the bundled plotly, a stray 2px dot: the swatch
+    // marker size is the mean of marker.size clamped to [2, 16], so a mean of 0 clamps up to
+    // 2), so a chart with no marker drawn anywhere goes back to the pre-merge mode: 'lines',
+    // no marker block at all.
+    test('go back to a line-only trace when no marker is drawn anywhere', () => {
+        const config = buildConfig(lineUserConfig({ pointRadius: [0, 0, 0, 0, 0, 0] }), 600, 400)
+        const traces = seriesTraces(createPlotlyData(config))
+        expect(traces.every(t => t.mode === 'lines')).toBe(true)
+        expect(traces.every(t => !('marker' in t))).toBe(true)
+    })
+
+    test('still own the tooltip and the legend entry with no marker drawn', () => {
+        const config = buildConfig(lineUserConfig({ pointRadius: [0, 0, 0, 0, 0, 0] }), 600, 400)
+        const traces = seriesTraces(createPlotlyData(config))
+        expect(traces.map(t => t.showlegend)).toEqual([true, true])
+        expect(traces.every(t => t.hoverinfo === 'name+text')).toBe(true)
+        expect(traces.map(t => t.text.length)).toEqual([3, 3])
+    })
+
+    // Whether markers are drawn is a chart-wide decision, not a per-series one: a series
+    // whose own radii are all zero must not fall back to mode: 'lines' while a neighbouring
+    // series still draws markers, or that series would emit no .point elements while its
+    // neighbour does, and addMarkerClickHandler's markerIndexToDataIndex mapping would shift
+    // every marker after the gap onto the wrong data row.
+    test('stay merged for every series when only some points across the chart draw a marker', () => {
+        // Markers only at the ends of each series - a real flipStandardCharts option
+        const config = buildConfig(lineUserConfig({ pointRadius: [3, 0, 0, 0, 0, 3] }), 600, 400)
+        const traces = seriesTraces(createPlotlyData(config))
+        expect(traces.map(t => t.mode)).toEqual(['lines+markers', 'lines+markers'])
+    })
+
+    test('leave a markers-only chart as markers, even with a radius of zero', () => {
+        const config = buildConfig(lineUserConfig({
+            lineShow: false,
+            pointRadius: [0, 0, 0, 0, 0, 0],
+        }), 600, 400)
+        const traces = seriesTraces(createPlotlyData(config))
+        expect(traces.every(t => t.mode === 'markers')).toBe(true)
+    })
 })
 
 describe('tooltip text', () => {

@@ -61,13 +61,24 @@ function createPlotlyData (config) {
             ? config.pointRadius.map(r => r * 2)
             : config.pointRadius * 2)
 
+    // Whether any marker is drawn anywhere in the chart, not per series: a series whose own
+    // slice is all zeros must draw exactly the same trace shape as its neighbours, or it
+    // would emit no .point elements while they do, and addMarkerClickHandler's
+    // markerIndexToDataIndex mapping would shift every marker after the gap onto the wrong
+    // data row. marker.show defaults to FALSE for a line chart (flipStandardCharts sends
+    // point.radius = rep(0, n)), and plotly's legend swatch draws a marker whenever the mode
+    // includes markers regardless of visibility - including a stray dot from the bundled
+    // plotly's swatch-size clamp on a mean of 0 - so a chart that draws no marker anywhere
+    // goes back to the pre-merge mode: 'lines', with no marker block.
+    const markersDrawn = Array.isArray(marker_size) ? marker_size.some(size => size !== 0) : marker_size !== 0
+
     const makeSeriesTrace = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
 
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             // Only the first panel takes the legend entry, otherwise every panel repeats it
-            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, p === 0, false))
+            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, p === 0, false, markersDrawn))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -109,7 +120,7 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, markersDrawn))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -192,13 +203,21 @@ function lineForGroup (config, group_index) {
 // beneath its own markers, and the legend swatch then shows the line and the marker symbol
 // together. The tooltip font colour stays keyed off the line colour, which is what owned the
 // tooltip while these were separate traces.
-function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+// markers_drawn is a chart-wide decision (see createPlotlyData), not this series' own: when
+// nothing draws a marker anywhere in the chart, this falls back to the pre-merge mode:
+// 'lines', with no marker block, so plotly's legend swatch has no marker to draw from.
+function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, markers_drawn = true) {
     const trace = createScatterTraceForMarker(config, tooltips, group_name, marker_size,
         marker_opacity, group_index, panel_index, data_index, showlegend, has_groups)
-    trace.mode = 'lines+markers'
     trace.line = lineForGroup(config, group_index)
     trace.connectgaps = false
     trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
+    if (markers_drawn) {
+        trace.mode = 'lines+markers'
+    } else {
+        trace.mode = 'lines'
+        delete trace.marker
+    }
     return trace
 }
 
