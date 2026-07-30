@@ -44,6 +44,24 @@ copy them into `theSrc/test/snapshots/ci`. Regenerate through CI instead:
 4. **Review, commit and push the changed snapshots yourself.** Use `git status` / `git diff --stat` to
    confirm only the snapshots you expected have changed.
 
+Steps 2 and 3 can be done from the command line with the [GitHub CLI](https://cli.github.com/)
+instead of the Actions UI:
+
+```sh
+# Dispatch a regeneration run on the current branch (add -f test_filter=<pattern> to narrow it)
+gh workflow run "JS tests" --ref "$(git rev-parse --abbrev-ref HEAD)" -f update_snapshots=true
+
+# Get the run id, then follow it to completion
+gh run list --workflow "JS tests" --event workflow_dispatch --limit 1
+gh run watch <run-id>
+
+# Extract the baselines straight into place -- the artifact is rooted at master/
+gh run download <run-id> -n regenerated-baselines -D theSrc/test/snapshots/ci
+
+# And the diffs from a failed comparison run, if you want them on disk
+gh run download <run-id> -n snapshot-diffs -D .tmp/diffs
+```
+
 CI deliberately does not commit the baselines for you. A push made with the default `GITHUB_TOKEN`
 does not trigger any workflow, and `workflow_dispatch` check runs are excluded from a pull request's
 status rollup — so a bot-authored head commit would leave the PR reporting no checks. Pushing the
