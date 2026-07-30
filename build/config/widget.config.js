@@ -36,7 +36,20 @@ const config = {
       failureThreshold: 0.0001,
       failureThresholdType: 'percent', // pixel or percent
     },
-    assertNoLogError: false
+    assertNoLogError: false,
+
+    // Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor, which
+    // breaks Chrome's sandbox on CI runners. --disable-dev-shm-usage avoids
+    // crashes from the small default /dev/shm in containers.
+    puppeteer: {
+      args: ['--no-sandbox', '--disable-dev-shm-usage'],
+    },
+
+    // Selects theSrc/test/snapshots/ci/<branch>/. Set here rather than passed
+    // as --env=ci, because rhtmlBuildUtils constrains that option to
+    // choices: ['local', 'travis'] and yargs would reject 'ci'. Command-line
+    // --env still wins, so `npm run localTest` keeps using 'local'.
+    env: 'ci',
   },
 }
 

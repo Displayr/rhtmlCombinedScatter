@@ -358,7 +358,7 @@ describe('state interactions', () => {
     await testSnapshots({ page, testName: 'smallmultiples_after_drag' })
 
     await page.mouse.move(400, 400)
-    await page.waitFor(3000)
+    await new Promise(resolve => setTimeout(resolve, 3000))
     await testSnapshots({ page, testName: 'smallmultiples_showing_reset' })
 
     await scatterPlot.clickResetButton()
