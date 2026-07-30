@@ -11,20 +11,19 @@ const DATES = [null, '2020-02-01', '2020-03-01', '2020-04-01']
 const GAPPED_Y = [null, 1.23456, 2.34567, 3.45678]
 
 describe('the legend entry of a line chart with one series', () => {
-    // The marker trace gives its legend entry up to the line trace when lines are drawn,
-    // so the line trace has to take it, or the legend comes out empty.
+    // The series' line and markers are drawn by one merged trace, so that trace is the only
+    // one that can ask for the legend entry, or the legend comes out empty.
     test('a line trace asks to be in the legend', () => {
         const shown = createPlotlyData(cfg({ lineShow: true }))
             .filter(t => t.showlegend === true)
         expect(shown.length).toBe(1)
-        expect(shown[0].mode).toBe('lines')
+        expect(shown[0].mode).toBe('lines+markers')
         expect(shown[0].name).toBe('Series 1')
     })
 
-    test('the marker trace stays out of it, so the entry is not duplicated', () => {
+    test('nothing else asks for the legend, so the entry is not duplicated', () => {
         const data = createPlotlyData(cfg({ lineShow: true }))
-        expect(data.filter(t => t.mode === 'markers' && t.showlegend === true))
-            .toHaveLength(0)
+        expect(data.filter(t => t.showlegend === true)).toHaveLength(1)
     })
 
     test('only one entry when the chart is split into panels', () => {

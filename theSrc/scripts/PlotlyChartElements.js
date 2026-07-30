@@ -134,8 +134,9 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
-    // When joining lines are drawn, the line trace owns the legend entry and the
-    // tooltip, so that both keep working for points whose marker is not shown.
+    // When joining lines are drawn, createSeriesTrace wraps this trace and adds the line
+    // on top, so the legend entry and the tooltip below are what a marker-only series uses;
+    // createSeriesTrace overwrites both for a merged trace.
     return {
         x: X,
         y: Y,
