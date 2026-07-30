@@ -30,12 +30,13 @@ const LEGEND_SETTINGS = {
 }
 const letters = (X) => X.map((v, i) => String.fromCharCode(97 + i))
 
-const makePlotData = (X, Y, group) => new PlotData(
+const makePlotData = (X, Y, group, xDataType = DataTypeEnum.numeric, xLevels = null,
+                      bounds = { xmin: 1, xmax: 4, ymin: 10, ymax: 40 }) => new PlotData(
   X, Y,
   null,                                       // Z
-  DataTypeEnum.numeric,                       // xDataType
+  xDataType,                                  // xDataType
   DataTypeEnum.numeric,                       // yDataType
-  null, null,                                 // xLevels, yLevels
+  xLevels, null,                              // xLevels, yLevels
   group,
   letters(X),                                 // label
   letters(X),                                 // originalLabel
@@ -46,7 +47,7 @@ const makePlotData = (X, Y, group) => new PlotData(
   ['red'],                                    // colorWheel
   false,                                      // originAlign
   2,                                          // pointRadius
-  { xmin: 1, xmax: 4, ymin: 10, ymax: 40 },   // bounds
+  bounds,
   null,                                       // transparency
   LEGEND_SETTINGS,
   []                                          // hiddenSeries
@@ -88,5 +89,42 @@ describe('mapping a marker back to its row', function () {
     // the second marker drawn is row 2, so clicking it hides that label and no other
     d.toggleLabelShowFromMarkerIndex(1)
     expect(d.hiddenLabelsId).toEqual([2])
+  })
+})
+
+// A line chart takes its x values from the row names of a table, so a category can be
+// named anything, including "NA". plotly draws a marker for it like any other category,
+// so it has to stay in the mapping. Treating the name as a gap shifted every marker from
+// that category onward onto the wrong row.
+describe('a category genuinely named "NA"', function () {
+  const REGIONS = ['EMEA', 'NA', 'APAC', 'LATAM']
+  const SALES = [10, 20, 30, 40]
+  const g = ['G1', 'G1', 'G1', 'G1']
+  // an ordinal axis places the categories at indices 0..3, so the bounds differ from the
+  // numeric cases above
+  const categorical = (group) =>
+    makePlotData(REGIONS, SALES, group, DataTypeEnum.ordinal, REGIONS,
+      { xmin: 0, xmax: 3, ymin: 10, ymax: 40 })
+
+  it('is a drawn point, so it keeps its place in the mapping', function () {
+    expect(categorical(g).markerIndexToDataIndex).toEqual([0, 1, 2, 3])
+  })
+
+  it('is still in the mapping on the ungrouped branch', function () {
+    expect(categorical(null).markerIndexToDataIndex).toEqual([0, 1, 2, 3])
+  })
+
+  it('toggles its own label when its marker is clicked', async function () {
+    const d = categorical(g)
+    await d.getPtsAndLabs('test')
+    // the second marker drawn is the "NA" category, which is row 1
+    d.toggleLabelShowFromMarkerIndex(1)
+    expect(d.hiddenLabelsId).toEqual([1])
+  })
+
+  it('shows its name as the coordinate on the label', async function () {
+    const d = categorical(g)
+    await d.getPtsAndLabs('test')
+    expect(d.pts.map(p => p.labelX)).toEqual(REGIONS)
   })
 })

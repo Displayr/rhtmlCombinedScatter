@@ -19,12 +19,13 @@ class Utils {
     return this.isArr(arr) && _.every(arr, n => typeof n === 'number')
   }
 
-  // A gap in the data. R has no way to put a NaN on the wire because JSON has no NaN
-  // literal, so missing values arrive either as null or, when jsonlite is left to encode
-  // them itself, as the strings 'NA' and 'NaN'.
+  // A gap in the data. Only X, Y and Z can carry one, and all three are serialised with
+  // na = "null", so a gap always arrives as the JSON null literal. The strings 'NA' and
+  // 'NaN' are deliberately not treated as gaps: they are indistinguishable from a category
+  // genuinely named that way, and reading one as a gap drops a drawn point from the marker
+  // index and blanks its coordinate in the label.
   static isMissingValue (v) {
-    return v === null || v === undefined || v === 'NA' || v === 'NaN' ||
-      (typeof v === 'number' && isNaN(v))
+    return v === null || v === undefined || (typeof v === 'number' && isNaN(v))
   }
 
   // A numeric series with gaps in it is still numeric. Used to classify the axes, where

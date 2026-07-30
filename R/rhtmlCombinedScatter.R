@@ -586,6 +586,9 @@ CombinedScatter <- function(
     # Coordinates are serialised with na = "null" so that gaps in the data arrive as the
     # JSON null literal. jsonlite would otherwise encode them as the strings "NA"/"NaN",
     # which plotly cannot recognise as missing and so cannot break a line at.
+    # The widget relies on this: it reads only the null literal as a gap, so that a
+    # category genuinely named "NA" stays a category. These are the only three arguments
+    # that can carry one, so they are the only ones that need it.
     x = list(X = toJsonOrNull(X, na = "null"),
              Y = toJsonOrNull(Y, na = "null"),
              Z = toJsonOrNull(Z, na = "null"),

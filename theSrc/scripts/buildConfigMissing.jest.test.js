@@ -26,14 +26,20 @@ describe('axis type with missing values', () => {
         expect(cfg([1, NaN, 3, 4]).yDataType).toBe(DataTypeEnum.numeric)
     })
 
-    test('a series carrying the R string "NA" is still numeric', () => {
-        expect(cfg([1, 'NA', 3, 4]).yDataType).toBe(DataTypeEnum.numeric)
+    // The strings "NA" and "NaN" are data, not gaps. A gap is serialised as the JSON null
+    // literal, so a series that carries one of these strings carries a category with that
+    // name, and a category among numbers makes the axis ordinal. Reading them as gaps
+    // instead would drop a drawn point from the marker index and blank its coordinate.
+    test('a series carrying the string "NA" is a categorical series', () => {
+        expect(cfg([1, 'NA', 3, 4]).yDataType).toBe(DataTypeEnum.ordinal)
     })
 
-    // A real JS NaN passes the numeric check, but R cannot send one: JSON has no NaN
-    // literal, so jsonlite encodes it as the string "NaN" just as it encodes NA as "NA".
-    test('a series carrying the R string "NaN" is still numeric', () => {
-        expect(cfg([1, 'NaN', 3, 4]).yDataType).toBe(DataTypeEnum.numeric)
+    test('a series carrying the string "NaN" is a categorical series', () => {
+        expect(cfg([1, 'NaN', 3, 4]).yDataType).toBe(DataTypeEnum.ordinal)
+    })
+
+    test('the category is kept as a level, so it is not lost from the axis', () => {
+        expect(cfg([1, 'NA', 3, 4]).yLevels).toContain('NA')
     })
 
     test('a numeric series with a gap gets no levels', () => {
