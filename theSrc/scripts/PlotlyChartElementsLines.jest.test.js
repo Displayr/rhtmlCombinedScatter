@@ -80,12 +80,16 @@ describe('joining lines', () => {
     })
 
     test('carry the legend entry and the tooltip on the merged trace', () => {
-        const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
+        const data = createPlotlyData(buildConfig(lineUserConfig({
+            colors: ['#000000', '#000000'],
+            lineColors: ['#ffffff', '#ffffff'],
+        }), 600, 400))
         const traces = seriesTraces(data)
         expect(traces.map(t => t.showlegend)).toEqual([true, true])
         expect(traces.every(t => t.hoverinfo === 'name+text')).toBe(true)
-        // The tooltip font colour is still judged from the line colour, not the marker's
-        expect(traces[0].hoverlabel.font.color).toBeDefined()
+        // Judged from the line colour, not the marker's: white line gives dark text,
+        // where the black marker colour would give white
+        expect(traces.every(t => t.hoverlabel.font.color === '#2C2C2C')).toBe(true)
     })
 
     test('leave the legend and tooltip on the markers when no lines are drawn', () => {

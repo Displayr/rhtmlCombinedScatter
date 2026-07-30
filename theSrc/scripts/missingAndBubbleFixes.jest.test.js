@@ -13,7 +13,7 @@ const GAPPED_Y = [null, 1.23456, 2.34567, 3.45678]
 describe('the legend entry of a line chart with one series', () => {
     // The series' line and markers are drawn by one merged trace, so that trace is the only
     // one that can ask for the legend entry, or the legend comes out empty.
-    test('a line trace asks to be in the legend', () => {
+    test('the merged trace asks to be in the legend', () => {
         const shown = createPlotlyData(cfg({ lineShow: true }))
             .filter(t => t.showlegend === true)
         expect(shown.length).toBe(1)
@@ -21,14 +21,29 @@ describe('the legend entry of a line chart with one series', () => {
         expect(shown[0].name).toBe('Series 1')
     })
 
-    test('nothing else asks for the legend, so the entry is not duplicated', () => {
-        const data = createPlotlyData(cfg({ lineShow: true }))
-        expect(data.filter(t => t.showlegend === true)).toHaveLength(1)
+    test('the border and annotation traces stay out of the legend', () => {
+        const config = cfg({
+            lineShow: true,
+            pointBorderColor: ['#000000', '#000000', '#000000', '#000000'],
+            pointBorderWidth: [1, 1, 1, 1],
+        })
+        const shown = createPlotlyData(config).filter(t => t.showlegend === true)
+        expect(shown).toHaveLength(1)
+        expect(shown[0].name).toBe('Series 1')
     })
 
     test('only one entry when the chart is split into panels', () => {
         const config = cfg({
             lineShow: true,
+            panels: [1, 1, 2, 2],
+            panelLabels: ['one', 'two'],
+        })
+        expect(createPlotlyData(config).filter(t => t.showlegend === true)).toHaveLength(1)
+    })
+
+    test('only one entry for a markers-only chart split into panels', () => {
+        const config = cfg({
+            lineShow: false,
             panels: [1, 1, 2, 2],
             panelLabels: ['one', 'two'],
         })

@@ -134,9 +134,9 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
-    // When joining lines are drawn, createSeriesTrace wraps this trace and adds the line
-    // on top, so the legend entry and the tooltip below are what a marker-only series uses;
-    // createSeriesTrace overwrites both for a merged trace.
+    // When joining lines are drawn, createSeriesTrace builds on this trace: it adds the
+    // joining line on top and replaces the hoverlabel below with one derived from the line
+    // colour instead of the marker's. The legend entry and tooltip set here are unchanged.
     return {
         x: X,
         y: Y,
@@ -187,9 +187,7 @@ function createSeriesTrace (config, tooltips, group_name, marker_size, marker_op
     trace.mode = 'lines+markers'
     trace.line = lineForGroup(config, group_index)
     trace.connectgaps = false
-    trace.hoverinfo = has_groups ? 'name+text' : 'text'
     trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
-    trace.showlegend = showlegend
     return trace
 }
 
