@@ -193,3 +193,37 @@ describe('invariants across the trace structure', () => {
         ])
     })
 })
+
+describe('point symbol', () => {
+    // flipStandardCharts sends one symbol per point, repeated across each series, the same
+    // shape it sends pointRadius and pointBorderColor in
+    const perPoint = ['square', 'square', 'square', 'diamond', 'diamond', 'diamond']
+
+    test('is sliced per group from a per-point array', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({ pointSymbol: perPoint }), 600, 400))
+        expect(seriesTraces(data).map(t => t.marker.symbol))
+            .toEqual([['square', 'square', 'square'], ['diamond', 'diamond', 'diamond']])
+    })
+
+    test('is passed straight through when given as a single value', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({ pointSymbol: 'square' }), 600, 400))
+        expect(seriesTraces(data).every(t => t.marker.symbol === 'square')).toBe(true)
+    })
+
+    test('is left to plotly when not supplied', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
+        expect(seriesTraces(data).every(t => t.marker.symbol === undefined)).toBe(true)
+    })
+
+    test('is matched by the marker border, so a square marker is not circled', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({
+            pointSymbol: perPoint,
+            pointBorderColor: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
+            pointBorderWidth: [1, 1, 1, 1, 1, 1],
+        }), 600, 400))
+        const borders = data.filter(t => !t.name && typeof t.mode === 'string'
+            && t.mode.includes('markers') && t.marker.color === 'transparent')
+        expect(borders.map(t => t.marker.symbol))
+            .toEqual([['square', 'square', 'square'], ['diamond', 'diamond', 'diamond']])
+    })
+})

@@ -192,6 +192,10 @@
 #'     When \code{Z} is supplied, the points are scaled so that the largest has a radius of
 #'     \code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
 #'     (37.6 pixels for the default of 4).
+#' @param point.symbol Marker symbol drawn at each point, using plotly's names
+#'     (\code{"circle"}, \code{"square"}, \code{"diamond"}, \code{"triangle-up"} and so on).
+#'     Either a single name or a vector with one name per point. NULL leaves the symbol to
+#'     plotly, which draws circles.
 #' @param point.border.color Colors of borders around points and bubbles
 #' @param point.border.width Widths of borders around points and bubbles in pixels
 #' @param x.bounds.minimum Integer or NULL; set minimum of range for plotting on the x axis
@@ -413,6 +417,7 @@ CombinedScatter <- function(
     plot.border.width = 1,
     plot.background.color = 'transparent',
     point.radius = if (is.null(Z)) 2 else 4,
+    point.symbol = NULL,
     point.border.color = '#000000',
     point.border.width = 0,
     subtitle = "",
@@ -735,6 +740,7 @@ CombinedScatter <- function(
              panelXGap = panel.x.gap,
              panelYGap = panel.y.gap,
              pointRadius = point.radius,
+             pointSymbol = point.symbol,
              pointBorderColor = point.border.color,
              pointBorderWidth = point.border.width,
              xBoundsMinimum = x.bounds.minimum,

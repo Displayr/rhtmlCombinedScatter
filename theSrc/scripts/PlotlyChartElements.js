@@ -126,10 +126,20 @@ function createPlotlyData (config) {
     return [...plot_data, ...plot_annotation_data]
 }
 
+// plotly takes a marker symbol per point, so a per-point array is sliced for this group the
+// way the radius is. Left undefined when not supplied, so plotly keeps its own default.
+function symbolForTrace (config, data_index) {
+    if (config.pointSymbol === null || config.pointSymbol === undefined) return undefined
+    return data_index && Array.isArray(config.pointSymbol)
+        ? _.at(config.pointSymbol, data_index)
+        : config.pointSymbol
+}
+
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+    const trace_marker_symbol = symbolForTrace(config, data_index)
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -149,6 +159,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
         marker: {
             color: marker_color,
             size: trace_marker_size,
+            symbol: trace_marker_symbol,
             sizemode: 'diameter',
             opacity: marker_opacity,
             line: {
@@ -197,6 +208,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+    const trace_marker_symbol = symbolForTrace(config, data_index)
     const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
     const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -210,6 +222,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
         marker: {
             color: 'transparent',
             size: trace_marker_size,
+            symbol: trace_marker_symbol,
             sizemode: 'diameter',
             opacity: 1, // somehow this applies to the border, so it needs to be 1
             line: {
