@@ -74,3 +74,14 @@ test_that("Length of Z different from X and Y", {
     expect_error(CombinedScatter(X = 1:10, Y = 11:20, Z = 1:3,
                                 label = letters[1:10]), msg)
 })
+
+test_that("A radius per point cannot be combined with Z", {
+    msg <- "point.radius must be a single value when Z is supplied"
+    expect_error(CombinedScatter(X = 1:10, Y = 11:20, Z = 0:9,
+                                point.radius = 1:10), msg)
+    # each on its own is fine
+    expect_error(CombinedScatter(X = 1:10, Y = 11:20, Z = 0:9,
+                                point.radius = 4), NA)
+    expect_error(CombinedScatter(X = 1:10, Y = 11:20,
+                                point.radius = 1:10), NA)
+})

@@ -29,6 +29,11 @@ function createPlotlyData (config) {
     let tooltips = indices.map(
         i => `${tooltip_labels[i]} (${config.xPrefix}${xFormatter(config.X[i])}${config.xSuffix}, ${config.yPrefix}${yFormatter(config.Y[i])}${config.ySuffix})`
     )
+    // Caller-supplied tooltip text replaces the generated text. Any extra dimensions
+    // (bubble size, color scale) are still appended to it below.
+    if (Array.isArray(config.tooltipText) && config.tooltipText.length === config.X.length) {
+        tooltips = config.tooltipText
+    }
 
     // Check if this is a bubbleplot
     let marker_opacity = config.transparency
@@ -41,6 +46,10 @@ function createPlotlyData (config) {
 
     const plot_data = []
     const plot_annotation_data = []
+    // Joining lines are drawn before the markers so that they appear underneath them.
+    // They emit js-line paths rather than .point elements, so they do not disturb the
+    // DOM ordering of the markers that addMarkerClickHandler relies on.
+    const plot_line_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
     }
@@ -49,11 +58,22 @@ function createPlotlyData (config) {
     const indices_by_panel = n_panels > 1 ? _.groupBy(indices, i => config.panels[i]) : {}
     const panel_nm = Object.keys(indices_by_panel)
     config.wrappedX = isXAxisLabelsWrapping(config) ? config.X.map(x => wrapByNumberOfCharacters(x, config.xAxisLabelWrapNChar)) : config.X
-    const marker_size = config.normZ === null ? config.pointRadius * 2 : config.normZ
+    // pointRadius may be a per-point array, so it cannot be scaled with a plain multiply
+    const marker_size = config.normZ !== null
+        ? config.normZ
+        : (Array.isArray(config.pointRadius)
+            ? config.pointRadius.map(r => r * 2)
+            : config.pointRadius * 2)
 
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
+            if (config.lineShow) {
+                // The marker trace gives up its legend entry to the line, so the line has
+                // to take it, or an ungrouped chart asked to show a legend shows an empty
+                // one. Only the first panel, otherwise every panel repeats the entry.
+                plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, p === 0, false))
+            }
             plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
@@ -96,6 +116,9 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
+                if (config.lineShow) {
+                    plot_line_data.push(createLineTrace(config, tooltips, g_name_to_show, g, p, gp_index, g_add, true))
+                }
                 plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
@@ -110,7 +133,7 @@ function createPlotlyData (config) {
     // Add the annotation traces last so that they don't interfere with the
     // order of the marker points in the DOM, which is relied upon by
     // code that handles marker label toggling.
-    return [...plot_data, ...plot_annotation_data]
+    return [...plot_line_data, ...plot_data, ...plot_annotation_data]
 }
 
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
@@ -121,12 +144,14 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
+    // When joining lines are drawn, the line trace owns the legend entry and the
+    // tooltip, so that both keep working for points whose marker is not shown.
     return {
         x: X,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
-        hoverinfo: has_groups ? 'name+text' : 'text',
+        hoverinfo: config.lineShow ? 'skip' : (has_groups ? 'name+text' : 'text'),
         hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
         mode: 'markers',
@@ -139,6 +164,42 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
+        legendgroup: group_name,
+        showlegend: config.lineShow ? false : showlegend,
+        cliponaxis: false,
+        xaxis: 'x' + x_axis,
+        yaxis: 'y' + y_axis
+    }
+}
+
+// Joins the points of a group with a line, in the order they were supplied.
+// Per-group styling is recycled by group index in the same way as config.colors.
+function createLineTrace (config, tooltips, group_name, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
+    const Y = data_index ? _.at(config.Y, data_index) : config.Y
+    const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
+    const line_color = config.lineColors[group_index % config.lineColors.length]
+    const x_axis = getPanelXAxisSuffix(panel_index, config)
+    const y_axis = getPanelYAxisSuffix(panel_index, config)
+    const line = {
+        color: line_color,
+        width: config.lineThickness[group_index % config.lineThickness.length],
+        dash: config.lineType[group_index % config.lineType.length],
+        shape: config.lineShape
+    }
+    // plotly only honours smoothing for splines, and warns if it is set otherwise
+    if (config.lineShape === 'spline') line.smoothing = config.lineSmoothing
+    return {
+        x: X,
+        y: Y,
+        name: group_name,
+        text: indexed_tooltips,
+        hoverinfo: has_groups ? 'name+text' : 'text',
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(line_color) } },
+        type: 'scatter',
+        mode: 'lines',
+        connectgaps: false,
+        line: line,
         legendgroup: group_name,
         showlegend: showlegend,
         cliponaxis: false,
@@ -327,13 +388,18 @@ function setTraceMarkerColorsFromConfig (trace, config, panel_index) {
 
 // Returns a function that can be applied later
 function getFormatter (format, values, value_is_date) {
-    if (!value_is_date && !_.isNumber(values[0])) return function (x) { return x }
+    // A series may begin with a gap, so the type is decided from the first value that is
+    // there. Reading values[0] would fall back to returning the value unformatted, and
+    // the requested hover format would be lost for the whole series.
+    const present = _.reject(values, v => Utils.isMissingValue(v))
+    if (!value_is_date && !_.isNumber(present[0])) return function (x) { return x }
     if (value_is_date) {
-        if (!format) format = getDefaultDateFormat(values)
+        if (!format) format = getDefaultDateFormat(present)
         const formatter = d3.time.format(format)
-        return function (x) { return formatter(new Date(x)) }
+        return function (x) { return Utils.isMissingValue(x) ? '' : formatter(new Date(x)) }
     }
-    return d3.format(checkD3Format(format, values, value_is_date))
+    const formatter = d3.format(checkD3Format(format, present, value_is_date))
+    return function (x) { return Utils.isMissingValue(x) ? '' : formatter(x) }
 }
 
 function checkD3Format (format, values, value_is_date) {
@@ -353,7 +419,8 @@ function checkD3Format (format, values, value_is_date) {
 }
 
 function getDefaultDateFormat (dates) {
-    const dvals = dates.map(x => new Date(x).getTime()) // all values in milliseconds
+    // all values in milliseconds, gaps left out so they do not read as the epoch
+    const dvals = _.reject(dates, d => Utils.isMissingValue(d)).map(x => new Date(x).getTime())
     const dmin = Math.min(...dvals)
     const dmax = Math.max(...dvals)
     const diff = dmax - dmin
@@ -378,6 +445,72 @@ function getPanelYAxisSuffix (panel, config) {
     return '' + (panel + 1)
 }
 
+// Giving plotly a title with empty text is not the same as giving it no title: it
+// reserves the height of the title font for one it never draws, which is a margin that
+// nothing accounts for. Only line charts skip it, so that they can reserve the same
+// margins as the plotly line chart they stand in for. Applying it to every chart would
+// be the real fix, but it would move the plot area of every existing scatter plot.
+function omitEmptyAxisTitle (config, title) {
+    return placeTextInMargins(config) && !title
+}
+
+// Where the title, subtitle and footer go. By default this widget lays them out itself,
+// pinning the title to the top of the chart and hanging the subtitle beneath it, with the
+// footer below a shortened plot. A line chart instead places them the way the plotly line
+// chart it stands in for does: inside the margins that have been reserved for them, with
+// the title centred vertically in the top margin. Turning automatic data label placement
+// on would otherwise move all three.
+function placeTextInMargins (config) {
+    return config.lineShow
+}
+
+// The alignment arguments are documented in title case, but flipStandardCharts passes its
+// own lower case spellings straight through, so they are read case insensitively. Returns
+// one of the four documented values.
+function normaliseAlignment (alignment) {
+    switch (String(alignment).toLowerCase()) {
+        case 'left': return 'Left'
+        case 'right': return 'Right'
+        case 'center': return 'Center'
+        default: return 'Center of plot area'
+    }
+}
+
+// Matches the x position and anchor that flipStandardCharts uses for its own title,
+// subtitle and footer annotations, so that they land in the same place under either
+// renderer.
+function titleAlignmentToX (alignment) {
+    switch (normaliseAlignment(alignment)) {
+        case 'Left': return { x: 0, xanchor: 'left', align: 'left' }
+        case 'Right': return { x: 1, xanchor: 'right', align: 'right' }
+        default: return { x: 0.5, xanchor: 'center', align: 'center' }
+    }
+}
+
+// The title annotation as flipStandardCharts positions it: anchored to the top of the
+// plot area and shifted up by half the top margin, so that it sits in the middle of it.
+function createTitleAnnotation (config) {
+    const a = titleAlignmentToX(config.titleAlignment)
+    return {
+        name: 'title',
+        text: config.title,
+        font: {
+            family: config.titleFontFamily,
+            color: config.titleFontColor,
+            size: config.titleFontSize
+        },
+        align: a.align,
+        xref: 'paper',
+        yref: 'paper',
+        x: a.x,
+        xanchor: a.xanchor,
+        y: 1,
+        yanchor: 'middle',
+        yshift: marginTop(config) * 0.5,
+        showarrow: false,
+    }
+}
+
 function createPlotlyLayout (config, margin_right, height) {
     const npanel = Array.isArray(config.panelLabels) ? config.panelLabels.length : 1
     let grid = null
@@ -398,7 +531,7 @@ function createPlotlyLayout (config, margin_right, height) {
                              config.width,
                              config.fixedAspectRatio)
     const x_axis = {
-        title: (npanel > 1 && config.panelShareAxes) ? null : {
+        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle) ? null : {
             text: config.xTitle,
             font: {
                 family: config.xTitleFontFamily,
@@ -428,7 +561,7 @@ function createPlotlyLayout (config, margin_right, height) {
         range: x_range,
         autorange: getAutoRange(x_range),
         autorangeoptions: getAutoRangeOptions(x_range),
-        rangemode: 'normal',
+        rangemode: config.xAxisRangeMode,
         dtick: parseTickDistance(config.xBoundsUnitsMajor),
         tickprefix: config.xPrefix,
         ticksuffix: config.xSuffix,
@@ -454,7 +587,7 @@ function createPlotlyLayout (config, margin_right, height) {
                              config.width,
                              config.fixedAspectRatio)
     const y_axis = {
-        title: (npanel > 1 && config.panelShareAxes) ? null : {
+        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle) ? null : {
             text: config.yTitle,
             font: {
                 family: config.yTitleFontFamily,
@@ -482,7 +615,8 @@ function createPlotlyLayout (config, margin_right, height) {
         range: y_range,
         autorange: getAutoRange(y_range),
         autorangeoptions: getAutoRangeOptions(y_range),
-        rangemode: 'normal',
+        rangemode: config.yAxisRangeMode,
+        tickangle: config.yAxisTickAngle,
         dtick: parseTickDistance(config.yBoundsUnitsMajor),
         tickprefix: config.yPrefix,
         ticksuffix: config.ySuffix,
@@ -502,7 +636,7 @@ function createPlotlyLayout (config, margin_right, height) {
 
     const plot_layout = {
         grid: grid,
-        title: {
+        title: placeTextInMargins(config) ? { text: '' } : {
             text: config.title,
             font: {
                 family: config.titleFontFamily,
@@ -533,9 +667,22 @@ function createPlotlyLayout (config, margin_right, height) {
         plot_bgcolor: config.plotAreaBackgroundColor,
         height: chartHeight(config, height)
     }
+    // Only set when asked for: plotly reads nticks as a hint, and giving it a null would
+    // override the axis choosing a tick count for itself
+    if (config.xAxisTickMaxnum !== null) x_axis.nticks = config.xAxisTickMaxnum
+    if (config.yAxisTickMaxnum !== null) y_axis.nticks = config.yAxisTickMaxnum
+
+    // Only set when hover is turned off, so that a chart which shows a tooltip keeps
+    // whatever plotly would choose for it
+    if (!config.tooltipShow) plot_layout.hovermode = false
+
     addAxesToGrid(plot_layout, x_axis, y_axis, npanel, config.panelNumRows, config.panelShareAxes)
+    if (placeTextInMargins(config) && config.title.length > 0) {
+        plot_layout.annotations = [createTitleAnnotation(config)]
+    }
     if (config.subtitle.length > 0) {
-        plot_layout.annotations = [{
+        const sa = titleAlignmentToX(config.subtitleAlignment)
+        const subtitle_annotation = {
             name: 'subtitle',
             text: config.subtitle,
             font: {
@@ -543,15 +690,23 @@ function createPlotlyLayout (config, margin_right, height) {
                 color: config.subtitleFontColor,
                 size: config.subtitleFontSize
             },
+            align: sa.align,
             xref: 'paper',
             yref: 'paper',
-            x: 0.5,
+            x: sa.x,
+            xanchor: sa.xanchor,
             y: 1,
             yanchor: 'bottom',
             showarrow: false,
-        }]
+        }
+        if (!plot_layout.annotations) {
+            plot_layout.annotations = [subtitle_annotation]
+        } else {
+            plot_layout.annotations.push(subtitle_annotation)
+        }
     }
     if (config.footer.length > 0) {
+        const fa = titleAlignmentToX(config.footerAlignment)
         const footer_annotation = {
             name: 'footer',
             text: config.footer,
@@ -560,9 +715,11 @@ function createPlotlyLayout (config, margin_right, height) {
                 color: config.footerFontColor,
                 size: config.footerFontSize
             },
+            align: fa.align,
             xref: 'paper',
             yref: 'paper',
-            x: 0.5,
+            x: fa.x,
+            xanchor: fa.xanchor,
             y: 0,
             yanchor: 'top',
             showarrow: false,
@@ -589,7 +746,7 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
         const has_min_bounds = minBounds !== null && minBounds
         const has_max_bounds = maxBounds !== null && maxBounds
         if (!has_min_bounds || !has_max_bounds) {
-            const dates = values.map(d => d.getTime())
+            const dates = _.reject(values, d => Utils.isMissingValue(d)).map(d => d.getTime())
             dates.sort()
             let min_diff = 1000 * 60 * 60 * 24 // defaults to a day
             for (let i = 1; i < dates.length; i++) {
@@ -959,6 +1116,9 @@ function footerHeight (config) {
 }
 
 function chartHeight (config, height) {
+    // The footer sits inside the bottom margin that has been reserved for it, so there is
+    // no room to make for it below the plot
+    if (placeTextInMargins(config)) return height
     if (config.footer && config.footer.length > 0) {
         // We shrink the height so that elements are moved up for the footer
         return height - footerHeight(config) - config.footerFontSize * (FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE + FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE)
@@ -1047,6 +1207,8 @@ function hideAxis (axis) {
 
 module.exports = {
     createPlotlyData,
+    placeTextInMargins,
+    normaliseAlignment,
     createPlotlyLayout,
     addSmallMultipleSettings,
     getPanelXAxisSuffix,

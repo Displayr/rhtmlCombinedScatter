@@ -25,6 +25,8 @@ CombinedScatter(
   x.axis.tick.color = x.axis.grid.color,
   x.axis.tick.length = 5,
   x.axis.tick.angle = NULL,
+  x.axis.range.mode = "normal",
+  x.axis.tick.maxnum = NULL,
   x.axis.label.wrap = NULL,
   x.axis.label.wrap.n.char = NULL,
   x.axis.zero.line.color = "#000000",
@@ -40,6 +42,9 @@ CombinedScatter(
   y.axis.line.width = 1,
   y.axis.tick.color = x.axis.grid.color,
   y.axis.tick.length = 5,
+  y.axis.tick.angle = NULL,
+  y.axis.range.mode = "normal",
+  y.axis.tick.maxnum = NULL,
   y.axis.zero.line.color = "#000000",
   y.axis.zero.line.dash = "dot",
   y.axis.zero.line.width = 1,
@@ -61,6 +66,7 @@ CombinedScatter(
   footer.font.color = rgb(44, 44, 44, maxColorValue = 255),
   footer.font.family = "Arial",
   footer.font.size = 8,
+  footer.alignment = "Center of plot area",
   grid = TRUE,
   group = NULL,
   height = NULL,
@@ -113,6 +119,12 @@ CombinedScatter(
   legend.y.anchor = NULL,
   legend.wrap = TRUE,
   legend.wrap.n.char = 30,
+  line.show = FALSE,
+  line.colors = NULL,
+  line.thickness = 3,
+  line.type = "solid",
+  line.shape = "linear",
+  line.smoothing = 1,
   margin.top = NULL,
   margin.bottom = NULL,
   margin.left = NULL,
@@ -151,6 +163,7 @@ CombinedScatter(
   tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
   tooltip.font.family = "Arial",
   tooltip.font.size = 10,
+  tooltip.show = TRUE,
   tooltip.text = NULL,
   trend.lines.line.thickness = 1,
   trend.lines.point.size = 2,
@@ -266,6 +279,12 @@ the tick labels are to the axis/grid lines.}
 
 \item{x.axis.tick.angle}{The angle to rotate the x axis labels}
 
+\item{x.axis.range.mode}{One of 'normal' or 'tozero'. With 'tozero' the axis is
+extended to include zero even when the data does not reach it.}
+
+\item{x.axis.tick.maxnum}{The maximum number of ticks on the x axis. The axis still
+chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.}
+
 \item{x.axis.label.wrap}{Whether to wrap the x-axis labels}
 
 \item{x.axis.label.wrap.n.char}{The number of characters before wrapping the x-axis labels}
@@ -297,6 +316,14 @@ of the plot area when `plot.border.show = TRUE`.}
 
 \item{y.axis.tick.length}{Length of tick lines on the y axis. This also adjust how close
 the tick labels are to the axis/grid lines.}
+
+\item{y.axis.tick.angle}{The angle to rotate the y axis labels}
+
+\item{y.axis.range.mode}{One of 'normal' or 'tozero'. With 'tozero' the axis is
+extended to include zero even when the data does not reach it.}
+
+\item{y.axis.tick.maxnum}{The maximum number of ticks on the y axis. The axis still
+chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.}
 
 \item{y.axis.zero.line.color}{Line color of the zero line on the y-axis. Shown when `origin` is TRUE.}
 
@@ -339,6 +366,8 @@ It should have the same length as the number of levels in `group`}
 \item{footer.font.family}{is the font of the footer text}
 
 \item{footer.font.size}{is the font size of the footer text}
+
+\item{footer.alignment}{One of "Left", "Center", "Center of plot area", "Right".}
 
 \item{grid}{Defaults to TRUE. Shows the grid lines.}
 
@@ -447,6 +476,28 @@ When automatic, the legend is only shown when there is more than one group. Defa
 
 \item{legend.wrap.n.char}{The number of characters before wrapping the legend group names}
 
+\item{line.show}{Whether to join the points in each group with a line, in the order
+supplied in \code{X} and \code{Y}. Used to draw line charts with automatically
+placed data labels.}
+
+\item{line.colors}{The color of the joining line in each group. Either a single value
+or a vector with one value per group, recycled in the same way as \code{colors}.
+Accepts rgba() strings, so opacity can be applied per group. Defaults to
+\code{colors} when NULL.}
+
+\item{line.thickness}{The width of the joining lines in pixels. Either a single value
+or a vector with one value per group.}
+
+\item{line.type}{The dash type of the joining lines, one of 'solid', 'dot', 'dash',
+'longdash', 'dashdot' or 'longdashdot'. Either a single value or a vector with one
+value per group.}
+
+\item{line.shape}{Either 'linear' for straight lines between points or 'spline' for
+curved lines.}
+
+\item{line.smoothing}{Numeric between 0 and 1.3; the amount of smoothing applied when
+\code{line.shape} is 'spline'.}
+
 \item{margin.top}{The top margin in pixels}
 
 \item{margin.bottom}{The bottom margin in pixels}
@@ -491,9 +542,14 @@ When automatic, the legend is only shown when there is more than one group. Defa
 
 \item{plot.background.color}{The color of the plot area background}
 
-\item{point.radius}{Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
-When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
-\code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).}
+\item{point.radius}{Radius of the points in pixels when bubble parameter \code{Z} is not
+supplied. Defaults to 2, or to 4 when \code{Z} is supplied. Either a single value or a
+vector with one value per point, which is how a chart shows a marker on some points and
+not others; a radius of 0 draws no marker. A vector requires \code{Z} to be NULL, since
+the bubble legend has only one radius to size its reference bubbles from.
+When \code{Z} is supplied, the points are scaled so that the largest has a radius of
+\code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
+(37.6 pixels for the default of 4).}
 
 \item{point.border.color}{Colors of borders around points and bubbles}
 
@@ -524,6 +580,8 @@ When the \code{Z} is supplied, the points are scaled so that the largest point h
 \item{tooltip.font.family}{is the font family of the tooltips}
 
 \item{tooltip.font.size}{is the font size of the tooltips}
+
+\item{tooltip.show}{Whether to show a tooltip on mouse hover. Defaults to TRUE.}
 
 \item{tooltip.text}{is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)}
 

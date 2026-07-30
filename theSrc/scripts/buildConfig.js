@@ -73,6 +73,7 @@ const defaultConfig = {
   footerFontColor: '#2C2C2C',
   footerFontFamily: 'Arial',
   footerFontSize: 10,
+  footerAlignment: 'Center of plot area',
   grid: true,
   group: null,
   label: null,
@@ -114,6 +115,17 @@ const defaultConfig = {
   legendTitle: null,
   legendTitleWrap: null,
   legendTitleWrapNChar: null,
+  yAxisTickAngle: null,
+  xAxisRangeMode: 'normal',
+  yAxisRangeMode: 'normal',
+  xAxisTickMaxnum: null,
+  yAxisTickMaxnum: null,
+  lineShow: false,
+  lineColors: null, // falls back to colors
+  lineThickness: [3],
+  lineType: ['solid'],
+  lineShape: 'linear',
+  lineSmoothing: 1,
   legendTitleFontColor: '#2C2C2C',
   legendTitleFontFamily: 'Arial',
   legendTitleFontSize: 12,
@@ -167,6 +179,7 @@ const defaultConfig = {
   tooltipFontColor: '#2C2C2C',
   tooltipFontFamily: 'Arial',
   tooltipFontSize: 10,
+  tooltipShow: true,
   tooltipText: [],
   transparency: null, // TODO rename to color transparency
   trendLines: false,
@@ -241,6 +254,13 @@ function buildConfig (userConfig, width, height) {
     config.colors = userConfig.colors
   }
 
+  // Same reasoning as colors above: these are per-group arrays that must be taken
+  // verbatim from userConfig rather than merged element-wise with the defaults.
+  for (const k of ['lineColors', 'lineThickness', 'lineType']) {
+    if (userConfig[k]) config[k] = userConfig[k]
+  }
+  if (config.lineColors === null) config.lineColors = config.colors
+
   if (_.isNull(config.pointRadius)) {
     config.pointRadius = (_.isArray(config.Z) && config.Z.length)
       ? 4 : 2
@@ -263,10 +283,10 @@ function buildConfig (userConfig, width, height) {
   if (config.labelsFontSize === 0 && config.panels !== null) { config.label = null }
 
   if (config.xIsDateTime) {
-    config.X = _.map(config.X, (d) => new Date(d))
+    config.X = _.map(config.X, (d) => Utils.isMissingValue(d) ? null : new Date(d))
     config.xDataType = DataTypeEnum.date
     config.xLevels = null
-  } else if (Utils.isArrOfNumTypes(config.X)) {
+  } else if (Utils.isArrOfNumTypesIgnoringMissing(config.X)) {
     config.xDataType = DataTypeEnum.numeric
     config.xLevels = null
   } else {
@@ -276,9 +296,9 @@ function buildConfig (userConfig, width, height) {
 
   if (config.yIsDateTime) {
     config.yDataType = DataTypeEnum.date
-    config.Y = _.map(config.Y, (d) => new Date(d))
+    config.Y = _.map(config.Y, (d) => Utils.isMissingValue(d) ? null : new Date(d))
     config.yLevels = null
-  } else if (Utils.isArrOfNumTypes(config.Y)) {
+  } else if (Utils.isArrOfNumTypesIgnoringMissing(config.Y)) {
     config.yDataType = DataTypeEnum.numeric
     config.yLevels = null
   } else {
@@ -291,10 +311,17 @@ function buildConfig (userConfig, width, height) {
   // Normalize bubble sizes to compute diameter in pixels
   config.normZ = null
   if (Array.isArray(config.Z)) {
+    // The R layer rejects this combination outright, because the bubble legend has only
+    // one radius to draw its reference bubbles from. A caller reaching buildConfig
+    // directly is warned instead, since it would otherwise get NaN legend geometry.
+    if (Array.isArray(config.pointRadius)) {
+      console.warn('pointRadius must be a single value when Z is supplied; the bubble legend cannot be sized from a radius per point')
+    }
     const z = config.bubbleSizesAsDiameter ? config.Z.map(v => v * v) : config.Z
     const maxZ = _.max(z)
     config.normZ = LegendUtils.normalizeZValues(z, maxZ)
-        .map(z => 2 * LegendUtils.normalizedZtoRadius(config.pointRadius, z))
+        .map((z, i) => 2 * LegendUtils.normalizedZtoRadius(
+            Array.isArray(config.pointRadius) ? config.pointRadius[i] : config.pointRadius, z))
   }
 
   if (!config.legendBubbleTitle) {

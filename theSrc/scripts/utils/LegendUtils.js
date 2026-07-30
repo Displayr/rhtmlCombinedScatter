@@ -1,10 +1,13 @@
 import _ from 'lodash'
 
 class LegendUtils {
+  // scale is point.radius, and must be a single number: a radius per point is rejected in the
+  // R layer, because the bubble legend has only one radius to size its reference bubbles from.
   static normalizedZtoRadius (scale, normalizedZ) {
     // z values are multiplied by the point size and a constant multiplier (50/3)
     // the constant multiplier makes LabeledScatter behave consistently with flipStandardCharts::Scatter
-    // it means that when point.radius = 3 (default), the largest marker will have a radius of 50 pixels
+    // the sqrt(1/PI) is part of the scaling as well, so the largest marker (normalizedZ of 1) has a
+    // radius of scale * 50/3 * sqrt(1/PI), about 9.4 * scale: 37.6 pixels for the default scale of 4
     return (Math.sqrt(normalizedZ / Math.PI) * scale * 50 / 3)
   }
 

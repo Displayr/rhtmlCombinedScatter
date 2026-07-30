@@ -19,6 +19,24 @@ class Utils {
     return this.isArr(arr) && _.every(arr, n => typeof n === 'number')
   }
 
+  // A gap in the data. Only X, Y and Z can carry one, and all three are serialised with
+  // na = "null", so a gap always arrives as the JSON null literal. The strings 'NA' and
+  // 'NaN' are deliberately not treated as gaps: they are indistinguishable from a category
+  // genuinely named that way, and reading one as a gap drops a drawn point from the marker
+  // index and blanks its coordinate in the label.
+  static isMissingValue (v) {
+    return v === null || v === undefined || (typeof v === 'number' && isNaN(v))
+  }
+
+  // A numeric series with gaps in it is still numeric. Used to classify the axes, where
+  // treating a gap as evidence of a categorical axis would put the values on an ordinal
+  // axis in whatever order they happened to appear.
+  static isArrOfNumTypesIgnoringMissing (arr) {
+    if (!this.isArr(arr)) return false
+    const present = _.reject(arr, v => this.isMissingValue(v))
+    return present.length > 0 && _.every(present, n => typeof n === 'number')
+  }
+
   static isArrOfPositiveNums (arr) {
     return this.isArr(arr) && _.every(arr, n => _.isFinite(n) && n >= 0)
   }

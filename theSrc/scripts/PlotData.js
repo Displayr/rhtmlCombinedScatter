@@ -259,10 +259,13 @@ class PlotData {
           } else {
             y = ((1 - this.normY[i]) * this.vb.height) + this.vb.y
           }
-          let r = this.pointRadius
+          // pointRadius holds a radius per point when the caller supplies one, so the
+          // value for this point has to be picked out before it is used: subtracting a
+          // whole array gives NaN, which places the label nowhere.
+          let r = Array.isArray(this.pointRadius) ? this.pointRadius[i] : this.pointRadius
           if (Utils.isArrOfNums(this.Z)) {
             const legendUtils = LegendUtils
-            r = legendUtils.normalizedZtoRadius(this.pointRadius, this.normZ[i])
+            r = legendUtils.normalizedZtoRadius(r, this.normZ[i])
           }
           const fillOpacity = this.plotColors.getFillOpacity(this.transparency)
 
@@ -289,7 +292,12 @@ class PlotData {
           const group = (this.group != null) ? this.group[i] : ''
           const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
           const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
-          this.pts.push({ x, y, r, label, labelAlt, labelX: this.origX[i].toString(), labelY: this.origY[i].toString(), labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
+          // A gap in the data has no coordinate to show, and calling toString on it
+          // would throw. The exception is swallowed further up, which loses every
+          // label on the chart rather than just this one.
+          const labelX = Utils.isMissingValue(this.origX[i]) ? '' : this.origX[i].toString()
+          const labelY2 = Utils.isMissingValue(this.origY[i]) ? '' : this.origY[i].toString()
+          this.pts.push({ x, y, r, label, labelAlt, labelX: labelX, labelY: labelY2, labelZ, group, color: ptColor, id: i, fillOpacity, hideLabel: fontOpacity === 0.0 })
           this.lab.push({ x, y: labelY, color: fontColor, opacity: fontOpacity, id: i, fontSize, fontFamily: this.vb.labelFontFamily, text: label, width, height, url, hidePointAndLabel })
         }
         i++
@@ -367,15 +375,20 @@ class PlotData {
     return (this.pts[index].hideLabel)
   }
 
+  // Maps the position of a marker in the document back to the row it came from. Clicking
+  // a marker toggles its label, so the two have to line up. plotly draws no marker for a
+  // row with a missing coordinate, so those rows are left out here as well; counting them
+  // would shift every marker after the first gap onto the wrong row.
   mapMarkerIndexToDataIndex () {
+    const isDrawn = i => !Utils.isMissingValue(this.X[i]) && !Utils.isMissingValue(this.Y[i])
     if (!Array.isArray(this.group)) {
-      return Array(this.len).fill().map((element, index) => index)
+      return Array(this.len).fill().map((element, index) => index).filter(isDrawn)
     }
     const uniq_groups = _.uniq(this.group)
     const result = []
     for (const g of uniq_groups) {
       for (let i = 0; i < this.group.length; i++) {
-        if (this.group[i] === g) {
+        if (this.group[i] === g && isDrawn(i)) {
           result.push(i)
         }
       }

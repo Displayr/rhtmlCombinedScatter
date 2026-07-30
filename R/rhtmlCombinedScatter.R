@@ -51,6 +51,10 @@
 #' @param x.axis.tick.color Color of tick lines on the x axis.
 #' @param x.axis.tick.length Length of tick lines on the x axis. This also adjust how close
 #'      the tick labels are to the axis/grid lines.
+#' @param x.axis.range.mode One of 'normal' or 'tozero'. With 'tozero' the axis is
+#'     extended to include zero even when the data does not reach it.
+#' @param x.axis.tick.maxnum The maximum number of ticks on the x axis. The axis still
+#'     chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.
 #' @param x.axis.tick.angle The angle to rotate the x axis labels
 #' @param x.axis.label.wrap Whether to wrap the x-axis labels
 #' @param x.axis.label.wrap.n.char The number of characters before wrapping the x-axis labels
@@ -63,6 +67,11 @@
 #' @param y.axis.tick.color Color of tick lines on the y axis.
 #' @param y.axis.tick.length Length of tick lines on the y axis. This also adjust how close
 #'      the tick labels are to the axis/grid lines.
+#' @param y.axis.tick.angle The angle to rotate the y axis labels
+#' @param y.axis.range.mode One of 'normal' or 'tozero'. With 'tozero' the axis is
+#'     extended to include zero even when the data does not reach it.
+#' @param y.axis.tick.maxnum The maximum number of ticks on the y axis. The axis still
+#'     chooses where to put them, so fewer may be drawn. NULL leaves it to the axis.
 #' @param x.title is the title text given to the x axis
 #' @param y.title is the title text given to the y axis
 #' @param z.title is the title text given to the bubble size. This is shown in the tooltips when size data is supplied.
@@ -80,6 +89,7 @@
 #' @param footer.font.family is the font of the footer text
 #' @param footer.font.color is the font color of the footer text
 #' @param footer.font.size is the font size of the footer text
+#' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right".
 #' @param labels.show Toggle for showing labels. Defaults to true if labels array given
 #' @param labels.font.family is the font family of the labels
 #' @param labels.font.color is the font color of the labels. NOTE: This overrides the color if it is set
@@ -116,6 +126,22 @@
 #' @param legend.y.anchor Either NULL, "top", "center" or "bottom"
 #' @param legend.wrap Whether to wrap the legend group names
 #' @param legend.wrap.n.char The number of characters before wrapping the legend group names
+#' @param line.show Whether to join the points in each group with a line, in the order
+#'     supplied in \code{X} and \code{Y}. Used to draw line charts with automatically
+#'     placed data labels.
+#' @param line.colors The color of the joining line in each group. Either a single value
+#'     or a vector with one value per group, recycled in the same way as \code{colors}.
+#'     Accepts rgba() strings, so opacity can be applied per group. Defaults to
+#'     \code{colors} when NULL.
+#' @param line.thickness The width of the joining lines in pixels. Either a single value
+#'     or a vector with one value per group.
+#' @param line.type The dash type of the joining lines, one of 'solid', 'dot', 'dash',
+#'     'longdash', 'dashdot' or 'longdashdot'. Either a single value or a vector with one
+#'     value per group.
+#' @param line.shape Either 'linear' for straight lines between points or 'spline' for
+#'     curved lines.
+#' @param line.smoothing Numeric between 0 and 1.3; the amount of smoothing applied when
+#'     \code{line.shape} is 'spline'.
 #' @param margin.top The top margin in pixels
 #' @param margin.bottom The bottom margin in pixels
 #' @param margin.left The left margin in pixels
@@ -141,6 +167,7 @@
 #' @param axis.font.family Font Family of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.size Font size of the axis labels. Only used if the values for specific axis is not set.
 #' @param axis.font.color Font color of the axis labels. Only used if the values for specific axis is not set.
+#' @param tooltip.show Whether to show a tooltip on mouse hover. Defaults to TRUE.
 #' @param tooltip.text is an array of text containing custom tool tip text that appears on mouse hover ('\\n' for new line)
 #' @param tooltip.font.color is the font color of the tooltips
 #' @param tooltip.font.family is the font family of the tooltips
@@ -157,9 +184,14 @@
 #' @param x.hover.format A string that is interpreted for the format of the x axis values in the tooltips.
 #' @param y.format A string that is interpreted for the format of the y axis labels. Default is NULL.
 #' @param y.hover.format A string that is interpreted for the format of the y axis values in the tooltips.
-#' @param point.radius Radius of the points when bubble parameter \code{Z} is not supplied. Defaults to 2.
-#'     When the \code{Z} is supplied, the points are scaled so that the largest point has a radius of
-#'     \code{point.radius * 50/3} (i.e. a diameter of roughly an inch for the default value).
+#' @param point.radius Radius of the points in pixels when bubble parameter \code{Z} is not
+#'     supplied. Defaults to 2, or to 4 when \code{Z} is supplied. Either a single value or a
+#'     vector with one value per point, which is how a chart shows a marker on some points and
+#'     not others; a radius of 0 draws no marker. A vector requires \code{Z} to be NULL, since
+#'     the bubble legend has only one radius to size its reference bubbles from.
+#'     When \code{Z} is supplied, the points are scaled so that the largest has a radius of
+#'     \code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
+#'     (37.6 pixels for the default of 4).
 #' @param point.border.color Colors of borders around points and bubbles
 #' @param point.border.width Widths of borders around points and bubbles in pixels
 #' @param x.bounds.minimum Integer or NULL; set minimum of range for plotting on the x axis
@@ -259,6 +291,8 @@ CombinedScatter <- function(
     x.axis.tick.color = x.axis.grid.color,
     x.axis.tick.length = 5,
     x.axis.tick.angle = NULL,
+    x.axis.range.mode = 'normal',
+    x.axis.tick.maxnum = NULL,
     x.axis.label.wrap = NULL,
     x.axis.label.wrap.n.char = NULL,
     x.axis.zero.line.color = '#000000',
@@ -274,6 +308,9 @@ CombinedScatter <- function(
     y.axis.line.width = 1,
     y.axis.tick.color = x.axis.grid.color,
     y.axis.tick.length = 5,
+    y.axis.tick.angle = NULL,
+    y.axis.range.mode = 'normal',
+    y.axis.tick.maxnum = NULL,
     y.axis.zero.line.color = '#000000',
     y.axis.zero.line.dash = 'dot',
     y.axis.zero.line.width = 1,
@@ -294,6 +331,7 @@ CombinedScatter <- function(
     footer.font.color = rgb(44, 44, 44, maxColorValue = 255),
     footer.font.family = "Arial",
     footer.font.size = 8,
+    footer.alignment = 'Center of plot area',
     grid = TRUE,
     group = NULL,
     height = NULL,
@@ -346,6 +384,12 @@ CombinedScatter <- function(
     legend.y.anchor = NULL,
     legend.wrap = TRUE,
     legend.wrap.n.char = 30,
+    line.show = FALSE,
+    line.colors = NULL,
+    line.thickness = 3,
+    line.type = 'solid',
+    line.shape = 'linear',
+    line.smoothing = 1,
     margin.top = NULL,
     margin.bottom = NULL,
     margin.left = NULL,
@@ -384,6 +428,7 @@ CombinedScatter <- function(
     tooltip.font.color = rgb(44, 44, 44, maxColorValue = 255),
     tooltip.font.family = "Arial",
     tooltip.font.size = 10,
+    tooltip.show = TRUE,
     tooltip.text = NULL,
     trend.lines.line.thickness = 1,
     trend.lines.point.size=2,
@@ -472,6 +517,10 @@ CombinedScatter <- function(
         stop("Inputs X and Y need to have the same length")
     if (!is.null(Z) && length(X) != length(Z))
         stop("Input Z needs to have the same length as X and Y")
+    # With a radius per point the area of a bubble is proportional to Z * point.radius^2,
+    # so there is no single Z-to-size mapping left for the bubble legend to draw.
+    if (!is.null(Z) && length(point.radius) > 1)
+        stop("point.radius must be a single value when Z is supplied")
 
     isDateTime <- function(x) { return (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXt"))}
     xIsDateTime <- isDateTime(X[1])
@@ -529,10 +578,20 @@ CombinedScatter <- function(
 
     label <- if (is.null(label)) NULL else toJSON(as.character(label))
     labelAlt <- if (is.null(label.alt)) NULL else toJSON(as.character(label.alt))
+    # Encoded here rather than left to htmlwidgets, which serialises with auto_unbox and
+    # would send a one-point chart's text as a bare string. The widget only takes the text
+    # when it arrives as an array, so it would silently fall back to the generated text.
+    tooltipText <- if (is.null(tooltip.text)) NULL else toJSON(as.character(tooltip.text))
 
-    x = list(X = toJsonOrNull(X),
-             Y = toJsonOrNull(Y),
-             Z = toJsonOrNull(Z),
+    # Coordinates are serialised with na = "null" so that gaps in the data arrive as the
+    # JSON null literal. jsonlite would otherwise encode them as the strings "NA"/"NaN",
+    # which plotly cannot recognise as missing and so cannot break a line at.
+    # The widget relies on this: it reads only the null literal as a gap, so that a
+    # category genuinely named "NA" stays a category. These are the only three arguments
+    # that can carry one, so they are the only ones that need it.
+    x = list(X = toJsonOrNull(X, na = "null"),
+             Y = toJsonOrNull(Y, na = "null"),
+             Z = toJsonOrNull(Z, na = "null"),
              xIsDateTime = xIsDateTime,
              yIsDateTime = yIsDateTime,
              colorIsDateTime = color.is.date.time,
@@ -583,6 +642,7 @@ CombinedScatter <- function(
              footer = footer,
              footerFontFamily = footer.font.family,
              footerFontSize = footer.font.size,
+             footerAlignment = footer.alignment,
              footerFontColor = footer.font.color,
              showLabels = labels.show,
              labelsFontFamily = labels.font.family,
@@ -639,6 +699,8 @@ CombinedScatter <- function(
              xAxisTickColor = x.axis.tick.color,
              xAxisTickLength = x.axis.tick.length,
              xAxisTickAngle = x.axis.tick.angle,
+             xAxisRangeMode = x.axis.range.mode,
+             xAxisTickMaxnum = x.axis.tick.maxnum,
              xAxisLabelWrap = x.axis.label.wrap,
              xAxisLabelWrapNChar = x.axis.label.wrap.n.char,
              xAxisZeroLineColor = x.axis.zero.line.color,
@@ -654,10 +716,14 @@ CombinedScatter <- function(
              yAxisLineWidth = y.axis.line.width,
              yAxisTickColor = y.axis.tick.color,
              yAxisTickLength = y.axis.tick.length,
+             yAxisTickAngle = y.axis.tick.angle,
+             yAxisRangeMode = y.axis.range.mode,
+             yAxisTickMaxnum = y.axis.tick.maxnum,
              yAxisZeroLineColor = y.axis.zero.line.color,
              yAxisZeroLineDash = y.axis.zero.line.dash,
              yAxisZeroLineWidth = y.axis.zero.line.width,
-             tooltipText = tooltip.text,
+             tooltipShow = tooltip.show,
+             tooltipText = tooltipText,
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,
@@ -677,6 +743,12 @@ CombinedScatter <- function(
              yBoundsMaximum = y.bounds.maximum,
              xBoundsUnitsMajor = x.bounds.units.major,
              yBoundsUnitsMajor = y.bounds.units.major,
+             lineShow = line.show,
+             lineColors = toJsonOrNull(line.colors),
+             lineThickness = toJsonOrNull(line.thickness),
+             lineType = toJsonOrNull(line.type),
+             lineShape = line.shape,
+             lineSmoothing = line.smoothing,
              trendLines = trend.lines.show,
              trendLinesLineThickness = trend.lines.line.thickness,
              trendLinesPointSize = trend.lines.point.size,
@@ -765,10 +837,10 @@ CombinedScatter <- function(
                               package = 'rhtmlCombinedScatter')
 }
 
-toJsonOrNull <- function(x) {
+toJsonOrNull <- function(x, ...) {
     if (is.null(x)) {
         NULL
     } else {
-        toJSON(x)
+        toJSON(x, ...)
     }
 }
