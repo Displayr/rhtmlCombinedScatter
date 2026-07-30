@@ -578,6 +578,10 @@ CombinedScatter <- function(
 
     label <- if (is.null(label)) NULL else toJSON(as.character(label))
     labelAlt <- if (is.null(label.alt)) NULL else toJSON(as.character(label.alt))
+    # Encoded here rather than left to htmlwidgets, which serialises with auto_unbox and
+    # would send a one-point chart's text as a bare string. The widget only takes the text
+    # when it arrives as an array, so it would silently fall back to the generated text.
+    tooltipText <- if (is.null(tooltip.text)) NULL else toJSON(as.character(tooltip.text))
 
     # Coordinates are serialised with na = "null" so that gaps in the data arrive as the
     # JSON null literal. jsonlite would otherwise encode them as the strings "NA"/"NaN",
@@ -716,7 +720,7 @@ CombinedScatter <- function(
              yAxisZeroLineDash = y.axis.zero.line.dash,
              yAxisZeroLineWidth = y.axis.zero.line.width,
              tooltipShow = tooltip.show,
-             tooltipText = tooltip.text,
+             tooltipText = tooltipText,
              tooltipFontColor = tooltip.font.color,
              tooltipFontFamily = tooltip.font.family,
              tooltipFontSize = tooltip.font.size,

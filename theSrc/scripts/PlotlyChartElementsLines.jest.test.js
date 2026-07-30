@@ -117,6 +117,16 @@ describe('tooltip text', () => {
         const config = buildConfig(lineUserConfig({ tooltipText: ['a', 'b'] }), 600, 400)
         expect(lineTraces(createPlotlyData(config))[0].text[0]).toBe('1 (Jan, 1)')
     })
+
+    // A bare string is not text for one point: its length is a character count, which
+    // would be indexed per character if it happened to match. The R layer encodes the
+    // text as an array however many points there are, so this stays a rejection.
+    test('is ignored when it arrives as a bare string', () => {
+        const config = buildConfig({
+            X: ['Jan'], Y: [1], label: ['1'], tooltipText: 'a',
+        }, 600, 400)
+        expect(createPlotlyData(config).find(t => t.text).text[0]).toBe('1 (Jan, 1)')
+    })
 })
 
 describe('point radius', () => {
