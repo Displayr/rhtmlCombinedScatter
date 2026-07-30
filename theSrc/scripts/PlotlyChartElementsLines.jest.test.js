@@ -25,6 +25,14 @@ function markerTraces (data) { return data.filter(drawsMarkers) }
 // Every trace that belongs to a series, however many traces that is
 function seriesTraces (data) { return data.filter(t => drawsLine(t) || drawsMarkers(t)) }
 
+// The legend proxy trace (see createLegendProxyTrace) is data-free and carries a series'
+// name too, so it satisfies drawsLine/drawsMarkers/seriesTraces along with the real trace
+// that carries the series' actual data. It is always hoverinfo: 'skip', which the real
+// trace never is (borders and annotation traces are also 'skip', but they have no name and
+// are already excluded above), so that is what tells the two apart.
+function realSeriesTraces (data) { return seriesTraces(data).filter(t => t.hoverinfo !== 'skip') }
+function legendProxyTraces (data) { return seriesTraces(data).filter(t => t.hoverinfo === 'skip') }
+
 describe('joining lines', () => {
     test('are not drawn unless line.show is set', () => {
         const config = buildConfig(lineUserConfig({ lineShow: false }), 600, 400)
@@ -33,7 +41,7 @@ describe('joining lines', () => {
 
     test('draw one trace per group, carrying that group of points', () => {
         const config = buildConfig(lineUserConfig(), 600, 400)
-        const traces = lineTraces(createPlotlyData(config))
+        const traces = realSeriesTraces(createPlotlyData(config))
         expect(traces.map(t => t.name)).toEqual(['A', 'B'])
         expect(traces[0].y).toEqual([1, 2, 3])
         expect(traces[1].y).toEqual([4, 5, 6])
@@ -41,7 +49,7 @@ describe('joining lines', () => {
 
     test('are drawn by the same trace as the markers, so plotly puts them underneath', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
-        expect(seriesTraces(data).map(t => t.mode)).toEqual(['lines+markers', 'lines+markers'])
+        expect(realSeriesTraces(data).map(t => t.mode)).toEqual(['lines+markers', 'lines+markers'])
     })
 
     test('apply per-group thickness, dash and color', () => {
@@ -60,14 +68,14 @@ describe('joining lines', () => {
             lineThickness: [5],
             lineType: ['dash'],
         }), 600, 400)
-        const traces = lineTraces(createPlotlyData(config))
+        const traces = realSeriesTraces(createPlotlyData(config))
         expect(traces.map(t => t.line.width)).toEqual([5, 5])
         expect(traces.map(t => t.line.dash)).toEqual(['dash', 'dash'])
     })
 
     test('fall back to colors when lineColors is not supplied', () => {
         const config = buildConfig(lineUserConfig(), 600, 400)
-        const traces = lineTraces(createPlotlyData(config))
+        const traces = realSeriesTraces(createPlotlyData(config))
         expect(traces.map(t => t.line.color)).toEqual(['#ff0000', '#00ff00'])
     })
 
@@ -79,13 +87,13 @@ describe('joining lines', () => {
         expect(spline[0].line).toMatchObject({ shape: 'spline', smoothing: 1.3 })
     })
 
-    test('carry the legend entry and the tooltip on the merged trace', () => {
+    test('carries the tooltip on the merged trace, but never the legend entry', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({
             colors: ['#000000', '#000000'],
             lineColors: ['#ffffff', '#ffffff'],
         }), 600, 400))
-        const traces = seriesTraces(data)
-        expect(traces.map(t => t.showlegend)).toEqual([true, true])
+        const traces = realSeriesTraces(data)
+        expect(traces.every(t => t.showlegend === false)).toBe(true)
         expect(traces.every(t => t.hoverinfo === 'name+text')).toBe(true)
         // Judged from the line colour, not the marker's: white line gives dark text,
         // where the black marker colour would give white
@@ -100,39 +108,34 @@ describe('joining lines', () => {
 
     test('do not connect across missing values', () => {
         const config = buildConfig(lineUserConfig(), 600, 400)
-        expect(lineTraces(createPlotlyData(config)).every(t => t.connectgaps === false)).toBe(true)
+        expect(realSeriesTraces(createPlotlyData(config)).every(t => t.connectgaps === false)).toBe(true)
     })
 
-    // marker.show defaults to FALSE for a line chart, so flipStandardCharts sends
-    // point.radius = rep(0, n). A merged lines+markers trace would still make plotly draw
-    // a swatch marker in the legend (and, in the bundled plotly, a stray 2px dot: the swatch
-    // marker size is the mean of marker.size clamped to [2, 16], so a mean of 0 clamps up to
-    // 2), so a chart with no marker drawn anywhere goes back to the pre-merge mode: 'lines',
-    // no marker block at all.
-    test('go back to a line-only trace when no marker is drawn anywhere', () => {
+    // The axis-padding fix: plotly decides its usual autorange padding from whether a trace
+    // *has* markers, not from their size or visibility, so a real series trace stays mode:
+    // 'lines+markers' with its marker block intact even when every radius in the chart is 0
+    // (marker.show defaults to FALSE for a line chart, so flipStandardCharts sends
+    // point.radius = rep(0, n)). Dropping the marker block for that case, as the previous
+    // mechanism did to save the legend a stray dot, lost this padding instead: labels at the
+    // extreme points overlapped the axis. The legend is what still needs a plain-line swatch
+    // in this case, and that is now the proxy trace's job (see the next describe block).
+    test('every real series trace still merges lines+markers when no marker is drawn anywhere', () => {
         const config = buildConfig(lineUserConfig({ pointRadius: [0, 0, 0, 0, 0, 0] }), 600, 400)
-        const traces = seriesTraces(createPlotlyData(config))
-        expect(traces.every(t => t.mode === 'lines')).toBe(true)
-        expect(traces.every(t => !('marker' in t))).toBe(true)
+        const traces = realSeriesTraces(createPlotlyData(config))
+        expect(traces.every(t => t.mode === 'lines+markers')).toBe(true)
+        expect(traces.every(t => 'marker' in t)).toBe(true)
     })
 
-    test('still own the tooltip and the legend entry with no marker drawn', () => {
-        const config = buildConfig(lineUserConfig({ pointRadius: [0, 0, 0, 0, 0, 0] }), 600, 400)
-        const traces = seriesTraces(createPlotlyData(config))
-        expect(traces.map(t => t.showlegend)).toEqual([true, true])
-        expect(traces.every(t => t.hoverinfo === 'name+text')).toBe(true)
-        expect(traces.map(t => t.text.length)).toEqual([3, 3])
-    })
-
-    // Whether markers are drawn is a chart-wide decision, not a per-series one: a series
-    // whose own radii are all zero must not fall back to mode: 'lines' while a neighbouring
-    // series still draws markers, or that series would emit no .point elements while its
-    // neighbour does, and addMarkerClickHandler's markerIndexToDataIndex mapping would shift
-    // every marker after the gap onto the wrong data row.
-    test('stay merged for every series when only some points across the chart draw a marker', () => {
+    // Real series traces are unconditionally lines+markers now (see createSeriesTrace), so a
+    // series whose own points are all zero merges identically to a neighbour that draws
+    // markers elsewhere in the chart - the mismatch this used to guard against (a series
+    // silently falling back to mode: 'lines' while its neighbour didn't, shifting .point
+    // indices and so addMarkerClickHandler's markerIndexToDataIndex mapping) can no longer
+    // happen, because there is no such fallback on the real trace any more.
+    test('stay merged for every series even when only some points across the chart draw a marker', () => {
         // Markers only at the ends of each series - a real flipStandardCharts option
         const config = buildConfig(lineUserConfig({ pointRadius: [3, 0, 0, 0, 0, 3] }), 600, 400)
-        const traces = seriesTraces(createPlotlyData(config))
+        const traces = realSeriesTraces(createPlotlyData(config))
         expect(traces.map(t => t.mode)).toEqual(['lines+markers', 'lines+markers'])
     })
 
@@ -143,6 +146,47 @@ describe('joining lines', () => {
         }), 600, 400)
         const traces = seriesTraces(createPlotlyData(config))
         expect(traces.every(t => t.mode === 'markers')).toBe(true)
+    })
+})
+
+// createLegendProxyTrace: a data-free trace per series (x: [null], y: [null]) that exists
+// only because the real trace above can no longer drop its marker block to keep the legend
+// swatch clean - it always keeps lines+markers now, for the axis padding.
+describe('the legend proxy trace of a line chart', () => {
+    test('carries the legend entry, styled like the series line, when the real trace does not', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({
+            colors: ['#000000', '#000000'],
+            lineColors: ['#ffffff', '#ffffff'],
+        }), 600, 400))
+        const proxies = legendProxyTraces(data)
+        expect(proxies.map(t => t.name)).toEqual(['A', 'B'])
+        expect(proxies.every(t => t.showlegend === true)).toBe(true)
+        expect(proxies.every(t => t.line.color === '#ffffff')).toBe(true)
+    })
+
+    test('is a plain line, with no marker block, when no marker is drawn anywhere', () => {
+        const config = buildConfig(lineUserConfig({ pointRadius: [0, 0, 0, 0, 0, 0] }), 600, 400)
+        const proxies = legendProxyTraces(createPlotlyData(config))
+        expect(proxies.every(t => t.mode === 'lines')).toBe(true)
+        expect(proxies.every(t => !('marker' in t))).toBe(true)
+    })
+
+    test('carries the series colour and its representative size and symbol when markers are drawn', () => {
+        const config = buildConfig(lineUserConfig({
+            pointRadius: [1, 2, 3, 4, 5, 6],
+            pointSymbol: ['square', 'square', 'square', 'diamond', 'diamond', 'diamond'],
+        }), 600, 400)
+        const proxies = legendProxyTraces(createPlotlyData(config))
+        // The first point of each series, doubled to a diameter - the swatch can only show
+        // one size, so it takes the series' first entry rather than an average or a max.
+        expect(proxies.map(t => t.marker.size)).toEqual([2, 8])
+        expect(proxies.map(t => t.marker.symbol)).toEqual(['square', 'diamond'])
+        expect(proxies.map(t => t.marker.color)).toEqual(['#ff0000', '#00ff00'])
+    })
+
+    test('does not exist at all when lineShow is false', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({ lineShow: false }), 600, 400))
+        expect(legendProxyTraces(data)).toHaveLength(0)
     })
 })
 
@@ -193,9 +237,10 @@ describe('point radius', () => {
     })
 })
 
-// These four hold before and after the line and marker traces merge. They are the contract
-// the merge must not break, so they are deliberately silent about how many traces a series
-// is drawn with.
+// These four hold before and after the line and marker traces merge, and again after the
+// legend was split out into its own proxy trace. They are the contract both restructurings
+// must not break, so they are deliberately silent about how many traces a series is drawn
+// with, and about which of those traces owns the legend.
 describe('invariants across the trace structure', () => {
     test('exactly one trace per series carries the tooltip payload, covering every point', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
@@ -244,7 +289,7 @@ describe('point symbol', () => {
 
     test('is sliced per group from a per-point array', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({ pointSymbol: perPoint }), 600, 400))
-        expect(seriesTraces(data).map(t => t.marker.symbol))
+        expect(realSeriesTraces(data).map(t => t.marker.symbol))
             .toEqual([['square', 'square', 'square'], ['diamond', 'diamond', 'diamond']])
     })
 

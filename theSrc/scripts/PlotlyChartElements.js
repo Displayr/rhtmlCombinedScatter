@@ -45,6 +45,7 @@ function createPlotlyData (config) {
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
+    const plot_legend_data = []
     const plot_annotation_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
@@ -61,15 +62,16 @@ function createPlotlyData (config) {
             ? config.pointRadius.map(r => r * 2)
             : config.pointRadius * 2)
 
-    // Whether any marker is drawn anywhere in the chart, not per series: a series whose own
-    // slice is all zeros must draw exactly the same trace shape as its neighbours, or it
-    // would emit no .point elements while they do, and addMarkerClickHandler's
-    // markerIndexToDataIndex mapping would shift every marker after the gap onto the wrong
-    // data row. marker.show defaults to FALSE for a line chart (flipStandardCharts sends
-    // point.radius = rep(0, n)), and plotly's legend swatch draws a marker whenever the mode
-    // includes markers regardless of visibility - including a stray dot from the bundled
-    // plotly's swatch-size clamp on a mean of 0 - so a chart that draws no marker anywhere
-    // goes back to the pre-merge mode: 'lines', with no marker block.
+    // Whether any marker is drawn anywhere in the chart, not per series: this is a chart-wide
+    // decision, not a per-series one, because it feeds the legend proxy trace (see
+    // createLegendProxyTrace) rather than the real series trace - every real series trace
+    // stays mode: 'lines+markers' regardless, so that plotly computes its usual autorange
+    // padding for the axis (plotly decides that padding from whether a trace has markers, not
+    // from their size, so a chart with radius-0 markers everywhere still needs the marker
+    // block to get the padding a line chart is drawn with). marker.show defaults to FALSE for
+    // a line chart (flipStandardCharts sends point.radius = rep(0, n)), so the legend proxy
+    // falls back to mode: 'lines' with no marker block when nothing is drawn anywhere, rather
+    // than drawing a stray dot from the bundled plotly's swatch-size clamp on a mean of 0.
     const markersDrawn = Array.isArray(marker_size) ? marker_size.some(size => size !== 0) : marker_size !== 0
 
     const makeSeriesTrace = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
@@ -78,7 +80,11 @@ function createPlotlyData (config) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             // Only the first panel takes the legend entry, otherwise every panel repeats it
-            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, p === 0, false, markersDrawn))
+            const show_in_legend = p === 0
+            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, show_in_legend, false))
+            if (config.lineShow) {
+                plot_legend_data.push(createLegendProxyTrace(config, 'Series 1', 0, index, marker_size, show_in_legend, markersDrawn))
+            }
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -120,7 +126,10 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, markersDrawn))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                if (config.lineShow) {
+                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size, g_add, markersDrawn))
+                }
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -131,10 +140,14 @@ function createPlotlyData (config) {
             }
         }
     }
-    // Add the annotation traces last so that they don't interfere with the
-    // order of the marker points in the DOM, which is relied upon by
-    // code that handles marker label toggling.
-    return [...plot_data, ...plot_annotation_data]
+    // Legend proxy traces carry no data (x: [null], y: [null]), so plotly's translatePoint
+    // fails for them and the .point element it provisionally appends is removed before it
+    // ever renders - confirmed against the bundled plotly's scatter point join, which calls
+    // translatePoint per point and does `n.remove()` on failure. They are ordered here purely
+    // to stay clear of the real marker traces regardless, and the annotation traces are added
+    // last so that they don't interfere with the order of the marker points in the DOM, which
+    // is relied upon by code that handles marker label toggling.
+    return [...plot_data, ...plot_legend_data, ...plot_annotation_data]
 }
 
 // plotly takes a marker symbol per point, so a per-point array is sliced for this group the
@@ -200,23 +213,65 @@ function lineForGroup (config, group_index) {
 }
 
 // A series whose joining line is drawn is one trace, not two: plotly draws a trace's line
-// beneath its own markers, and the legend swatch then shows the line and the marker symbol
-// together. The tooltip font colour stays keyed off the line colour, which is what owned the
-// tooltip while these were separate traces.
-// markers_drawn is a chart-wide decision (see createPlotlyData), not this series' own: when
-// nothing draws a marker anywhere in the chart, this falls back to the pre-merge mode:
-// 'lines', with no marker block, so plotly's legend swatch has no marker to draw from.
-function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, markers_drawn = true) {
+// beneath its own markers, and the tooltip stays keyed off this one trace. The tooltip font
+// colour stays keyed off the line colour, which is what owned the tooltip while these were
+// separate traces.
+// This trace always stays mode: 'lines+markers' with its marker block intact, whatever the
+// radius - even a radius of 0 - because plotly decides its usual autorange padding from
+// whether a trace *has* markers, not from their size or visibility. Dropping the marker
+// block for a markerless chart (the previous approach) saved the legend a stray dot, but it
+// also lost that padding, since plotly no longer saw a trace with markers at all: labels at
+// the extreme points then overlapped the axis. The legend entry is carried by a separate,
+// data-free proxy trace instead (see createLegendProxyTrace), so this trace never shows in
+// the legend while lineShow is on.
+function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const trace = createScatterTraceForMarker(config, tooltips, group_name, marker_size,
         marker_opacity, group_index, panel_index, data_index, showlegend, has_groups)
     trace.line = lineForGroup(config, group_index)
     trace.connectgaps = false
     trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
+    trace.mode = 'lines+markers'
+    trace.showlegend = false
+    return trace
+}
+
+// The legend swatch cannot show a value that varies by point, since the whole series is one
+// legend entry: it takes the series' first point, the same slice createScatterTraceForMarker
+// would draw first for this group.
+function representativeMarkerSize (marker_size, data_index) {
+    if (!Array.isArray(marker_size)) return marker_size
+    return marker_size[Array.isArray(data_index) ? data_index[0] : 0]
+}
+
+// A data-free trace (x: [null], y: [null]) that exists only to carry a line-chart series'
+// legend entry, styled explicitly for the swatch rather than inherited from a real trace's
+// data. Splitting the legend out this way is what lets createSeriesTrace always stay mode:
+// 'lines+markers' (see its comment) without also drawing a stray legend dot when nothing is
+// actually drawn: this proxy falls back to a plain 'lines' swatch in that case instead.
+// Having no data means plotly's translatePoint fails for it, so it renders no .point element
+// of its own in the plot area - see the comment on createPlotlyData's return.
+function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size, showlegend, markers_drawn) {
+    const trace = {
+        x: [null],
+        y: [null],
+        name: group_name,
+        hoverinfo: 'skip',
+        type: 'scatter',
+        line: lineForGroup(config, group_index),
+        legendgroup: group_name,
+        showlegend: showlegend
+    }
     if (markers_drawn) {
+        const symbol = symbolForTrace(config, data_index)
         trace.mode = 'lines+markers'
+        trace.marker = {
+            color: config.colors[group_index % config.colors.length],
+            size: representativeMarkerSize(marker_size, data_index),
+            symbol: Array.isArray(symbol) ? symbol[0] : symbol,
+            sizemode: 'diameter'
+        }
     } else {
         trace.mode = 'lines'
-        delete trace.marker
     }
     return trace
 }
