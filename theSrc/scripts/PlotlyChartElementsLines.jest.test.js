@@ -14,13 +14,16 @@ function lineUserConfig (overrides = {}) {
     }, overrides)
 }
 
-function lineTraces (data) {
-    return data.filter(t => t.mode === 'lines' && t.name)
-}
+// A series' joining line and its markers may be one trace or two, so these select by what
+// a trace draws rather than by an exact mode string. Named traces only, which excludes the
+// base trace that forces categorical labels and the border and annotation traces.
+function drawsLine (t) { return Boolean(t.name) && typeof t.mode === 'string' && t.mode.includes('lines') }
+function drawsMarkers (t) { return Boolean(t.name) && typeof t.mode === 'string' && t.mode.includes('markers') }
 
-function markerTraces (data) {
-    return data.filter(t => t.mode === 'markers' && t.name)
-}
+function lineTraces (data) { return data.filter(drawsLine) }
+function markerTraces (data) { return data.filter(drawsMarkers) }
+// Every trace that belongs to a series, however many traces that is
+function seriesTraces (data) { return data.filter(t => drawsLine(t) || drawsMarkers(t)) }
 
 describe('joining lines', () => {
     test('are not drawn unless line.show is set', () => {
@@ -142,5 +145,48 @@ describe('point radius', () => {
     test('is still doubled when given as a single value', () => {
         const config = buildConfig(lineUserConfig({ pointRadius: 4 }), 600, 400)
         expect(markerTraces(createPlotlyData(config))[0].marker.size).toBe(8)
+    })
+})
+
+// These four hold before and after the line and marker traces merge. They are the contract
+// the merge must not break, so they are deliberately silent about how many traces a series
+// is drawn with.
+describe('invariants across the trace structure', () => {
+    test('exactly one trace per series carries the tooltip payload, covering every point', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
+        const hovered = seriesTraces(data).filter(t => t.hoverinfo !== 'skip')
+        expect(hovered.map(t => t.name)).toEqual(['A', 'B'])
+        // Every point of the series, so hover still works where the marker has radius 0,
+        // which is the default for a line chart
+        expect(hovered.map(t => t.text.length)).toEqual([3, 3])
+        expect(hovered.map(t => t.y)).toEqual([[1, 2, 3], [4, 5, 6]])
+    })
+
+    test('exactly one trace per series carries the legend entry', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig(), 600, 400))
+        const legended = seriesTraces(data).filter(t => t.showlegend === true)
+        expect(legended.map(t => t.name)).toEqual(['A', 'B'])
+    })
+
+    test('marker traces come before the border and annotation traces', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({
+            pointBorderColor: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
+            pointBorderWidth: [1, 1, 1, 1, 1, 1],
+        }), 600, 400))
+        const modes = data.map(t => (typeof t.mode === 'string' && t.mode.includes('markers')) ? 'markers' : 'other')
+        const last_series_marker = data.reduce((acc, t, i) => drawsMarkers(t) ? i : acc, -1)
+        const first_unnamed_marker = modes.findIndex((m, i) => m === 'markers' && !data[i].name)
+        expect(last_series_marker).toBeGreaterThanOrEqual(0)
+        expect(first_unnamed_marker).toBeGreaterThan(last_series_marker)
+    })
+
+    test('the trace structure is untouched when no joining line is drawn', () => {
+        const data = createPlotlyData(buildConfig(lineUserConfig({ lineShow: false }), 600, 400))
+        expect(seriesTraces(data).map(t => ({
+            name: t.name, mode: t.mode, showlegend: t.showlegend, hoverinfo: t.hoverinfo,
+        }))).toEqual([
+            { name: 'A', mode: 'markers', showlegend: true, hoverinfo: 'name+text' },
+            { name: 'B', mode: 'markers', showlegend: true, hoverinfo: 'name+text' },
+        ])
     })
 })
