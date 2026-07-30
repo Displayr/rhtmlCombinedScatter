@@ -26,6 +26,7 @@ describe('the legend entry of a line chart with one series', () => {
             lineShow: true,
             pointBorderColor: ['#000000', '#000000', '#000000', '#000000'],
             pointBorderWidth: [1, 1, 1, 1],
+            markerAnnotations: ['a', 'b', 'c', 'd'],
         })
         const shown = createPlotlyData(config).filter(t => t.showlegend === true)
         expect(shown).toHaveLength(1)

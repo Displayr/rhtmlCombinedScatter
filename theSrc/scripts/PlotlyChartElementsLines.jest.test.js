@@ -175,6 +175,7 @@ describe('invariants across the trace structure', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({
             pointBorderColor: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
             pointBorderWidth: [1, 1, 1, 1, 1, 1],
+            markerAnnotations: ['a', 'b', 'c', 'd', 'e', 'f'],
         }), 600, 400))
         const modes = data.map(t => (typeof t.mode === 'string' && t.mode.includes('markers')) ? 'markers' : 'other')
         const last_series_marker = data.reduce((acc, t, i) => drawsMarkers(t) ? i : acc, -1)

@@ -61,12 +61,13 @@ function createPlotlyData (config) {
             ? config.pointRadius.map(r => r * 2)
             : config.pointRadius * 2)
 
+    const makeSeriesTrace = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
+
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
             // Only the first panel takes the legend entry, otherwise every panel repeats it
-            const make = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
-            plot_data.push(make(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, p === 0, false))
+            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, p === 0, false))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -108,8 +109,7 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                const make = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
-                plot_data.push(make(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
