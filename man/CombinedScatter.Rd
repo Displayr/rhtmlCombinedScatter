@@ -148,6 +148,7 @@ CombinedScatter(
   plot.border.width = 1,
   plot.background.color = "transparent",
   point.radius = if (is.null(Z)) 2 else 4,
+  point.symbol = NULL,
   point.border.color = "#000000",
   point.border.width = 0,
   subtitle = "",
@@ -550,6 +551,11 @@ the bubble legend has only one radius to size its reference bubbles from.
 When \code{Z} is supplied, the points are scaled so that the largest has a radius of
 \code{point.radius * 50/3 * sqrt(1/pi)}, which is about \code{point.radius * 9.4} pixels
 (37.6 pixels for the default of 4).}
+
+\item{point.symbol}{Marker symbol drawn at each point, using plotly's names
+(\code{"circle"}, \code{"square"}, \code{"diamond"}, \code{"triangle-up"} and so on).
+Either a single name or a vector with one name per point. NULL leaves the symbol to
+plotly, which draws circles.}
 
 \item{point.border.color}{Colors of borders around points and bubbles}
 

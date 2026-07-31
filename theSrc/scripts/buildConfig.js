@@ -160,6 +160,7 @@ const defaultConfig = {
   plotBorderWidth: 1,
   plotBorderColor: '#000000',
   pointRadius: null, // if Z then 4 else 2 (applied below)
+  pointSymbol: null,
   pointBorderColor: null,
   pointBorderWidth: null,
   showLabels: true,

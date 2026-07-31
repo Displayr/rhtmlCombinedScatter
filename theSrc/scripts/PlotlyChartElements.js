@@ -45,11 +45,8 @@ function createPlotlyData (config) {
     if (marker_opacity === null) marker_opacity = 1.0
 
     const plot_data = []
+    const plot_legend_data = []
     const plot_annotation_data = []
-    // Joining lines are drawn before the markers so that they appear underneath them.
-    // They emit js-line paths rather than .point elements, so they do not disturb the
-    // DOM ordering of the markers that addMarkerClickHandler relies on.
-    const plot_line_data = []
     if (config.xLevels || config.yLevels) {
         plot_data.push(createBaseTrace(config))
     }
@@ -65,16 +62,19 @@ function createPlotlyData (config) {
             ? config.pointRadius.map(r => r * 2)
             : config.pointRadius * 2)
 
+    const makeSeriesTrace = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
+
     if (!Array.isArray(config.group)) {
         for (let p = 0; p < n_panels; p++) {
             const index = n_panels > 1 ? indices_by_panel[panel_nm[p]] : null
-            if (config.lineShow) {
-                // The marker trace gives up its legend entry to the line, so the line has
-                // to take it, or an ungrouped chart asked to show a legend shows an empty
-                // one. Only the first panel, otherwise every panel repeats the entry.
-                plot_line_data.push(createLineTrace(config, tooltips, 'Series 1', 0, p, index, p === 0, false))
+            // Only the first panel takes the legend entry, otherwise every panel repeats it
+            const show_in_legend = p === 0
+            plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, show_in_legend, false))
+            // One proxy for the series rather than one per panel: it carries no data and
+            // references no axis, so a proxy per panel would leave the rest as no-ops.
+            if (config.lineShow && show_in_legend) {
+                plot_legend_data.push(createLegendProxyTrace(config, 'Series 1', 0, index, marker_size))
             }
-            plot_data.push(createScatterTraceForMarker(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index))
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
             }
@@ -116,10 +116,11 @@ function createPlotlyData (config) {
                 const gp_index = _.intersection(g_index, p_index)
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
-                if (config.lineShow) {
-                    plot_line_data.push(createLineTrace(config, tooltips, g_name_to_show, g, p, gp_index, g_add, true))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                // One proxy per group, not per group and panel - see the ungrouped branch
+                if (config.lineShow && g_add) {
+                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size))
                 }
-                plot_data.push(createScatterTraceForMarker(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
                 }
@@ -130,76 +131,56 @@ function createPlotlyData (config) {
             }
         }
     }
-    // Add the annotation traces last so that they don't interfere with the
-    // order of the marker points in the DOM, which is relied upon by
-    // code that handles marker label toggling.
-    return [...plot_line_data, ...plot_data, ...plot_annotation_data]
+    // Legend proxy traces carry no data (x: [null], y: [null]), so plotly's translatePoint
+    // fails for them and the .point element it provisionally appends is removed before it
+    // ever renders - confirmed against the bundled plotly's scatter point join, which calls
+    // translatePoint per point and does `n.remove()` on failure. They are ordered here purely
+    // to stay clear of the real marker traces regardless, and the annotation traces are added
+    // last so that they don't interfere with the order of the marker points in the DOM, which
+    // is relied upon by code that handles marker label toggling.
+    return [...plot_data, ...plot_legend_data, ...plot_annotation_data]
+}
+
+// plotly takes a marker symbol per point, so a per-point array is sliced for this group the
+// way the radius is. Left undefined when not supplied, so plotly keeps its own default.
+function symbolForTrace (config, data_index) {
+    if (config.pointSymbol === null || config.pointSymbol === undefined) return undefined
+    return data_index && Array.isArray(config.pointSymbol)
+        ? _.at(config.pointSymbol, data_index)
+        : config.pointSymbol
 }
 
 function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+    const trace_marker_symbol = symbolForTrace(config, data_index)
     const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
     const marker_color = config.colors[group_index % config.colors.length]
     const x_axis = getPanelXAxisSuffix(panel_index, config)
     const y_axis = getPanelYAxisSuffix(panel_index, config)
-    // When joining lines are drawn, the line trace owns the legend entry and the
-    // tooltip, so that both keep working for points whose marker is not shown.
-    return {
-        x: X,
-        y: Y,
-        name: group_name,
-        text: indexed_tooltips,
-        hoverinfo: config.lineShow ? 'skip' : (has_groups ? 'name+text' : 'text'),
-        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
-        type: 'scatter',
-        mode: 'markers',
-        marker: {
-            color: marker_color,
-            size: trace_marker_size,
-            sizemode: 'diameter',
-            opacity: marker_opacity,
-            line: {
-                width: 0 // this is needed otherwise plotly draws a thin white border
-            }
-        },
-        legendgroup: group_name,
-        showlegend: config.lineShow ? false : showlegend,
-        cliponaxis: false,
-        xaxis: 'x' + x_axis,
-        yaxis: 'y' + y_axis
-    }
-}
-
-// Joins the points of a group with a line, in the order they were supplied.
-// Per-group styling is recycled by group index in the same way as config.colors.
-function createLineTrace (config, tooltips, group_name, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
-    const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
-    const Y = data_index ? _.at(config.Y, data_index) : config.Y
-    const indexed_tooltips = data_index ? _.at(tooltips, data_index) : tooltips
-    const line_color = config.lineColors[group_index % config.lineColors.length]
-    const x_axis = getPanelXAxisSuffix(panel_index, config)
-    const y_axis = getPanelYAxisSuffix(panel_index, config)
-    const line = {
-        color: line_color,
-        width: config.lineThickness[group_index % config.lineThickness.length],
-        dash: config.lineType[group_index % config.lineType.length],
-        shape: config.lineShape
-    }
-    // plotly only honours smoothing for splines, and warns if it is set otherwise
-    if (config.lineShape === 'spline') line.smoothing = config.lineSmoothing
+    // When joining lines are drawn, createSeriesTrace builds on this trace: it adds the
+    // joining line on top and replaces the hoverlabel below with one derived from the line
+    // colour instead of the marker's. The legend entry and tooltip set here are unchanged.
     return {
         x: X,
         y: Y,
         name: group_name,
         text: indexed_tooltips,
         hoverinfo: has_groups ? 'name+text' : 'text',
-        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(line_color) } },
+        hoverlabel: { font: { color: TooltipUtils.blackOrWhite(marker_color) } },
         type: 'scatter',
-        mode: 'lines',
-        connectgaps: false,
-        line: line,
+        mode: 'markers',
+        marker: {
+            color: marker_color,
+            size: trace_marker_size,
+            symbol: trace_marker_symbol,
+            sizemode: 'diameter',
+            opacity: marker_opacity,
+            line: {
+                width: 0 // this is needed otherwise plotly draws a thin white border
+            }
+        },
         legendgroup: group_name,
         showlegend: showlegend,
         cliponaxis: false,
@@ -208,12 +189,107 @@ function createLineTrace (config, tooltips, group_name, group_index, panel_index
     }
 }
 
+// The plotly line for a group. Per-group styling is recycled by group index in the same way
+// as config.colors.
+function lineForGroup (config, group_index) {
+    const line = {
+        color: config.lineColors[group_index % config.lineColors.length],
+        width: config.lineThickness[group_index % config.lineThickness.length],
+        dash: config.lineType[group_index % config.lineType.length],
+        shape: config.lineShape
+    }
+    // plotly only honours smoothing for splines, and warns if it is set otherwise
+    if (config.lineShape === 'spline') line.smoothing = config.lineSmoothing
+    return line
+}
+
+// A series whose joining line is drawn is one trace, not two: plotly draws a trace's line
+// beneath its own markers, and the tooltip stays keyed off this one trace. The tooltip font
+// colour stays keyed off the line colour, which is what owned the tooltip while these were
+// separate traces.
+// This trace always stays mode: 'lines+markers' with its marker block intact, whatever the
+// radius - even a radius of 0 - because plotly decides its usual autorange padding from
+// whether a trace *has* markers, not from their size or visibility. Dropping the marker
+// block for a markerless chart (the previous approach) saved the legend a stray dot, but it
+// also lost that padding, since plotly no longer saw a trace with markers at all: labels at
+// the extreme points then overlapped the axis. The legend entry is carried by a separate,
+// data-free proxy trace instead (see createLegendProxyTrace), so this trace never shows in
+// the legend while lineShow is on.
+function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+    const trace = createScatterTraceForMarker(config, tooltips, group_name, marker_size,
+        marker_opacity, group_index, panel_index, data_index, showlegend, has_groups)
+    trace.line = lineForGroup(config, group_index)
+    trace.connectgaps = false
+    trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
+    trace.mode = 'lines+markers'
+    trace.showlegend = false
+    return trace
+}
+
+// The sizes belonging to one series, sliced out of the chart-wide array the way every other
+// per-group setting here is.
+function markerSizesForGroup (marker_size, data_index) {
+    return data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+}
+
+// The legend swatch cannot show a value that varies by point, since the whole series is one
+// legend entry, so it takes the first marker the series actually draws. Not simply its first
+// point: a radius of 0 is marker.show = FALSE encoded as a radius rather than a small marker,
+// and a series can hide its leading points and still draw later ones - marker.show.at.last.end
+// hides all but the final point of every series. Only called when the series draws a marker,
+// so the search always finds one.
+function representativeMarkerSize (group_sizes) {
+    return Array.isArray(group_sizes) ? group_sizes.find(size => size !== 0) : group_sizes
+}
+
+// A data-free trace (x: [null], y: [null]) that exists only to carry a line-chart series'
+// legend entry, styled explicitly for the swatch rather than inherited from a real trace's
+// data. Splitting the legend out this way is what lets createSeriesTrace always stay mode:
+// 'lines+markers' (see its comment) without also drawing a stray legend dot when nothing is
+// actually drawn: this proxy falls back to a plain 'lines' swatch in that case instead.
+// Whether a marker is drawn is judged from this series' own sizes, not the whole chart's:
+// marker.show is per series, so one series showing markers must not give a markerless one a
+// size-0 marker block, which is the very input the plain-line fallback exists to avoid.
+// Having no data means plotly's translatePoint fails for it, so it renders no .point element
+// of its own in the plot area - see the comment on createPlotlyData's return.
+// Only created for a series that takes the legend entry, so it always shows.
+function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size) {
+    const group_sizes = markerSizesForGroup(marker_size, data_index)
+    const markers_drawn = Array.isArray(group_sizes)
+        ? group_sizes.some(size => size !== 0)
+        : group_sizes !== 0
+    const trace = {
+        x: [null],
+        y: [null],
+        name: group_name,
+        hoverinfo: 'skip',
+        type: 'scatter',
+        line: lineForGroup(config, group_index),
+        legendgroup: group_name,
+        showlegend: true
+    }
+    if (markers_drawn) {
+        const symbol = symbolForTrace(config, data_index)
+        trace.mode = 'lines+markers'
+        trace.marker = {
+            color: config.colors[group_index % config.colors.length],
+            size: representativeMarkerSize(group_sizes),
+            symbol: Array.isArray(symbol) ? symbol[0] : symbol,
+            sizemode: 'diameter'
+        }
+    } else {
+        trace.mode = 'lines'
+    }
+    return trace
+}
+
 function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index) {
     // We draw the marker border separately from the marker otherwise the legend symbols will also have borders
     // with a colors taken from the border colors
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+    const trace_marker_symbol = symbolForTrace(config, data_index)
     const border_color = data_index ? _.at(config.pointBorderColor, data_index) : config.pointBorderColor
     const border_width = data_index ? _.at(config.pointBorderWidth, data_index) : config.pointBorderWidth
     const x_axis = getPanelXAxisSuffix(panel_index, config)
@@ -227,6 +303,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
         marker: {
             color: 'transparent',
             size: trace_marker_size,
+            symbol: trace_marker_symbol,
             sizemode: 'diameter',
             opacity: 1, // somehow this applies to the border, so it needs to be 1
             line: {
@@ -819,10 +896,18 @@ function createLegendSettings (config) {
             color: config.legendFontColor,
             size: config.legendFontSize
         },
-        itemsizing: 'constant',
         tracegroupgap: 0,
         orientation: config.legendOrientation === 'Horizontal' ? 'h' : 'v',
         bgcolor: 'rgba(0,0,0,0)'
+    }
+    // itemsizing: 'constant' exists so that bubble charts do not show legend markers of
+    // wildly different sizes. Line charts are the case where the legend must mirror the
+    // series instead: a chart specifying marker sizes 1, 2, 3, 4 across four series should
+    // show four different legend markers, with the swatch line matching the series line
+    // width rather than plotly's substituted 5px. So it is set for every chart except one
+    // that draws joining lines; plotly's own default ('trace') applies when omitted.
+    if (!config.lineShow) {
+        settings.itemsizing = 'constant'
     }
     if (config.legendX !== null) {
         settings.x = Math.max(-2, Math.min(3, config.legendX))
