@@ -309,8 +309,8 @@ describe('point symbol', () => {
             pointBorderColor: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
             pointBorderWidth: [1, 1, 1, 1, 1, 1],
         }), 600, 400))
-        const borders = data.filter(t => !t.name && typeof t.mode === 'string'
-            && t.mode.includes('markers') && t.marker.color === 'transparent')
+        const borders = data.filter(t => !t.name && typeof t.mode === 'string' &&
+            t.mode.includes('markers') && t.marker.color === 'transparent')
         expect(borders.map(t => t.marker.symbol))
             .toEqual([['square', 'square', 'square'], ['diamond', 'diamond', 'diamond']])
     })
