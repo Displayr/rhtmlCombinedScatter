@@ -15,5 +15,3 @@ notes.md
 package-lock.json
 package.json
 theSrc
-^\.positai$
-^\.claude$
