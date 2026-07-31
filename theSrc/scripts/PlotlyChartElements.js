@@ -62,18 +62,6 @@ function createPlotlyData (config) {
             ? config.pointRadius.map(r => r * 2)
             : config.pointRadius * 2)
 
-    // Whether any marker is drawn anywhere in the chart, not per series: this is a chart-wide
-    // decision, not a per-series one, because it feeds the legend proxy trace (see
-    // createLegendProxyTrace) rather than the real series trace - every real series trace
-    // stays mode: 'lines+markers' regardless, so that plotly computes its usual autorange
-    // padding for the axis (plotly decides that padding from whether a trace has markers, not
-    // from their size, so a chart with radius-0 markers everywhere still needs the marker
-    // block to get the padding a line chart is drawn with). marker.show defaults to FALSE for
-    // a line chart (flipStandardCharts sends point.radius = rep(0, n)), so the legend proxy
-    // falls back to mode: 'lines' with no marker block when nothing is drawn anywhere, rather
-    // than drawing a stray dot from the bundled plotly's swatch-size clamp on a mean of 0.
-    const markersDrawn = Array.isArray(marker_size) ? marker_size.some(size => size !== 0) : marker_size !== 0
-
     const makeSeriesTrace = config.lineShow ? createSeriesTrace : createScatterTraceForMarker
 
     if (!Array.isArray(config.group)) {
@@ -82,8 +70,10 @@ function createPlotlyData (config) {
             // Only the first panel takes the legend entry, otherwise every panel repeats it
             const show_in_legend = p === 0
             plot_data.push(makeSeriesTrace(config, tooltips, 'Series 1', marker_size, marker_opacity, 0, p, index, show_in_legend, false))
-            if (config.lineShow) {
-                plot_legend_data.push(createLegendProxyTrace(config, 'Series 1', 0, index, marker_size, show_in_legend, markersDrawn))
+            // One proxy for the series rather than one per panel: it carries no data and
+            // references no axis, so a proxy per panel would leave the rest as no-ops.
+            if (config.lineShow && show_in_legend) {
+                plot_legend_data.push(createLegendProxyTrace(config, 'Series 1', 0, index, marker_size))
             }
             if (hasMarkerBorder(config, index)) {
                 plot_annotation_data.push(createScatterTraceForMarkerBorder(config, 'Series 1', marker_size, p, index))
@@ -127,8 +117,9 @@ function createPlotlyData (config) {
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
                 if (gp_index.length === 0) continue
                 plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
-                if (config.lineShow) {
-                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size, g_add, markersDrawn))
+                // One proxy per group, not per group and panel - see the ungrouped branch
+                if (config.lineShow && g_add) {
+                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size))
                 }
                 if (hasMarkerBorder(config, gp_index)) {
                     plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
@@ -235,12 +226,20 @@ function createSeriesTrace (config, tooltips, group_name, marker_size, marker_op
     return trace
 }
 
+// The sizes belonging to one series, sliced out of the chart-wide array the way every other
+// per-group setting here is.
+function markerSizesForGroup (marker_size, data_index) {
+    return data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
+}
+
 // The legend swatch cannot show a value that varies by point, since the whole series is one
-// legend entry: it takes the series' first point, the same slice createScatterTraceForMarker
-// would draw first for this group.
-function representativeMarkerSize (marker_size, data_index) {
-    if (!Array.isArray(marker_size)) return marker_size
-    return marker_size[Array.isArray(data_index) ? data_index[0] : 0]
+// legend entry, so it takes the first marker the series actually draws. Not simply its first
+// point: a radius of 0 is marker.show = FALSE encoded as a radius rather than a small marker,
+// and a series can hide its leading points and still draw later ones - marker.show.at.last.end
+// hides all but the final point of every series. Only called when the series draws a marker,
+// so the search always finds one.
+function representativeMarkerSize (group_sizes) {
+    return Array.isArray(group_sizes) ? group_sizes.find(size => size !== 0) : group_sizes
 }
 
 // A data-free trace (x: [null], y: [null]) that exists only to carry a line-chart series'
@@ -248,9 +247,17 @@ function representativeMarkerSize (marker_size, data_index) {
 // data. Splitting the legend out this way is what lets createSeriesTrace always stay mode:
 // 'lines+markers' (see its comment) without also drawing a stray legend dot when nothing is
 // actually drawn: this proxy falls back to a plain 'lines' swatch in that case instead.
+// Whether a marker is drawn is judged from this series' own sizes, not the whole chart's:
+// marker.show is per series, so one series showing markers must not give a markerless one a
+// size-0 marker block, which is the very input the plain-line fallback exists to avoid.
 // Having no data means plotly's translatePoint fails for it, so it renders no .point element
 // of its own in the plot area - see the comment on createPlotlyData's return.
-function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size, showlegend, markers_drawn) {
+// Only created for a series that takes the legend entry, so it always shows.
+function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size) {
+    const group_sizes = markerSizesForGroup(marker_size, data_index)
+    const markers_drawn = Array.isArray(group_sizes)
+        ? group_sizes.some(size => size !== 0)
+        : group_sizes !== 0
     const trace = {
         x: [null],
         y: [null],
@@ -259,14 +266,14 @@ function createLegendProxyTrace (config, group_name, group_index, data_index, ma
         type: 'scatter',
         line: lineForGroup(config, group_index),
         legendgroup: group_name,
-        showlegend: showlegend
+        showlegend: true
     }
     if (markers_drawn) {
         const symbol = symbolForTrace(config, data_index)
         trace.mode = 'lines+markers'
         trace.marker = {
             color: config.colors[group_index % config.colors.length],
-            size: representativeMarkerSize(marker_size, data_index),
+            size: representativeMarkerSize(group_sizes),
             symbol: Array.isArray(symbol) ? symbol[0] : symbol,
             sizemode: 'diameter'
         }

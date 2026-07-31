@@ -184,6 +184,45 @@ describe('the legend proxy trace of a line chart', () => {
         expect(proxies.map(t => t.marker.color)).toEqual(['#ff0000', '#00ff00'])
     })
 
+    // flipStandardCharts expands a per-series marker.show into point.radius, so a chart
+    // showing markers on one series and not the other arrives as a single array with a
+    // zero run in it. Deciding from the whole array gives the markerless series a marker
+    // block of size 0, which is the input the plain-line fallback exists to avoid.
+    test('is a plain line for a series with no markers, even when another series has them', () => {
+        const config = buildConfig(lineUserConfig({ pointRadius: [3, 3, 3, 0, 0, 0] }), 600, 400)
+        const [a, b] = legendProxyTraces(createPlotlyData(config))
+        expect(a.mode).toBe('lines+markers')
+        expect(a.marker.size).toBe(6)
+        expect(b.mode).toBe('lines')
+        expect('marker' in b).toBe(false)
+    })
+
+    // A radius of 0 is marker.show = FALSE encoded as a radius, not a small marker, so the
+    // swatch has to show the first marker actually drawn. marker.show.at.last.end makes this
+    // the ordinary shape: every series hides all but its final point.
+    test('takes the first marker drawn, not the first point, when the first is hidden', () => {
+        const config = buildConfig(lineUserConfig({ pointRadius: [0, 3, 3, 0, 0, 4] }), 600, 400)
+        const proxies = legendProxyTraces(createPlotlyData(config))
+        expect(proxies.map(t => t.marker.size)).toEqual([6, 8])
+    })
+
+    // Panels mean nothing to a proxy - it carries no data and references no axis - so one
+    // per group is enough. Creating one per group x panel left the extras as no-ops with
+    // showlegend false, which reads as though panel membership mattered.
+    test('is created once per group, not once per group and panel', () => {
+        const config = buildConfig(lineUserConfig({
+            X: ['Jan', 'Feb', 'Jan', 'Feb', 'Jan', 'Feb', 'Jan', 'Feb'],
+            Y: [1, 2, 3, 4, 5, 6, 7, 8],
+            group: ['A', 'A', 'B', 'B', 'A', 'A', 'B', 'B'],
+            label: ['1', '2', '3', '4', '5', '6', '7', '8'],
+            panels: ['P1', 'P1', 'P1', 'P1', 'P2', 'P2', 'P2', 'P2'],
+            panelLabels: ['P1', 'P2'],
+        }), 600, 400)
+        const proxies = legendProxyTraces(createPlotlyData(config))
+        expect(proxies.map(t => t.name)).toEqual(['A', 'B'])
+        expect(proxies.every(t => t.showlegend === true)).toBe(true)
+    })
+
     test('does not exist at all when lineShow is false', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({ lineShow: false }), 600, 400))
         expect(legendProxyTraces(data)).toHaveLength(0)
