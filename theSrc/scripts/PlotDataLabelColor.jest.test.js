@@ -1,0 +1,106 @@
+const PlotData = require('./PlotData.js')
+const DataTypeEnum = require('./utils/DataTypeEnum.js')
+
+// A line chart can colour its data labels by series, so the label colour arrives as one
+// value per point, expanded from the per-series values the same way pointRadius is. A
+// single value still colours every label, as it always has.
+const makePlotData = (labelFontColor, group = ['G1', 'G1', 'G2']) => new PlotData(
+  [1, 2, 3],                                  // X
+  [10, 20, 30],                               // Y
+  null,                                       // Z
+  DataTypeEnum.numeric,                       // xDataType
+  DataTypeEnum.numeric,                       // yDataType
+  null,                                       // xLevels
+  null,                                       // yLevels
+  group,                                      // group
+  ['a', 'b', 'c'],                            // label
+  ['a', 'b', 'c'],                            // originalLabel
+  null,                                       // labelAlt
+  {                                           // vb
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    labelFontSize: 10,
+    labelFontFamily: 'Arial',
+    labelFontColor: labelFontColor,
+    labelLogoScale: null,
+  },
+  {                                           // legend
+    pts: [],
+    addGroup: () => {},
+    setLegendGroupsAndPts: () => {},
+  },
+  null,                                       // bubbleLegend
+  ['red'],                                    // colorWheel
+  false,                                      // originAlign
+  4,                                          // pointRadius
+  { xmin: 1, xmax: 3, ymin: 10, ymax: 30 },   // bounds
+  null,                                       // transparency
+  {                                           // legendSettings
+    wrap: false,
+    wrapNChar: null,
+    showBubblesInLegend: () => false,
+    zPrefix: '',
+    zSuffix: '',
+    bubbleSizesAsDiameter: false,
+  },
+  [],                                         // hiddenSeries
+)
+
+describe('PlotData data label colour:', function () {
+  it('colours every label the same when one colour is given', async function () {
+    const data = makePlotData('#123456')
+    await data.getPtsAndLabs('test')
+
+    expect(data.lab.map(l => l.color)).toEqual(['#123456', '#123456', '#123456'])
+  })
+
+  it('gives each label its own colour when one colour per point is given', async function () {
+    const data = makePlotData(['#FF0000', '#FF0000', '#00AA00'])
+    await data.getPtsAndLabs('test')
+
+    expect(data.lab.map(l => l.color)).toEqual(['#FF0000', '#FF0000', '#00AA00'])
+  })
+
+  it('recycles a colour array shorter than the data', async function () {
+    const data = makePlotData(['#FF0000', '#00AA00'])
+    await data.getPtsAndLabs('test')
+
+    expect(data.lab.map(l => l.color)).toEqual(['#FF0000', '#00AA00', '#FF0000'])
+  })
+
+  it('falls back to the series colour when no colour is given', async function () {
+    // How automatic colouring reaches the widget: nothing is sent, and each label takes
+    // the colour of its own point
+    const data = makePlotData(null)
+    await data.getPtsAndLabs('test')
+
+    expect(data.lab.map(l => l.color)).toEqual(['red', 'red', 'red'])
+  })
+})
+
+// The config merge replaces a scalar default with whatever the caller supplied, so unlike
+// the per-group arrays this one needs no special handling to survive it. Pinned here
+// because the per-point form only works if it arrives intact.
+const { buildConfig } = require('./buildConfig')
+
+describe('buildConfig data label colour:', function () {
+  const base = { X: [1, 2, 3], Y: [1, 2, 3], label: ['a', 'b', 'c'] }
+
+  it('keeps a colour per point', function () {
+    const config = buildConfig(Object.assign({}, base,
+      { labelsFontColor: ['#FF0000', '#FF0000', '#00AA00'] }), 600, 400)
+    expect(config.labelsFontColor).toEqual(['#FF0000', '#FF0000', '#00AA00'])
+  })
+
+  it('keeps a single colour', function () {
+    const config = buildConfig(Object.assign({}, base, { labelsFontColor: '#123456' }), 600, 400)
+    expect(config.labelsFontColor).toBe('#123456')
+  })
+
+  it('falls back to its default when none is given', function () {
+    const config = buildConfig(Object.assign({}, base), 600, 400)
+    expect(config.labelsFontColor).toBe('#2C2C2C')
+  })
+})

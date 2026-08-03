@@ -408,7 +408,9 @@ It should have the same length as the number of levels in `group`}
 
 \item{label.placement.weight.labelLabelOverlap}{Label placement algorithm weight for the overlap between two labels (Default is 12.0)}
 
-\item{labels.font.color}{is the font color of the labels. NOTE: This overrides the color if it is set}
+\item{labels.font.color}{is the font color of the labels. Accepts a single value, or one
+value per data point where the labels are coloured by series. NOTE: This overrides the
+color if it is set}
 
 \item{labels.font.family}{is the font family of the labels}
 

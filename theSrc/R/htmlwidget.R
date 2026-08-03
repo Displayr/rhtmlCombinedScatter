@@ -92,7 +92,9 @@
 #' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right".
 #' @param labels.show Toggle for showing labels. Defaults to true if labels array given
 #' @param labels.font.family is the font family of the labels
-#' @param labels.font.color is the font color of the labels. NOTE: This overrides the color if it is set
+#' @param labels.font.color is the font color of the labels. Accepts a single value, or one
+#'     value per data point where the labels are coloured by series. NOTE: This overrides the
+#'     color if it is set
 #' @param labels.font.size is the font size of the labels
 #' @param labels.logo.scale is a vector of scaling factors for label logos
 #' @param labels.max.shown Number of labels to show on chart. If the number of labels is greater than this
@@ -651,7 +653,7 @@ CombinedScatter <- function(
              footerFontColor = footer.font.color,
              showLabels = labels.show,
              labelsFontFamily = labels.font.family,
-             labelsFontColor = labels.font.color,
+             labelsFontColor = toJsonOrNull(labels.font.color),
              labelsFontSize = labels.font.size,
              labelsLogoScale = labels.logo.scale,
              labelsMaxShown = labels.max.shown,

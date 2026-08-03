@@ -288,7 +288,12 @@ class PlotData {
 
           let fontColor = (ptColor = this.plotColors.getColor(i))
           let fontOpacity = _.includes(this.hiddenLabelsId, i) ? 0.0 : 1.0
-          if ((this.vb.labelFontColor != null) && !(this.vb.labelFontColor === '')) { fontColor = this.vb.labelFontColor }
+          // One colour for every label, or one per point where a line chart colours its
+          // labels by series. Recycled, so a shorter array still covers the data.
+          const labelColor = this.vb.labelFontColor
+          if ((labelColor != null) && !(labelColor === '')) {
+            fontColor = Array.isArray(labelColor) ? labelColor[i % labelColor.length] : labelColor
+          }
           const group = (this.group != null) ? this.group[i] : ''
           const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
           const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
