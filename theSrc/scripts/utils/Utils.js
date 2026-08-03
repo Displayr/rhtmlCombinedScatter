@@ -3,6 +3,18 @@ import d3 from 'd3'
 import BigNumber from 'bignumber.js'
 
 class Utils {
+  // The data label colour for one point. It arrives either as a single colour for every
+  // label or as one per point, where a line chart colours its labels by series, and a
+  // shorter array is recycled. Returns null when nothing was supplied, so each caller can
+  // apply its own fallback: the labels are drawn in two places, by PlotData for an ordinary
+  // chart and as plotly annotations for a panelled one, and both have to read it alike.
+  static labelColorAt (label_font_color, index) {
+    if (label_font_color == null || label_font_color === '') return null
+    if (!Array.isArray(label_font_color)) return label_font_color
+    if (label_font_color.length === 0) return null
+    return label_font_color[index % label_font_color.length]
+  }
+
   static isNum (num) {
     return !(_.isNull(num)) && _.isNumber(num)
   }

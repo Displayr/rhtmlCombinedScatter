@@ -104,3 +104,27 @@ describe('buildConfig data label colour:', function () {
     expect(config.labelsFontColor).toBe('#2C2C2C')
   })
 })
+
+// The panelled chart draws its labels as plotly annotations rather than through PlotData, so
+// the same value has to be read the same way there. Utils.labelColorAt is what both use.
+const Utils = require('./utils/Utils')
+
+describe('Utils.labelColorAt:', function () {
+  it('returns the colour for that point when given one per point', function () {
+    expect(Utils.labelColorAt(['#FF0000', '#00AA00', '#0000FF'], 1)).toBe('#00AA00')
+  })
+
+  it('returns the single colour whatever the point', function () {
+    expect(Utils.labelColorAt('#123456', 2)).toBe('#123456')
+  })
+
+  it('recycles an array shorter than the data', function () {
+    expect(Utils.labelColorAt(['#FF0000', '#00AA00'], 2)).toBe('#FF0000')
+  })
+
+  it('returns null when nothing was supplied, so the caller can fall back', function () {
+    expect(Utils.labelColorAt(null, 0)).toBeNull()
+    expect(Utils.labelColorAt('', 0)).toBeNull()
+    expect(Utils.labelColorAt([], 0)).toBeNull()
+  })
+})

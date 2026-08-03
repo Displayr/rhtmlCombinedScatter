@@ -1048,6 +1048,9 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
                 j === saved_annotations[k].index
             const xaxis = 'x' + getPanelXAxisSuffix(config.panels[i], config)
             const yaxis = 'y' + getPanelYAxisSuffix(config.panels[i], config)
+            // Read the same way PlotData reads it, so a colour per point means the same
+            // thing whether the labels are drawn here or there
+            const label_color = Utils.labelColorAt(config.labelsFontColor, i)
             annotations.push({
                 name: 'markerlabel',
                 text: combineLabelAndAnnotations(config, i).trim(),
@@ -1064,8 +1067,8 @@ function addSmallMultipleSettings (plotly_layout, config, saved_annotations) {
                 captureevents: false,
                 font: {
                     family: config.labelsFontFamily,
-                    color: config.labelsFontColor !== null
-                        ? config.labelsFontColor
+                    color: label_color !== null
+                        ? label_color
                         : colors[Array.isArray(config.group) ? config.group[i] : 0],
                     size: config.labelsFontSize
                 },
