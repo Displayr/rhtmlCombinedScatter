@@ -139,9 +139,9 @@
 #'     'longdash', 'dashdot' or 'longdashdot'. Either a single value or a vector with one
 #'     value per group.
 #' @param line.shape Either 'linear' for straight lines between points or 'spline' for
-#'     curved lines.
-#' @param line.smoothing Numeric between 0 and 1.3; the amount of smoothing applied when
-#'     \code{line.shape} is 'spline'.
+#'     curved lines. Accepts a single value or one value per group.
+#' @param line.smoothing Numeric between 0 and 1.3; the amount of smoothing applied to the
+#'     groups whose \code{line.shape} is 'spline'. Accepts a single value or one per group.
 #' @param margin.top The top margin in pixels
 #' @param margin.bottom The bottom margin in pixels
 #' @param margin.left The left margin in pixels
@@ -753,8 +753,8 @@ CombinedScatter <- function(
              lineColors = toJsonOrNull(line.colors),
              lineThickness = toJsonOrNull(line.thickness),
              lineType = toJsonOrNull(line.type),
-             lineShape = line.shape,
-             lineSmoothing = line.smoothing,
+             lineShape = toJsonOrNull(line.shape),
+             lineSmoothing = toJsonOrNull(line.smoothing),
              trendLines = trend.lines.show,
              trendLinesLineThickness = trend.lines.line.thickness,
              trendLinesPointSize = trend.lines.point.size,

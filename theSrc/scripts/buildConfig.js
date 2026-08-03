@@ -124,8 +124,8 @@ const defaultConfig = {
   lineColors: null, // falls back to colors
   lineThickness: [3],
   lineType: ['solid'],
-  lineShape: 'linear',
-  lineSmoothing: 1,
+  lineShape: ['linear'],
+  lineSmoothing: [1],
   legendTitleFontColor: '#2C2C2C',
   legendTitleFontFamily: 'Arial',
   legendTitleFontSize: 12,
@@ -255,10 +255,16 @@ function buildConfig (userConfig, width, height) {
     config.colors = userConfig.colors
   }
 
-  // Same reasoning as colors above: these are per-group arrays that must be taken
-  // verbatim from userConfig rather than merged element-wise with the defaults.
-  for (const k of ['lineColors', 'lineThickness', 'lineType']) {
-    if (userConfig[k]) config[k] = userConfig[k]
+  // Same reasoning as colors above: these are per-group arrays that must be taken verbatim
+  // from userConfig rather than merged element-wise with the defaults. Anything empty or
+  // absent falls back to the default: R reaches an empty one with character(0), which would
+  // otherwise leave every group's lookup indexing by group_index % 0, i.e. NaN. Each of these
+  // was a single value for the whole chart before series-specific settings arrived, so a
+  // scalar is still accepted and covers every series. A smoothing of 0 and a thickness of 0
+  // are real settings, hence the emptiness test rather than a truthy one.
+  for (const k of ['lineColors', 'lineThickness', 'lineType', 'lineShape', 'lineSmoothing']) {
+    const supplied = _.isNil(userConfig[k]) ? [] : _.castArray(userConfig[k])
+    config[k] = supplied.length ? supplied : _.cloneDeep(defaultConfig[k])
   }
   if (config.lineColors === null) config.lineColors = config.colors
 

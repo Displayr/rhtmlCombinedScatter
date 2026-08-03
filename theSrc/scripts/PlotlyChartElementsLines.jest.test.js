@@ -87,6 +87,37 @@ describe('joining lines', () => {
         expect(spline[0].line).toMatchObject({ shape: 'spline', smoothing: 1.3 })
     })
 
+    test('takes a shape and a smoothing per series', () => {
+        const traces = realSeriesTraces(createPlotlyData(buildConfig(lineUserConfig({
+            lineShape: ['linear', 'spline'], lineSmoothing: [1, 1.3],
+        }), 600, 400)))
+        expect(traces[0].line.shape).toBe('linear')
+        expect(traces[1].line.shape).toBe('spline')
+        // smoothing still only reaches the series that can use it
+        expect(traces[0].line.smoothing).toBeUndefined()
+        expect(traces[1].line.smoothing).toBe(1.3)
+    })
+
+    test('recycles a shape that names fewer series than the chart has', () => {
+        const traces = realSeriesTraces(createPlotlyData(buildConfig(lineUserConfig({
+            lineShape: ['spline'],
+        }), 600, 400)))
+        expect(traces.map(t => t.line.shape)).toEqual(['spline', 'spline'])
+    })
+
+    // An R caller can reach these with character(0)/numeric(0), which serializes to [], and an
+    // empty list would otherwise leave every lookup indexing by group_index % 0, i.e. NaN.
+    test('ignore an empty per-group setting and keep the default', () => {
+        const traces = realSeriesTraces(createPlotlyData(buildConfig(lineUserConfig({
+            lineColors: [], lineThickness: [], lineType: [], lineShape: [], lineSmoothing: [],
+        }), 600, 400)))
+        expect(traces.map(t => t.line.width)).toEqual([3, 3])
+        expect(traces.map(t => t.line.dash)).toEqual(['solid', 'solid'])
+        expect(traces.map(t => t.line.shape)).toEqual(['linear', 'linear'])
+        // lineColors falls back to colors rather than to a line-specific default
+        expect(traces.map(t => t.line.color)).toEqual(['#ff0000', '#00ff00'])
+    })
+
     test('carries the tooltip on the merged trace, but never the legend entry', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({
             colors: ['#000000', '#000000'],
