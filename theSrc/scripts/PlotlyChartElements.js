@@ -196,10 +196,13 @@ function lineForGroup (config, group_index) {
         color: config.lineColors[group_index % config.lineColors.length],
         width: config.lineThickness[group_index % config.lineThickness.length],
         dash: config.lineType[group_index % config.lineType.length],
-        shape: config.lineShape
+        shape: config.lineShape[group_index % config.lineShape.length]
     }
-    // plotly only honours smoothing for splines, and warns if it is set otherwise
-    if (config.lineShape === 'spline') line.smoothing = config.lineSmoothing
+    // plotly only honours smoothing for splines, and warns if it is set otherwise, so a
+    // chart mixing the two only gives it to the series curved enough to use it
+    if (line.shape === 'spline') {
+        line.smoothing = config.lineSmoothing[group_index % config.lineSmoothing.length]
+    }
     return line
 }
 

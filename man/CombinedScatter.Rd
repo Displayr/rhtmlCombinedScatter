@@ -494,10 +494,10 @@ or a vector with one value per group.}
 value per group.}
 
 \item{line.shape}{Either 'linear' for straight lines between points or 'spline' for
-curved lines.}
+curved lines. Accepts a single value or one value per group.}
 
-\item{line.smoothing}{Numeric between 0 and 1.3; the amount of smoothing applied when
-\code{line.shape} is 'spline'.}
+\item{line.smoothing}{Numeric between 0 and 1.3; the amount of smoothing applied to the
+groups whose \code{line.shape} is 'spline'. Accepts a single value or one per group.}
 
 \item{margin.top}{The top margin in pixels}
 

@@ -124,8 +124,8 @@ const defaultConfig = {
   lineColors: null, // falls back to colors
   lineThickness: [3],
   lineType: ['solid'],
-  lineShape: 'linear',
-  lineSmoothing: 1,
+  lineShape: ['linear'],
+  lineSmoothing: [1],
   legendTitleFontColor: '#2C2C2C',
   legendTitleFontFamily: 'Arial',
   legendTitleFontSize: 12,
@@ -259,6 +259,12 @@ function buildConfig (userConfig, width, height) {
   // verbatim from userConfig rather than merged element-wise with the defaults.
   for (const k of ['lineColors', 'lineThickness', 'lineType']) {
     if (userConfig[k]) config[k] = userConfig[k]
+  }
+  // The shape and its smoothing are per group too. Both were a single value for the whole
+  // chart until series-specific settings arrived, so one is still accepted and covers every
+  // series. A smoothing of 0 is a real setting, hence the null check rather than a truthy one.
+  for (const k of ['lineShape', 'lineSmoothing']) {
+    if (!_.isNil(userConfig[k])) config[k] = _.castArray(userConfig[k])
   }
   if (config.lineColors === null) config.lineColors = config.colors
 

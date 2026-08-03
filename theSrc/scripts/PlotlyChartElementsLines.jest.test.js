@@ -87,6 +87,24 @@ describe('joining lines', () => {
         expect(spline[0].line).toMatchObject({ shape: 'spline', smoothing: 1.3 })
     })
 
+    test('takes a shape and a smoothing per series', () => {
+        const traces = realSeriesTraces(createPlotlyData(buildConfig(lineUserConfig({
+            lineShape: ['linear', 'spline'], lineSmoothing: [1, 1.3],
+        }), 600, 400)))
+        expect(traces[0].line.shape).toBe('linear')
+        expect(traces[1].line.shape).toBe('spline')
+        // smoothing still only reaches the series that can use it
+        expect(traces[0].line.smoothing).toBeUndefined()
+        expect(traces[1].line.smoothing).toBe(1.3)
+    })
+
+    test('recycles a shape that names fewer series than the chart has', () => {
+        const traces = realSeriesTraces(createPlotlyData(buildConfig(lineUserConfig({
+            lineShape: ['spline'],
+        }), 600, 400)))
+        expect(traces.map(t => t.line.shape)).toEqual(['spline', 'spline'])
+    })
+
     test('carries the tooltip on the merged trace, but never the legend entry', () => {
         const data = createPlotlyData(buildConfig(lineUserConfig({
             colors: ['#000000', '#000000'],
