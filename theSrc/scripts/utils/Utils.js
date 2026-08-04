@@ -3,6 +3,22 @@ import d3 from 'd3'
 import BigNumber from 'bignumber.js'
 
 class Utils {
+  // The data label colour for one point. The value is either a single colour covering
+  // every label, or an array with one entry per point, indexed by point index; a shorter
+  // array is recycled. Returns null when nothing was supplied, so each caller can apply
+  // its own fallback — the labels are drawn in two places, by PlotData for an ordinary
+  // chart and as plotly annotations for a panelled one, and both have to read it alike.
+  static labelColorAt (label_font_color, index) {
+    if (!Array.isArray(label_font_color)) {
+      return (label_font_color == null || label_font_color === '') ? null : label_font_color
+    }
+    if (label_font_color.length === 0) return null
+    // An entry can be unset even when the array is not: R sends an empty string as it is and
+    // an NA as null. Either has to fall back rather than be used as a colour.
+    const color = label_font_color[index % label_font_color.length]
+    return (color == null || color === '') ? null : color
+  }
+
   static isNum (num) {
     return !(_.isNull(num)) && _.isNumber(num)
   }

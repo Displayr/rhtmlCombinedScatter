@@ -288,7 +288,8 @@ class PlotData {
 
           let fontColor = (ptColor = this.plotColors.getColor(i))
           let fontOpacity = _.includes(this.hiddenLabelsId, i) ? 0.0 : 1.0
-          if ((this.vb.labelFontColor != null) && !(this.vb.labelFontColor === '')) { fontColor = this.vb.labelFontColor }
+          const labelColor = Utils.labelColorAt(this.vb.labelFontColor, i)
+          if (labelColor !== null) { fontColor = labelColor }
           const group = (this.group != null) ? this.group[i] : ''
           const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
           const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
