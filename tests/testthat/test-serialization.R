@@ -34,3 +34,37 @@ test_that("a single label is an array too", {
     x <- CombinedScatter(X = 1, Y = 2, label = "a")$x
     expect_equal(as.character(x$label), '["a"]')
 })
+
+# The values themselves have to survive too. jsonlite rounds to four significant digits by
+# default, which silently merges values that differ beyond that. `group` is the one where it
+# breaks the chart rather than just blurring it: a numeric colour scale gives one colour per
+# distinct value and the widget matches them up by value, so merged values leave the colours
+# at the end of the scale unreachable.
+
+test_that("a numeric group keeps values that differ beyond four digits", {
+    g <- c(1.521035, 1.521036, 1.521037)
+    x <- CombinedScatter(X = 1:3, Y = 1:3, label = letters[1:3], group = g)$x
+    expect_equal(jsonlite::fromJSON(as.character(x$group)), g)
+    expect_length(unique(jsonlite::fromJSON(as.character(x$group))), 3)
+})
+
+test_that("coordinates and bubble sizes keep their precision", {
+    v <- c(1.234567891, 2.345678912, 3.456789123)
+    x <- CombinedScatter(X = v, Y = rev(v), Z = v, label = letters[1:3])$x
+    expect_equal(jsonlite::fromJSON(as.character(x$X)), v)
+    expect_equal(jsonlite::fromJSON(as.character(x$Y)), rev(v))
+    expect_equal(jsonlite::fromJSON(as.character(x$Z)), v)
+})
+
+test_that("values that do not need the digits are unchanged", {
+    # Full precision costs nothing when the data does not carry it, so this is not a
+    # trade of payload for correctness
+    v <- c(1.5, 2.25, 3)
+    x <- CombinedScatter(X = v, Y = v, label = letters[1:3])$x
+    expect_equal(as.character(x$X), "[1.5,2.25,3]")
+})
+
+test_that("a gap is still encoded as null", {
+    x <- CombinedScatter(X = c(1.5, NA, 3.5), Y = c(1, 2, 3), label = letters[1:3])$x
+    expect_equal(as.character(x$X), "[1.5,null,3.5]")
+})

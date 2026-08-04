@@ -847,10 +847,15 @@ CombinedScatter <- function(
                               package = 'rhtmlCombinedScatter')
 }
 
-toJsonOrNull <- function(x, ...) {
+# Encodes a value for the widget. Full precision rather than jsonlite's default of four
+# significant digits: this carries data, and rounding it merges values that differ beyond
+# that. It costs nothing for values that do not need the digits - a number is written with
+# as many as it takes and no more - so it only grows the payload where rounding would have
+# been discarding something real.
+toJsonOrNull <- function(x, digits = NA, ...) {
     if (is.null(x)) {
         NULL
     } else {
-        toJSON(x, ...)
+        toJSON(x, digits = digits, ...)
     }
 }
