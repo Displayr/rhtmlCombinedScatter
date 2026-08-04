@@ -92,10 +92,11 @@
 #' @param footer.alignment One of "Left", "Center", "Center of plot area", "Right".
 #' @param labels.show Toggle for showing labels. Defaults to true if labels array given
 #' @param labels.font.family is the font family of the labels
-#' @param labels.font.color is the font color of the labels. Accepts a single value covering
-#'     every label, or one value per data point in the same order as the labels, which colors
-#'     each label individually. If not supplied, each label takes the color of its own point.
-#'     NOTE: This overrides the color if it is set
+#' @param labels.font.color is the font color of the labels. Accepts a single value
+#'     covering every label, or one value per data point in the same order as the
+#'     labels, which colors each label individually. If not supplied, each label takes
+#'     the color of its own data point. This affects the label text only; the data
+#'     point markers keep their colors from \code{colors}.
 #' @param labels.font.size is the font size of the labels
 #' @param labels.logo.scale is a vector of scaling factors for label logos
 #' @param labels.max.shown Number of labels to show on chart. If the number of labels is greater than this

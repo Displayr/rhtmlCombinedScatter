@@ -70,6 +70,17 @@ describe('PlotData data label colour:', function () {
     expect(data.lab.map(l => l.color)).toEqual(['#FF0000', '#00AA00', '#FF0000'])
   })
 
+  it('leaves the marker colours alone', async function () {
+    // The point colour is taken before the label override is applied, so a label colour
+    // recolours the text and nothing else. Characterisation of existing behaviour, pinned
+    // because the parameter documentation now states it.
+    const data = makePlotData(['#FF0000', '#FF0000', '#00AA00'])
+    await data.getPtsAndLabs('test')
+
+    expect(data.pts.map(p => p.color)).toEqual(['red', 'red', 'red'])
+    expect(data.lab.map(l => l.color)).toEqual(['#FF0000', '#FF0000', '#00AA00'])
+  })
+
   it('falls back to the colour of its own point when none is given', async function () {
     // How automatic colouring reaches the widget: nothing is sent, and each label takes
     // the colour of its own point
