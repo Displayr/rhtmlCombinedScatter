@@ -1,9 +1,9 @@
 const PlotData = require('./PlotData.js')
 const DataTypeEnum = require('./utils/DataTypeEnum.js')
 
-// A line chart can colour its data labels by series, so the label colour arrives as one
-// value per point, expanded from the per-series values the same way pointRadius is. A
-// single value still colours every label, as it always has.
+// The label colour is either a single value covering every label, or one entry per point,
+// indexed by point index the same way pointRadius is. A single value still colours every
+// label, as it always has.
 const makePlotData = (labelFontColor, group = ['G1', 'G1', 'G2']) => new PlotData(
   [1, 2, 3],                                  // X
   [10, 20, 30],                               // Y
@@ -70,7 +70,7 @@ describe('PlotData data label colour:', function () {
     expect(data.lab.map(l => l.color)).toEqual(['#FF0000', '#00AA00', '#FF0000'])
   })
 
-  it('falls back to the series colour when no colour is given', async function () {
+  it('falls back to the colour of its own point when none is given', async function () {
     // How automatic colouring reaches the widget: nothing is sent, and each label takes
     // the colour of its own point
     const data = makePlotData(null)
