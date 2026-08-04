@@ -127,4 +127,12 @@ describe('Utils.labelColorAt:', function () {
     expect(Utils.labelColorAt('', 0)).toBeNull()
     expect(Utils.labelColorAt([], 0)).toBeNull()
   })
+
+  it('returns null for an entry that is itself unset, so that point falls back too', function () {
+    // An array from R can carry an empty entry, and an NA in it arrives as null. Either has
+    // to fall back to the point's own colour rather than being used as a colour.
+    expect(Utils.labelColorAt(['#FF0000', ''], 1)).toBeNull()
+    expect(Utils.labelColorAt(['#FF0000', null], 1)).toBeNull()
+    expect(Utils.labelColorAt(['#FF0000', ''], 0)).toBe('#FF0000')
+  })
 })

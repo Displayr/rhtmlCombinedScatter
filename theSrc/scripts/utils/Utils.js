@@ -9,10 +9,14 @@ class Utils {
   // apply its own fallback: the labels are drawn in two places, by PlotData for an ordinary
   // chart and as plotly annotations for a panelled one, and both have to read it alike.
   static labelColorAt (label_font_color, index) {
-    if (label_font_color == null || label_font_color === '') return null
-    if (!Array.isArray(label_font_color)) return label_font_color
+    if (!Array.isArray(label_font_color)) {
+      return (label_font_color == null || label_font_color === '') ? null : label_font_color
+    }
     if (label_font_color.length === 0) return null
-    return label_font_color[index % label_font_color.length]
+    // An entry can be unset even when the array is not: R sends an empty string as it is and
+    // an NA as null. Either has to fall back rather than be used as a colour.
+    const color = label_font_color[index % label_font_color.length]
+    return (color == null || color === '') ? null : color
   }
 
   static isNum (num) {
