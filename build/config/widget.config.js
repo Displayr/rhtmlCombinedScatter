@@ -1,4 +1,3 @@
-const path = require('path')
 const cliArgs = require('yargs').argv
 const _ = require('lodash')
 
@@ -7,28 +6,11 @@ const config = {
   widgetFactory: 'theSrc/scripts/rhtmlCombinedScatter.factory.js',
   widgetName: 'rhtmlCombinedScatter',
 
-  // Keeps node's crypto out of the shipped bundle, restoring what browserify produced.
-  //
-  // bignumber.js@2.4.0 line 2730 reads:
-  //
-  //     if ( !cryptoObj ) try { cryptoObj = require('cry' + 'pto'); } catch (e) {}
-  //
-  // The concatenation and the try/catch are deliberate: they stop a bundler statically resolving crypto,
-  // and browserify duly left it as a runtime require that simply failed in the browser. esbuild is
-  // cleverer -- it constant-folds 'cry' + 'pto' -- so it DOES resolve it, and rhtmlBuildUtils then aliases
-  // crypto to crypto-browserify. That pulled 616 KiB across 180 files (elliptic, four copies of bn.js,
-  // asn1.js, browserify-sign, diffie-hellman, ...) into the bundle, taking it from 1651 to 2341 KiB.
-  //
-  // Measured with esbuild's metafile: stubbing crypto gives 1704 KiB against browserify's 1651 KiB, so
-  // nearly the whole difference was crypto and the bundler swap itself costs ~53 KiB. Safe because
-  // BigNumber.random is the only thing that uses it and this widget never calls it -- the old bundle
-  // shipped without any crypto implementation for years.
-  //
-  // Only the crypto key is overridden; rhtmlBuildUtils deep-merges this, so its buffer/stream/events
-  // aliases stay in place for anything that genuinely needs them.
-  esbuildOptions: {
-    alias: { crypto: path.join(__dirname, 'emptyCryptoShim.js') }
-  },
+  // NB no esbuildOptions crypto alias here. This repo briefly needed one, because bignumber.js@2 reaches
+  // for crypto via require('cry' + 'pto') and esbuild -- unlike browserify -- constant-folds that and
+  // resolves it, dragging 616 KiB of crypto-browserify into the bundle for a path nothing calls.
+  // rhtmlBuildUtils 9.0.0 stubs crypto by default instead, so there is nothing to do here. See
+  // rhtmlBuildUtils/src/lib/cryptoStub.js.
   internalWebSettings: {
     isReadySelector: 'div[rhtmlwidget-status=ready]',
     singleWidgetSnapshotSelector: '.rhtmlwidget-outer-svg',
