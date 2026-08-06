@@ -16,13 +16,13 @@ const config = {
   // The concatenation and the try/catch are deliberate: they stop a bundler statically resolving crypto,
   // and browserify duly left it as a runtime require that simply failed in the browser. esbuild is
   // cleverer -- it constant-folds 'cry' + 'pto' -- so it DOES resolve it, and rhtmlBuildUtils then aliases
-  // crypto to crypto-browserify. That pulled 616 KB across 180 files (elliptic, four copies of bn.js,
-  // asn1.js, browserify-sign, diffie-hellman, ...) into the bundle, growing it from 1690 KB to 2398 KB.
+  // crypto to crypto-browserify. That pulled 616 KiB across 180 files (elliptic, four copies of bn.js,
+  // asn1.js, browserify-sign, diffie-hellman, ...) into the bundle, taking it from 1651 to 2341 KiB.
   //
-  // Measured with esbuild's metafile: stubbing crypto gives 1702 KB against browserify's 1690 KB, so the
-  // whole difference was crypto and the bundler swap itself costs ~12 KB. Safe because BigNumber.random
-  // is the only thing that uses it and this widget never calls it -- the old bundle shipped without any
-  // crypto implementation for years.
+  // Measured with esbuild's metafile: stubbing crypto gives 1704 KiB against browserify's 1651 KiB, so
+  // nearly the whole difference was crypto and the bundler swap itself costs ~53 KiB. Safe because
+  // BigNumber.random is the only thing that uses it and this widget never calls it -- the old bundle
+  // shipped without any crypto implementation for years.
   //
   // Only the crypto key is overridden; rhtmlBuildUtils deep-merges this, so its buffer/stream/events
   // aliases stay in place for anything that genuinely needs them.
