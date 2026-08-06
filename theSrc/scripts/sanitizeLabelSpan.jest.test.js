@@ -1,3 +1,9 @@
+/**
+ * @jest-environment jsdom
+ *
+ * NB see the same note in sanitizeLabel.jest.test.js: DOMPurify needs a window, and jest 27 changed the
+ * default testEnvironment from jsdom to node.
+ */
 import sanitizeLabel from './sanitizeLabel'
 
 // Labels reach the d3 path as SVG, so callers must emit annotation markup as <tspan

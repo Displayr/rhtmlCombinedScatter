@@ -2,17 +2,18 @@
   "name": "rhtmlCombinedScatter",
   "private": true,
   "engines": {
-    "node": ">=18.15.0",
+    "node": "^20.19.0 || ^22.13.0 || >=24",
     "npm": ">=9.5.0"
   },
   "scripts": {
     "prepush": "node ./build/bin/prepush",
-    "lint": "gulp lint",
-    "build": "gulp build",
-    "start": "gulp serve",
+    "lint": "rhtml lint",
+    "build": "rhtml build",
+    "start": "rhtml serve",
     "test": "npm run localTest",
-    "visualTestOnly": "gulp testVisual_s",
-    "localTest": "gulp testSpecs && gulp testVisual --env=local --branch=`git rev-parse --abbrev-ref HEAD`",
+    "visualTestOnly": "rhtml testVisual_s",
+    "localTest": "rhtml testSpecs && rhtml testVisual --env=local --branch=`git rev-parse --abbrev-ref HEAD`",
+    "reviewBaselines": "rhtml reviewBaselines --from origin/master",
     "gatherDiffs": "rm -rf .tmp/diffs; mkdir -p .tmp/diffs/; BRANCH=`git rev-parse --abbrev-ref HEAD` && for I in `find theSrc/test/snapshots/local/$BRANCH -type d -name __diff_output__`; do cp $I/* .tmp/diffs/ 2> /dev/null; done; true",
     "gatherMasterDiffs": "rm -rf .tmp/diffs; mkdir -p .tmp/diffs/; for I in `find theSrc/test/snapshots/local/master -type d -name __diff_output__`; do cp $I/* .tmp/diffs/ 2> /dev/null; done; true",
     "macOpenDiffs": "open .tmp/diffs",
@@ -21,10 +22,11 @@
     "deleteDiffs": "find theSrc/test/snapshots -iname '__diff_output__' | xargs rm -rf"
   },
   "devDependencies": {
-    "eslint-plugin-only-warn": "^1.1.0",
-    "gulp": "^4.0.2",
-    "request-promise": "^4.2.5",
-    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#7.2.6"
+    "eslint-plugin-only-warn": "^1.2.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#3067a83d2926b95a355fe6c9d741ed7d3c618c03",
+    "yargs": "^15.4.1"
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
@@ -45,11 +47,6 @@
     "shelljs": "^0.8.4"
   },
   "overrides": {
-    "puppeteer": "^13",
-    "glob-parent": "5.1.2",
-    "ini": "1.3.8",
-    "minimist": "1.2.5",
-    "y18n": "4.0.3",
-    "yargs-parser": "18.1.3"
+    "minimist": "^1.2.8"
   }
 }

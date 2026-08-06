@@ -1,3 +1,4 @@
+const path = require('path')
 const cliArgs = require('yargs').argv
 const _ = require('lodash')
 
@@ -5,6 +6,29 @@ const config = {
   widgetEntryPoint: 'theSrc/scripts/rhtmlCombinedScatter.js',
   widgetFactory: 'theSrc/scripts/rhtmlCombinedScatter.factory.js',
   widgetName: 'rhtmlCombinedScatter',
+
+  // Keeps node's crypto out of the shipped bundle, restoring what browserify produced.
+  //
+  // bignumber.js@2.4.0 line 2730 reads:
+  //
+  //     if ( !cryptoObj ) try { cryptoObj = require('cry' + 'pto'); } catch (e) {}
+  //
+  // The concatenation and the try/catch are deliberate: they stop a bundler statically resolving crypto,
+  // and browserify duly left it as a runtime require that simply failed in the browser. esbuild is
+  // cleverer -- it constant-folds 'cry' + 'pto' -- so it DOES resolve it, and rhtmlBuildUtils then aliases
+  // crypto to crypto-browserify. That pulled 616 KB across 180 files (elliptic, four copies of bn.js,
+  // asn1.js, browserify-sign, diffie-hellman, ...) into the bundle, growing it from 1690 KB to 2398 KB.
+  //
+  // Measured with esbuild's metafile: stubbing crypto gives 1702 KB against browserify's 1690 KB, so the
+  // whole difference was crypto and the bundler swap itself costs ~12 KB. Safe because BigNumber.random
+  // is the only thing that uses it and this widget never calls it -- the old bundle shipped without any
+  // crypto implementation for years.
+  //
+  // Only the crypto key is overridden; rhtmlBuildUtils deep-merges this, so its buffer/stream/events
+  // aliases stay in place for anything that genuinely needs them.
+  esbuildOptions: {
+    alias: { crypto: path.join(__dirname, 'emptyCryptoShim.js') }
+  },
   internalWebSettings: {
     isReadySelector: 'div[rhtmlwidget-status=ready]',
     singleWidgetSnapshotSelector: '.rhtmlwidget-outer-svg',
