@@ -4,6 +4,7 @@
 // The block after it carries over the local relaxations that were in .eslintrc, so this migration
 // changes which config FORMAT is used without changing which code passes.
 const base = require('rhtmlBuildUtils/eslint.config.base')
+const globals = require('globals')
 const onlyWarn = require('eslint-plugin-only-warn')
 
 module.exports = [
@@ -21,7 +22,27 @@ module.exports = [
       '@stylistic/comma-dangle': 'off',
       'prefer-promise-reject-errors': 'off',
       'no-unused-expressions': 'off',
-      camelcase: 'off'
+      camelcase: 'off',
+
+      // NB not in the old .eslintrc because it did not exist then: @stylistic split the continuation
+      // indent of a wrapped binary expression out of `indent` into its own rule. This repo switched
+      // `indent` off, so leaving its offshoot on reports 13 warnings for exactly the thing that was
+      // deliberately not being checked.
+      '@stylistic/indent-binary-ops': 'off'
+    }
+  },
+
+  {
+    // The interaction tests drive a real browser: they require puppeteer and pass callbacks that
+    // puppeteer serialises into the page, where `window` and `document` do exist.
+    files: ['theSrc/test/**/*.js'],
+    languageOptions: { globals: { ...globals.browser } },
+    rules: {
+      // NB puppeteer is deliberately NOT a dependency of this repo. It comes from rhtmlBuildUtils, which
+      // owns the browser version precisely because the browser version decides whether the image
+      // baselines are valid. Declaring it here would let the two drift and silently invalidate ~430
+      // baselines, so the "extraneous" reading is wrong for this directory.
+      'n/no-extraneous-require': 'off'
     }
   },
 
