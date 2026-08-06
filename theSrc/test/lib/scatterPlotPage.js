@@ -59,6 +59,21 @@ class ScatterPlotPage {
     return this.drag({ from: initialMousePosition, to: finalMousePosition })
   }
 
+  // Parks the pointer outside the widget, so the hover-only Reset affordance is hidden.
+  //
+  // Needed because a drag leaves the pointer wherever it finished, which is inside the widget. The Reset
+  // control is shown by `root_element.on('mouseover', ...)` whenever the state has been altered by the
+  // user (see ResetButton.js), so a snapshot taken straight after a drag can include Reset, while the
+  // same view loaded from saved state cannot -- no pointer ever goes near it. Any test that snapshots a
+  // dragged view under a name it SHARES with a load-saved-state test has to call this first, or the two
+  // renders differ by the Reset overlay alone.
+  //
+  // (0, 0) is outside the widget: renderExample places #widget-container at (10, 39) and the widget div
+  // itself at (11, 40). Verified in a real browser -- reset opacity goes 1 -> 0 on moving here.
+  async moveMouseOffWidget () {
+    return this.page.mouse.move(0, 0)
+  }
+
   async moveMouseOntoPlot () {
     // XXX this is an assumption that currently holds based on tests ...
     const unmovedLabel = await this.plotLabel({ id: 1 })
