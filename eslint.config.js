@@ -4,7 +4,6 @@
 // The block after it carries over the local relaxations that were in .eslintrc, so this migration
 // changes which config FORMAT is used without changing which code passes.
 const base = require('rhtmlBuildUtils/eslint.config.base')
-const globals = require('globals')
 const onlyWarn = require('eslint-plugin-only-warn')
 
 module.exports = [
@@ -36,7 +35,11 @@ module.exports = [
     // The interaction tests drive a real browser: they require puppeteer and pass callbacks that
     // puppeteer serialises into the page, where `window` and `document` do exist.
     files: ['theSrc/test/**/*.js'],
-    languageOptions: { globals: { ...globals.browser } },
+    // NB the two names are listed rather than spread from the `globals` package, which this repo does
+    // not depend on -- requiring it here would only work by reaching into rhtmlBuildUtils' hoisted copy,
+    // the same phantom dependency that broke widget.config.js when gulp was removed. These are the only
+    // browser globals these files actually reference.
+    languageOptions: { globals: { window: 'readonly', document: 'readonly' } },
     rules: {
       // NB puppeteer is deliberately NOT a dependency of this repo. It comes from rhtmlBuildUtils, which
       // owns the browser version precisely because the browser version decides whether the image
