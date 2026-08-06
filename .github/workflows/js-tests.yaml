@@ -17,6 +17,14 @@ on:
         type: boolean
         default: false
 
+# NB the actions/* versions below are held at majors that declare `runs.using: node24`, currently
+# checkout@v7, setup-node@v7, cache@v6 and upload-artifact@v7. The @v4 line of each declares node20, which
+# makes every step log "Node 20 is being deprecated. This workflow is running with Node 24 by default".
+# That notice is about the runtime the ACTION ITSELF executes in, declared in its action.yml -- it has
+# nothing to do with the `node-version: 22` below, which is the node the project's own commands run under.
+# So do not try to silence it by changing node-version; bump the action majors.
+# These majors also require an Actions Runner of 2.327.1 or later, which GitHub-hosted runners satisfy.
+
 # One in-flight run per branch; a new push supersedes the previous run rather
 # than stacking another full ~430-snapshot visual job behind it.
 #
@@ -40,9 +48,9 @@ jobs:
       # This job never launches a browser, so skip the ~150MB Chrome download.
       PUPPETEER_SKIP_DOWNLOAD: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -79,9 +87,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -110,7 +118,7 @@ jobs:
       # @puppeteer/browsers and ~/.cache/puppeteer, which survives. Keyed on the lockfile because that is
       # what pins the puppeteer version and therefore the Chrome revision.
       - name: Cache the puppeteer browser download
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/puppeteer
           key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -168,7 +176,7 @@ jobs:
 
       - name: Upload snapshot diffs
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snapshot-diffs
           path: |
@@ -194,7 +202,7 @@ jobs:
       # still worth inspecting alongside the diffs.
       - name: Upload regenerated baselines
         if: ${{ !cancelled() && inputs.update_snapshots }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: regenerated-baselines
           # Exclude the diagnostic directories; they are uploaded separately as
