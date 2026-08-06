@@ -25,7 +25,7 @@
     "eslint-plugin-only-warn": "^1.2.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#b55978593877c552935280570549074669b79af3",
+    "rhtmlBuildUtils": "github:Displayr/rhtmlBuildUtils#0a00449f077a32eb30128cacf39cb85fd1bd61f3",
     "yargs": "^15.4.1"
   },
   "dependencies": {
