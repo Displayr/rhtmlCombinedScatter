@@ -315,26 +315,34 @@ describe('state interactions', () => {
     await page.close()
   })
 
-  // Disabling as this works locally but not in CircleCI (clicking on a marker doesn't toggle the label)
-  // test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
-  //   const { page, scatterPlot } = await loadWidget({
-  //     browser,
-  //     configName: 'data.bdd.bubbleplot_maxlabels',
-  //     width: 600,
-  //     height: 600,
-  //   })
+  // Re-enabled in RS-23047. It was disabled with "works locally but not in CircleCI (clicking on a
+  // marker doesn't toggle the label)"; the cause was clickMouseOnAnchor using page.click('.point'),
+  // which delivers nothing to the handler because the markers are deliberately pointer-events: none.
+  // See the note on clickMouseOnAnchor in scatterPlotPage.js.
+  test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.bdd.bubbleplot_maxlabels',
+      width: 600,
+      height: 600,
+    })
 
-  //   await testSnapshots({ page, testName: 'bubble_maxlabels' })
+    await testSnapshots({ page, testName: 'bubble_maxlabels' })
 
-  //   await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
-  //   await scatterPlot.clickMouseOnAnchor()
-  //   await testSnapshots({ page, testName: 'labels_after_toggling' })
+    await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
+    await scatterPlot.clickMouseOnAnchor()
 
-  //   await scatterPlot.clickResetButton()
-  //   await testSnapshots({ page, testName: 'labels_after_reset' })
+    // The drag leaves the pointer inside the widget, which shows the hover-gated Reset control. Park it
+    // so these baselines record the labels, not whether a pointer happened to be resting on the plot.
+    await scatterPlot.moveMouseOffWidget()
+    await testSnapshots({ page, testName: 'labels_after_toggling' })
 
-  //   await page.close()
-  // })
+    await scatterPlot.clickResetButton()
+    await scatterPlot.moveMouseOffWidget()
+    await testSnapshots({ page, testName: 'labels_after_reset' })
+
+    await page.close()
+  })
 
   test(`${++testId}: Load saved state and see a user hidden label`, async function () {
     const { page } = await loadWidget({
@@ -372,6 +380,21 @@ describe('state interactions', () => {
     await page.close()
   })
 
+  // This never hid anything (RS-23047), and the reason is not the same as for the single-panel toggle
+  // test above. Small multiples hide a label through plotly, not through widget code: their labels are
+  // plotly ANNOTATIONS carrying `clicktoshow: 'onoff'` (see addSmallMultipleSettings in
+  // PlotlyChartElements.js), so plotly itself flips an annotation's `visible` when the data point it is
+  // anchored to is clicked.
+  //
+  // That needs a real event through plotly's pipeline, which is why this uses clickMarkerViaPlotly
+  // rather than clickMouseOnAnchor -- the in-page dispatch drives the single-panel handler but not
+  // plotly. And it must be exactly ONE click: 'onoff' means a second click puts the label back, which
+  // is the "2 clicks instead of 1" the ticket describes. The old page.click('.point') left all 42
+  // annotations visible and merely raised a plotly hover tooltip, which is what the previous baseline
+  // recorded.
+  //
+  // Measured in a browser for this config: one real click at a marker centre takes the visible
+  // annotation count from 42 to 41.
   test(`${++testId}: Hide labels in small multiples with shared axis`, async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
@@ -380,7 +403,7 @@ describe('state interactions', () => {
       height: 500
     })
     await new Promise(resolve => setTimeout(resolve, 1000))
-    await scatterPlot.clickMouseOnAnchor()
+    await scatterPlot.clickMarkerViaPlotly()
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
     await page.close()
   })
