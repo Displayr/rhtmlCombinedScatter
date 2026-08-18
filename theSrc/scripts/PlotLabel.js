@@ -2,7 +2,6 @@ import _ from 'lodash'
 import 'babel-polyfill'
 import DisplayError from './DisplayError'
 
-
 /* To Refactor:
  * *no method to access the label promises (PlotData accesses the internal directly)
  */
