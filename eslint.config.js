@@ -32,24 +32,6 @@ module.exports = [
   },
 
   {
-    // The interaction tests drive a real browser: they require puppeteer and pass callbacks that
-    // puppeteer serialises into the page, where `window` and `document` do exist.
-    files: ['theSrc/test/**/*.js'],
-    // NB the two names are listed rather than spread from the `globals` package, which this repo does
-    // not depend on -- requiring it here would only work by reaching into rhtmlBuildUtils' hoisted copy,
-    // the same phantom dependency that broke widget.config.js when gulp was removed. These are the only
-    // browser globals these files actually reference.
-    languageOptions: { globals: { window: 'readonly', document: 'readonly' } },
-    rules: {
-      // NB puppeteer is deliberately NOT a dependency of this repo. It comes from rhtmlBuildUtils, which
-      // owns the browser version precisely because the browser version decides whether the image
-      // baselines are valid. Declaring it here would let the two drift and silently invalidate ~430
-      // baselines, so the "extraneous" reading is wrong for this directory.
-      'n/no-extraneous-require': 'off'
-    }
-  },
-
-  {
     // NB also carried over from .eslintrc. This plugin downgrades every error to a warning, so `rhtml
     // lint` reports problems but exits 0 -- which means the lint step in .github/workflows/js-tests.yaml
     // cannot currently fail. That is pre-existing behaviour and is preserved here deliberately, so that

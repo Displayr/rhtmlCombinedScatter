@@ -1,5 +1,6 @@
 .eslintignore
 .eslintrc
+eslint.config.js
 .keys
 .travis.yml
 ^.*\.Rproj$

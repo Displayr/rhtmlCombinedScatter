@@ -51,9 +51,9 @@ const config = {
       args: ['--no-sandbox', '--disable-dev-shm-usage'],
     },
 
-    // Selects theSrc/test/snapshots/ci/<branch>/. Set here rather than passed
-    // as --env=ci, because rhtmlBuildUtils constrains that option to
-    // choices: ['local', 'travis'] and yargs would reject 'ci'. Command-line
+    // Selects theSrc/test/snapshots/ci/<branch>/. Set here rather than passed as
+    // --env=ci because that is what CI should default to; the flag no longer
+    // constrains the value (9.0.0 dropped the local/travis whitelist). Command-line
     // --env still wins, so `npm run localTest` keeps using 'local'.
     env: 'ci',
   },

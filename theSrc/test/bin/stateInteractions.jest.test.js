@@ -1,5 +1,4 @@
-const puppeteer = require('puppeteer')
-const { snapshotTesting: { renderExamplePageTestHelper } } = require('rhtmlBuildUtils')
+const { snapshotTesting: { puppeteer, renderExamplePageTestHelper } } = require('rhtmlBuildUtils')
 const loadWidget = require('../lib/loadWidget.helper')
 
 const {
