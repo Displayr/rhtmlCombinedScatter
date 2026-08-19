@@ -1,5 +1,3 @@
-.eslintignore
-.eslintrc
 eslint.config.js
 .keys
 .travis.yml
@@ -10,7 +8,6 @@ build
 browser
 docs
 examples
-gulpfile.js
 node_modules
 notes.md
 package-lock.json
