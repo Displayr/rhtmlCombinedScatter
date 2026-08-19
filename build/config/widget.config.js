@@ -5,6 +5,12 @@ const config = {
   widgetEntryPoint: 'theSrc/scripts/rhtmlCombinedScatter.js',
   widgetFactory: 'theSrc/scripts/rhtmlCombinedScatter.factory.js',
   widgetName: 'rhtmlCombinedScatter',
+
+  // NB no esbuildOptions crypto alias here. This repo briefly needed one, because bignumber.js@2 reaches
+  // for crypto via require('cry' + 'pto') and esbuild -- unlike browserify -- constant-folds that and
+  // resolves it, dragging 616 KiB of crypto-browserify into the bundle for a path nothing calls.
+  // rhtmlBuildUtils 9.0.0 stubs crypto by default instead, so there is nothing to do here. See
+  // rhtmlBuildUtils/src/lib/cryptoStub.js.
   internalWebSettings: {
     isReadySelector: 'div[rhtmlwidget-status=ready]',
     singleWidgetSnapshotSelector: '.rhtmlwidget-outer-svg',
@@ -45,9 +51,9 @@ const config = {
       args: ['--no-sandbox', '--disable-dev-shm-usage'],
     },
 
-    // Selects theSrc/test/snapshots/ci/<branch>/. Set here rather than passed
-    // as --env=ci, because rhtmlBuildUtils constrains that option to
-    // choices: ['local', 'travis'] and yargs would reject 'ci'. Command-line
+    // Selects theSrc/test/snapshots/ci/<branch>/. Set here rather than passed as
+    // --env=ci because that is what CI should default to; the flag no longer
+    // constrains the value (9.0.0 dropped the local/travis whitelist). Command-line
     // --env still wins, so `npm run localTest` keeps using 'local'.
     env: 'ci',
   },

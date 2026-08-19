@@ -1,3 +1,11 @@
+/**
+ * @jest-environment jsdom
+ *
+ * NB declared explicitly because sanitizeLabel uses DOMPurify, which needs a window. Under jest 25
+ * (which rhtmlBuildUtils resolved before 9.0.0) the default testEnvironment was jsdom, so this suite
+ * passed without saying so. jest 27 changed the default to 'node', where DOMPurify exports an
+ * uninitialised factory and the failure reads "DOMPurify.sanitize is not a function".
+ */
 const sanitizeLabel = require('./sanitizeLabel')
 
 describe('sanitizeLabel (RS-22478)', () => {

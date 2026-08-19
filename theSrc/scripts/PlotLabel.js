@@ -2,8 +2,6 @@ import _ from 'lodash'
 import 'babel-polyfill'
 import DisplayError from './DisplayError'
 
-/* global Image */ // https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image
-
 /* To Refactor:
  * *no method to access the label promises (PlotData accesses the internal directly)
  */
