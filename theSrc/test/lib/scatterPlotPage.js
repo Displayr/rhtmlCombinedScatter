@@ -141,7 +141,15 @@ class ScatterPlotPage {
       const rect = marker.getBoundingClientRect()
       const dragLayer = document.querySelector('.nsewdrag')
       if (!dragLayer) { throw new Error('no .nsewdrag to dispatch the click on') }
+      // NB view: window is not decoration. Chrome derives offsetX/offsetY from page coordinates,
+      // which are clientX/clientY plus the document scroll -- and with no view the scroll term is taken
+      // as 0. That is only harmless while the page never scrolls, which is true today because
+      // defaultViewport is 1600x1600, but puppeteerSettings is documented as overridable on the command
+      // line and every testSnapshots call ends in elementHandle.screenshot(), which scrolls its element
+      // into view. On a scrolled page the offsets would be short by scrollY, the radius test in
+      // addMarkerClickHandler would miss, and this helper would go back to asserting nothing.
       dragLayer.dispatchEvent(new MouseEvent('click', {
+        view: window,
         clientX: rect.left + rect.width / 2,
         clientY: rect.top + rect.height / 2,
         bubbles: true
