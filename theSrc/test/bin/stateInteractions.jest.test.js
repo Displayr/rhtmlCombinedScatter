@@ -315,26 +315,48 @@ describe('state interactions', () => {
     await page.close()
   })
 
-  // Disabling as this works locally but not in CircleCI (clicking on a marker doesn't toggle the label)
-  // test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
-  //   const { page, scatterPlot } = await loadWidget({
-  //     browser,
-  //     configName: 'data.bdd.bubbleplot_maxlabels',
-  //     width: 600,
-  //     height: 600,
-  //   })
+  // Re-enabled in RS-23047. It was disabled with "works locally but not in CircleCI (clicking on a
+  // marker doesn't toggle the label)".
+  //
+  // NB the drag below is load bearing, not scene setting. LabeledScatter puts its labels in .draglayer
+  // ABOVE .nsewdrag and they are real hit targets, so an unmoved label sits over its own marker and
+  // swallows the click -- which is what made this look broken. Dragging label 0 away is what makes
+  // marker 0 clickable at all, so the state assertion after it is guarding the precondition for
+  // everything below. See the note on dispatchMarkerClick in scatterPlotPage.js.
+  test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
+    const { page, scatterPlot } = await loadWidget({
+      browser,
+      configName: 'data.bdd.bubbleplot_maxlabels',
+      width: 600,
+      height: 600,
+    })
 
-  //   await testSnapshots({ page, testName: 'bubble_maxlabels' })
+    await testSnapshots({ page, testName: 'bubble_maxlabels' })
 
-  //   await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
-  //   await scatterPlot.clickMouseOnAnchor()
-  //   await testSnapshots({ page, testName: 'labels_after_toggling' })
+    await scatterPlot.movePlotLabel({ id: 0, x: 100, y: 100 })
 
-  //   await scatterPlot.clickResetButton()
-  //   await testSnapshots({ page, testName: 'labels_after_reset' })
+    // NB asserted rather than assumed: the drag leaves no trace in any of the three snapshots, because
+    // the label it moves is the one the click then hides. Without this, movePlotLabel could silently
+    // stop moving anything and all three baselines would still match.
+    const draggedState = await scatterPlot.getState()
+    // NB defaulted: in the very case this guards -- movePlotLabel doing nothing -- the latest state is
+    // the one State's constructor publishes, which carries no userPositionedLabs, so reading .map on it
+    // would throw a TypeError that reads like a broken test rather than a broken drag.
+    expect((draggedState.userPositionedLabs || []).map(({ id }) => id)).toContain(0)
 
-  //   await page.close()
-  // })
+    await scatterPlot.dispatchMarkerClick({ expectToggle: true })
+
+    // The drag leaves the pointer inside the widget, which shows the hover-gated Reset control. Park it
+    // so these baselines record the labels, not whether a pointer happened to be resting on the plot.
+    await scatterPlot.moveMouseOffWidget()
+    await testSnapshots({ page, testName: 'labels_after_toggling' })
+
+    await scatterPlot.clickResetButton()
+    await scatterPlot.moveMouseOffWidget()
+    await testSnapshots({ page, testName: 'labels_after_reset' })
+
+    await page.close()
+  })
 
   test(`${++testId}: Load saved state and see a user hidden label`, async function () {
     const { page } = await loadWidget({
@@ -372,6 +394,18 @@ describe('state interactions', () => {
     await page.close()
   })
 
+  // Small multiples hide a label through plotly, not through widget code: their labels are plotly
+  // ANNOTATIONS carrying `clicktoshow: 'onoff'` (see addSmallMultipleSettings in
+  // PlotlyChartElements.js), so plotly itself flips an annotation's `visible` when the data point it is
+  // anchored to is clicked. One real click at a marker centre takes the visible annotation count from
+  // 42 to 41.
+  //
+  // NB this test was NOT asserting nothing, contrary to an earlier revision of this comment. Pixel
+  // diffing the old baseline, the new one, and the untouched render of the same config at the same size
+  // settles it: outside the tooltip's column range the old and new baselines are identical, and both
+  // differ from the untouched render by the same 180 px -- the hidden annotation. The old
+  // page.click('.point') did hide the label; it also left a hover tooltip in the snapshot, and clearing
+  // that is the only thing this change does here.
   test(`${++testId}: Hide labels in small multiples with shared axis`, async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
@@ -380,7 +414,7 @@ describe('state interactions', () => {
       height: 500
     })
     await new Promise(resolve => setTimeout(resolve, 1000))
-    await scatterPlot.clickMouseOnAnchor()
+    await scatterPlot.clickMarkerViaPlotly()
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
     await page.close()
   })

@@ -1,3 +1,4 @@
+const { snapshotTesting: { renderExamplePageTestHelper } } = require('rhtmlBuildUtils')
 
 class ScatterPlotPage {
   constructor (page) {
@@ -87,8 +88,151 @@ class ScatterPlotPage {
     return this.page.mouse.move(initialMousePosition.x, initialMousePosition.y)
   }
 
-  async clickMouseOnAnchor () {
-    return this.page.click('.point')
+  // Toggles a marker's label by dispatching one click at the marker's coordinates.
+  //
+  // NB a synthetic dispatch, not page.mouse.click, and NOT because a real click fails to arrive -- an
+  // earlier revision of this helper claimed exactly that and it was wrong. A real click arrives fine.
+  // The reason is that how MANY events reach this handler is environment dependent, and the handler is
+  // not idempotent, so an even number of them is indistinguishable from none at all.
+  //
+  // Measured by wrapping the widget's own onclick and recording isTrusted for every invocation:
+  //
+  //   locally, one real click  -> 1 invocation,  isTrusted false
+  //   on CI,   one real click  -> 2 invocations, isTrusted false then true
+  //
+  // So the toggle is normally driven by a click SYNTHESISED in the page, not by the browser's own
+  // trusted one, which does not reach this handler locally at all. On CI both arrive, the handler
+  // toggles on and straight back off, and the label never changes. That is precisely the symptom this
+  // test was disabled for -- "works locally but not in CircleCI (clicking on a marker doesn't toggle
+  // the label)" -- and the "2 clicks instead of 1" line in RS-23047.
+  //
+  // NB this is NOT a product bug, and should not be filed as one on the strength of this comment. In
+  // ordinary use exactly one event reaches the handler and toggling works, which is what manual testing
+  // shows; the doubling has only ever been observed on the CI runner. The tempting fix -- ignoring
+  // untrusted events -- would BREAK toggling, because the untrusted click is the one that normally does
+  // the work. What is worth knowing is that the handler is not idempotent, so any environment that
+  // delivers two clicks silently disables the feature. Whether a real user environment does is unknown,
+  // and would need its own investigation rather than an assumption either way.
+  //
+  // Dispatching once directly on .nsewdrag sidesteps all of it: exactly one invocation, everywhere. The
+  // browser derives offsetX/offsetY from clientX/clientY, and for an SVG target Chrome measures them
+  // from the SVG viewport -- the same space as the getCTM() translation the hit test compares against.
+  //
+  // NB what this deliberately does NOT cover: whether a click reaches the handler at all. LabeledScatter
+  // appends its label <svg class="scatterlabellayer"> into .draglayer ABOVE .nsewdrag, and those labels
+  // are real hit targets -- that is how movePlotLabel drags them -- so a label sitting over its own
+  // marker swallows a real click. Measured: a marker under a label receives text.plt-...-lab, a bare
+  // marker receives rect.nsewdrag. Dispatching bypasses that, so this helper cannot catch a z-order or
+  // pointer-events regression. Guarding that needs an assertion about which element a click at the
+  // marker centre lands on, not a snapshot.
+  //
+  // NB deliberately no markerIndex parameter. addMarkerClickHandler walks markers in DOM order and
+  // breaks at the FIRST whose radius contains the click point, and these configs are bubble plots
+  // with overlapping bubbles, so aiming at marker N can toggle a lower indexed label whose radius also
+  // covers that point. A parameter would advertise addressability the helper cannot deliver: worst
+  // case it passes having hidden a label it did not name. Marker 0 is what both callers want.
+  async dispatchMarkerClick ({ expectToggle = false } = {}) {
+    const markerIndex = 0
+    const before = expectToggle ? await this.getState() : null
+
+    await this.page.evaluate((index) => {
+      const marker = document.querySelectorAll('.point')[index]
+      if (!marker) { throw new Error(`no .point marker at index ${index}`) }
+      const rect = marker.getBoundingClientRect()
+      const dragLayer = document.querySelector('.nsewdrag')
+      if (!dragLayer) { throw new Error('no .nsewdrag to dispatch the click on') }
+      // NB view: window is not decoration. Chrome derives offsetX/offsetY from page coordinates,
+      // which are clientX/clientY plus the document scroll -- and with no view the scroll term is taken
+      // as 0. That is only harmless while the page never scrolls, which is true today because
+      // defaultViewport is 1600x1600, but puppeteerSettings is documented as overridable on the command
+      // line and every testSnapshots call ends in elementHandle.screenshot(), which scrolls its element
+      // into view. On a scrolled page the offsets would be short by scrollY, the radius test in
+      // addMarkerClickHandler would miss, and this helper would go back to asserting nothing.
+      dragLayer.dispatchEvent(new MouseEvent('click', {
+        view: window,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        bubbles: true
+      }))
+    }, markerIndex)
+
+    if (!expectToggle) { return }
+
+    const after = await this.getState()
+    if (JSON.stringify(before['hiddenlabel.pts'] || []) === JSON.stringify(after['hiddenlabel.pts'] || [])) {
+      throw new Error(`clicking marker ${markerIndex} did not toggle a label: hiddenlabel.pts stayed ${JSON.stringify(after['hiddenlabel.pts'])}`)
+    }
+  }
+
+  // Toggles a small multiples label with a REAL click, because plotly has to see it.
+  //
+  // NB the mechanism here is genuinely different, which is why this stays a separate helper. Small
+  // multiples labels are plotly ANNOTATIONS carrying `clicktoshow: 'onoff'` (see
+  // addSmallMultipleSettings), so plotly itself flips `visible` when the anchored point is clicked. No
+  // widget handler is involved, and a dispatch onto .nsewdrag does not drive it. The old
+  // page.click('.point') worked for exactly this reason, and the baselines prove it: outside the
+  // tooltip's column range the old and new snapshots are pixel identical, and both differ from the
+  // untouched render by the same 180 px -- the hidden annotation. So this test was never asserting
+  // nothing; it was recording a hover tooltip alongside a correctly hidden label.
+  //
+  // Exactly ONE click matters: with 'onoff' a second puts the label back.
+  // NB no markerIndex here either, for the same reason: plotly decides which annotation a click
+  // toggles by its own hit testing, so the index is not honoured end to end.
+  async clickMarkerViaPlotly () {
+    const markerIndex = 0
+    const target = await this.page.evaluate((index) => {
+      const marker = document.querySelectorAll('.point')[index]
+      if (!marker) { throw new Error(`no .point marker at index ${index}`) }
+      const rect = marker.getBoundingClientRect()
+      const centre = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      // NB the marker's OWN drag layer, not the first in the document. Small multiples render one
+      // .nsewdrag per subplot -- measured: 2 for bubbleplot_small_multiples_with_groups -- so the
+      // first one belongs to another panel, and a midpoint computed from it can land outside this
+      // marker's drag layer or on a bubble in a third panel. Since plotly only drops the hover on a
+      // mousemove away from the point, that leaves the tooltip in the snapshot.
+      //
+      // NB plotly does NOT nest the drag layers inside the .subplot groups that hold the traces --
+      // they live under .draglayer, keyed by axis. Measured: subplots are "subplot xy" and
+      // "subplot x2y2", while the drag rects sit under parents "xy" and "x2y2". So the marker is
+      // matched to its drag layer through that axis key.
+      const subplot = marker.closest('.subplot')
+      const axisKey = subplot ? [...subplot.classList].find(name => name !== 'subplot') : null
+      const dragEl = [...document.querySelectorAll('.nsewdrag')]
+        .find(el => axisKey ? el.parentElement.classList.contains(axisKey) : true)
+      if (!dragEl) { throw new Error(`no .nsewdrag for marker ${index}${axisKey ? ` (axis ${axisKey})` : ''}`) }
+
+      const drag = dragEl.getBoundingClientRect()
+      return { centre, plotCentre: { x: drag.left + drag.width / 2, y: drag.top + drag.height / 2 } }
+    }, markerIndex)
+
+    await this.page.mouse.click(target.centre.x, target.centre.y)
+
+    // NB a real click leaves the pointer ON the marker, so plotly shows its hover tooltip, which then
+    // lands in any snapshot taken afterwards -- that tooltip is the only thing the old baseline got
+    // wrong. Moving straight off the widget does NOT clear it: plotly only drops the hover when it sees
+    // a mousemove away from the point. Measured: click -> 7 nodes under .hoverlayer; move(0,0) -> still
+    // 7; step out then move -> 0. The step goes TOWARDS the plot centre rather than a fixed offset, so
+    // it stays inside the marker's OWN drag layer for a marker near any edge.
+    await this.page.mouse.move(
+      (target.centre.x + target.plotCentre.x) / 2,
+      (target.centre.y + target.plotCentre.y) / 2
+    )
+    await this.moveMouseOffWidget()
+
+    const hoverNodes = await this.page.evaluate(() => document.querySelectorAll('.hoverlayer *').length)
+    if (hoverNodes > 0) {
+      throw new Error(`a plotly tooltip survived the click and would land in the snapshot (${hoverNodes} nodes under .hoverlayer)`)
+    }
+  }
+
+  // The widget's most recent state update.
+  //
+  // NB delegates to the shared getRecentState rather than reading window.stateUpdates again. An
+  // earlier revision reimplemented it and returned null when the widget had published nothing, which
+  // swaps a diagnostic for a TypeError further up the stack; the shared one says "no stateUpdates on
+  // window object. Widget lib must implement stateUpdates".
+  async getState () {
+    return renderExamplePageTestHelper.getRecentState(this.page)
   }
 
   async clickResetButton () {
