@@ -108,7 +108,7 @@ class ScatterPlotPage {
   // when the anchored point is clicked. Either way it is one real click at the marker centre, so one
   // helper serves both. Exactly ONE click matters: with 'onoff' a second click puts the label back,
   // which is the "2 clicks instead of 1" that made this look broken in CircleCI (RS-23047).
-  async clickMarker ({ markerIndex = 0 } = {}) {
+  async clickMarker ({ markerIndex = 0, expectToggle = false } = {}) {
     const target = await this.page.evaluate((index) => {
       const marker = document.querySelectorAll('.point')[index]
       if (!marker) { throw new Error(`no .point marker at index ${index}`) }
@@ -126,6 +126,19 @@ class ScatterPlotPage {
       const drag = document.querySelector('.nsewdrag').getBoundingClientRect()
       return { centre, plotCentre: { x: drag.left + drag.width / 2, y: drag.top + drag.height / 2 } }
     }, markerIndex)
+
+    // NB the handler compares e.offsetX/offsetY against each marker's getCTM() translation, so the click
+    // has to land ON .nsewdrag with offsets in that space. Record what it actually received, because a
+    // near miss is otherwise indistinguishable from "the toggle is broken" -- which is exactly how this
+    // failed on CI while passing locally.
+    await this.page.evaluate(() => {
+      window.__lastClickOnDragLayer = null
+      document.querySelector('.nsewdrag').addEventListener('click', (e) => {
+        window.__lastClickOnDragLayer = { offsetX: e.offsetX, offsetY: e.offsetY }
+      }, true)
+    })
+
+    const before = expectToggle ? await this.getState() : null
 
     await this.page.mouse.click(target.centre.x, target.centre.y)
 
@@ -146,6 +159,29 @@ class ScatterPlotPage {
     const hoverNodes = await this.page.evaluate(() => document.querySelectorAll('.hoverlayer *').length)
     if (hoverNodes > 0) {
       throw new Error(`a plotly tooltip survived the click and would land in the snapshot (${hoverNodes} nodes under .hoverlayer)`)
+    }
+
+    if (!expectToggle) { return }
+
+    const after = await this.getState()
+    const hiddenBefore = JSON.stringify(before['hiddenlabel.pts'] || [])
+    const hiddenAfter = JSON.stringify(after['hiddenlabel.pts'] || [])
+    if (hiddenBefore === hiddenAfter) {
+      const diagnosis = await this.page.evaluate(() => ({
+        received: window.__lastClickOnDragLayer,
+        scroll: { x: window.scrollX, y: window.scrollY },
+        markers: [...document.querySelectorAll('.point')].map((m) => {
+          const ctm = m.getCTM()
+          return { ctm: { x: Math.round(ctm.e), y: Math.round(ctm.f) }, radius: Math.round(0.5 * m.getBBox().width) }
+        })
+      }))
+      throw new Error([
+        `clicking marker ${markerIndex} did not toggle a label: hiddenlabel.pts stayed ${hiddenAfter}.`,
+        `clicked at viewport (${Math.round(target.centre.x)}, ${Math.round(target.centre.y)});`,
+        `.nsewdrag received ${JSON.stringify(diagnosis.received)};`,
+        `page scroll ${JSON.stringify(diagnosis.scroll)};`,
+        `markers ${JSON.stringify(diagnosis.markers)}`
+      ].join(' '))
     }
   }
 

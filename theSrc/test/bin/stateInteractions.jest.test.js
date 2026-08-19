@@ -341,7 +341,7 @@ describe('state interactions', () => {
     const draggedState = await scatterPlot.getState()
     expect(draggedState.userPositionedLabs.map(({ id }) => id)).toContain(0)
 
-    await scatterPlot.clickMarker()
+    await scatterPlot.clickMarker({ expectToggle: true })
 
     // The drag leaves the pointer inside the widget, which shows the hover-gated Reset control. Park it
     // so these baselines record the labels, not whether a pointer happened to be resting on the plot.
