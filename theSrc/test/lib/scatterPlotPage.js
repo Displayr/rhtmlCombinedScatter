@@ -1,3 +1,5 @@
+const { snapshotTesting: { renderExamplePageTestHelper } } = require('rhtmlBuildUtils')
+
 class ScatterPlotPage {
   constructor (page) {
     this.page = page
@@ -123,7 +125,14 @@ class ScatterPlotPage {
   // marker receives rect.nsewdrag. Dispatching bypasses that, so this helper cannot catch a z-order or
   // pointer-events regression. Guarding that needs an assertion about which element a click at the
   // marker centre lands on, not a snapshot.
-  async dispatchMarkerClick ({ markerIndex = 0, expectToggle = false } = {}) {
+  //
+  // NB deliberately no markerIndex parameter. addMarkerClickHandler walks markers in DOM order and
+  // breaks at the FIRST whose radius contains the click point, and these configs are bubble plots
+  // with overlapping bubbles, so aiming at marker N can toggle a lower indexed label whose radius also
+  // covers that point. A parameter would advertise addressability the helper cannot deliver: worst
+  // case it passes having hidden a label it did not name. Marker 0 is what both callers want.
+  async dispatchMarkerClick ({ expectToggle = false } = {}) {
+    const markerIndex = 0
     const before = expectToggle ? await this.getState() : null
 
     await this.page.evaluate((index) => {
@@ -159,13 +168,32 @@ class ScatterPlotPage {
   // nothing; it was recording a hover tooltip alongside a correctly hidden label.
   //
   // Exactly ONE click matters: with 'onoff' a second puts the label back.
-  async clickMarkerViaPlotly ({ markerIndex = 0 } = {}) {
+  // NB no markerIndex here either, for the same reason: plotly decides which annotation a click
+  // toggles by its own hit testing, so the index is not honoured end to end.
+  async clickMarkerViaPlotly () {
+    const markerIndex = 0
     const target = await this.page.evaluate((index) => {
       const marker = document.querySelectorAll('.point')[index]
       if (!marker) { throw new Error(`no .point marker at index ${index}`) }
       const rect = marker.getBoundingClientRect()
       const centre = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-      const drag = document.querySelector('.nsewdrag').getBoundingClientRect()
+      // NB the marker's OWN drag layer, not the first in the document. Small multiples render one
+      // .nsewdrag per subplot -- measured: 2 for bubbleplot_small_multiples_with_groups -- so the
+      // first one belongs to another panel, and a midpoint computed from it can land outside this
+      // marker's drag layer or on a bubble in a third panel. Since plotly only drops the hover on a
+      // mousemove away from the point, that leaves the tooltip in the snapshot.
+      //
+      // NB plotly does NOT nest the drag layers inside the .subplot groups that hold the traces --
+      // they live under .draglayer, keyed by axis. Measured: subplots are "subplot xy" and
+      // "subplot x2y2", while the drag rects sit under parents "xy" and "x2y2". So the marker is
+      // matched to its drag layer through that axis key.
+      const subplot = marker.closest('.subplot')
+      const axisKey = subplot ? [...subplot.classList].find(name => name !== 'subplot') : null
+      const dragEl = [...document.querySelectorAll('.nsewdrag')]
+        .find(el => axisKey ? el.parentElement.classList.contains(axisKey) : true)
+      if (!dragEl) { throw new Error(`no .nsewdrag for marker ${index}${axisKey ? ` (axis ${axisKey})` : ''}`) }
+
+      const drag = dragEl.getBoundingClientRect()
       return { centre, plotCentre: { x: drag.left + drag.width / 2, y: drag.top + drag.height / 2 } }
     }, markerIndex)
 
@@ -176,7 +204,7 @@ class ScatterPlotPage {
     // wrong. Moving straight off the widget does NOT clear it: plotly only drops the hover when it sees
     // a mousemove away from the point. Measured: click -> 7 nodes under .hoverlayer; move(0,0) -> still
     // 7; step out then move -> 0. The step goes TOWARDS the plot centre rather than a fixed offset, so
-    // it stays inside the drag layer for a marker near any edge.
+    // it stays inside the marker's OWN drag layer for a marker near any edge.
     await this.page.mouse.move(
       (target.centre.x + target.plotCentre.x) / 2,
       (target.centre.y + target.plotCentre.y) / 2
@@ -189,9 +217,14 @@ class ScatterPlotPage {
     }
   }
 
-  // The widget's most recent state update, as the example page records it.
+  // The widget's most recent state update.
+  //
+  // NB delegates to the shared getRecentState rather than reading window.stateUpdates again. An
+  // earlier revision reimplemented it and returned null when the widget had published nothing, which
+  // swaps a diagnostic for a TypeError further up the stack; the shared one says "no stateUpdates on
+  // window object. Widget lib must implement stateUpdates".
   async getState () {
-    return this.page.evaluate(() => (window.stateUpdates || []).slice(-1)[0] || null)
+    return renderExamplePageTestHelper.getRecentState(this.page)
   }
 
   async clickResetButton () {

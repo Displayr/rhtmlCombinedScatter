@@ -339,7 +339,10 @@ describe('state interactions', () => {
     // the label it moves is the one the click then hides. Without this, movePlotLabel could silently
     // stop moving anything and all three baselines would still match.
     const draggedState = await scatterPlot.getState()
-    expect(draggedState.userPositionedLabs.map(({ id }) => id)).toContain(0)
+    // NB defaulted: in the very case this guards -- movePlotLabel doing nothing -- the latest state is
+    // the one State's constructor publishes, which carries no userPositionedLabs, so reading .map on it
+    // would throw a TypeError that reads like a broken test rather than a broken drag.
+    expect((draggedState.userPositionedLabs || []).map(({ id }) => id)).toContain(0)
 
     await scatterPlot.dispatchMarkerClick({ expectToggle: true })
 
