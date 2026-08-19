@@ -132,10 +132,18 @@ class ScatterPlotPage {
     // near miss is otherwise indistinguishable from "the toggle is broken" -- which is exactly how this
     // failed on CI while passing locally.
     await this.page.evaluate(() => {
-      window.__lastClickOnDragLayer = null
-      document.querySelector('.nsewdrag').addEventListener('click', (e) => {
-        window.__lastClickOnDragLayer = { offsetX: e.offsetX, offsetY: e.offsetY }
-      }, true)
+      // NB the widget's handler itself is wrapped, rather than a listener added alongside it. A
+      // listener only sees events that reach .nsewdrag; wrapping counts every invocation of the
+      // handler however it arrives, and records isTrusted, which separates a real click from one
+      // synthesised in the page. An even number of invocations toggles on and back off, which is
+      // indistinguishable from "nothing happened" once the click has returned.
+      const el = document.querySelector('.nsewdrag')
+      const original = el.onclick
+      window.__handlerCalls = []
+      el.onclick = (e) => {
+        window.__handlerCalls.push({ offsetX: Math.round(e.offsetX), offsetY: Math.round(e.offsetY), isTrusted: e.isTrusted })
+        return original.call(el, e)
+      }
     })
 
     const before = expectToggle ? await this.getState() : null
@@ -168,7 +176,7 @@ class ScatterPlotPage {
     const hiddenAfter = JSON.stringify(after['hiddenlabel.pts'] || [])
     if (hiddenBefore === hiddenAfter) {
       const diagnosis = await this.page.evaluate(() => ({
-        received: window.__lastClickOnDragLayer,
+        calls: window.__handlerCalls,
         scroll: { x: window.scrollX, y: window.scrollY },
         // NB LabeledScatter assigns its handler as an onclick PROPERTY on .nsewdrag, and scopes the
         // lookup to its own root element. So the two ways this can land correctly and still do nothing
@@ -184,7 +192,7 @@ class ScatterPlotPage {
       throw new Error([
         `clicking marker ${markerIndex} did not toggle a label: hiddenlabel.pts stayed ${hiddenAfter}.`,
         `clicked at viewport (${Math.round(target.centre.x)}, ${Math.round(target.centre.y)});`,
-        `.nsewdrag received ${JSON.stringify(diagnosis.received)};`,
+        `the widget handler ran ${diagnosis.calls.length} time(s): ${JSON.stringify(diagnosis.calls)};`,
         `page scroll ${JSON.stringify(diagnosis.scroll)};`,
         `.nsewdrag onclick is ${diagnosis.handler}, ${diagnosis.dragLayers} drag layer(s) in the page;`,
         `markers ${JSON.stringify(diagnosis.markers)}`
