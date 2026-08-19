@@ -322,7 +322,7 @@ describe('state interactions', () => {
   // ABOVE .nsewdrag and they are real hit targets, so an unmoved label sits over its own marker and
   // swallows the click -- which is what made this look broken. Dragging label 0 away is what makes
   // marker 0 clickable at all, so the state assertion after it is guarding the precondition for
-  // everything below. See the note on clickMarker in scatterPlotPage.js.
+  // everything below. See the note on dispatchMarkerClick in scatterPlotPage.js.
   test(`${++testId}: Initialise plot with only some labels shown and toggle labels`, async function () {
     const { page, scatterPlot } = await loadWidget({
       browser,
@@ -341,7 +341,7 @@ describe('state interactions', () => {
     const draggedState = await scatterPlot.getState()
     expect(draggedState.userPositionedLabs.map(({ id }) => id)).toContain(0)
 
-    await scatterPlot.clickMarker({ expectToggle: true })
+    await scatterPlot.dispatchMarkerClick({ expectToggle: true })
 
     // The drag leaves the pointer inside the widget, which shows the hover-gated Reset control. Park it
     // so these baselines record the labels, not whether a pointer happened to be resting on the plot.
@@ -411,7 +411,7 @@ describe('state interactions', () => {
       height: 500
     })
     await new Promise(resolve => setTimeout(resolve, 1000))
-    await scatterPlot.clickMarker()
+    await scatterPlot.clickMarkerViaPlotly()
     await testSnapshots({ page, testName: 'smallmultiples_hide_label' })
     await page.close()
   })

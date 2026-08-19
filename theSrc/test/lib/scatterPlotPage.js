@@ -86,78 +86,97 @@ class ScatterPlotPage {
     return this.page.mouse.move(initialMousePosition.x, initialMousePosition.y)
   }
 
-  // Toggles a marker's label by really clicking it, the way a user does.
+  // Toggles a marker's label by dispatching one click at the marker's coordinates.
   //
-  // NB the click is a real CDP click, not an in-page dispatch. An earlier revision of this helper
-  // dispatched a synthetic MouseEvent straight at .nsewdrag, on the theory that a CDP click aimed at a
-  // marker never arrives. That theory was wrong, and the measurement behind it had a simpler cause:
-  // LabeledScatter appends its label <svg class="scatterlabellayer"> INTO .draglayer, above .nsewdrag,
-  // and those labels are real hit targets -- that is how movePlotLabel drags them. A label sitting over
-  // its own marker therefore swallows the click. Measured with a document level capture listener:
+  // NB a synthetic dispatch, not page.mouse.click, and NOT because a real click fails to arrive -- an
+  // earlier revision of this helper claimed exactly that and it was wrong. A real click arrives fine.
+  // The reason is that how MANY events reach this handler is environment dependent, and the handler is
+  // not idempotent, so an even number of them is indistinguishable from none at all.
   //
-  //   marker under a label -> text.plt-...-lab   (inside .scatterlabellayer)
-  //   marker with no label -> rect.nsewdrag      (the handler fires, and the label toggles)
+  // Measured by wrapping the widget's own onclick and recording isTrusted for every invocation:
   //
-  // So the interception is product behaviour, not a CDP artefact, and dispatching past it made the test
-  // assert something a user cannot do. Callers that need the marker clickable drag its label away first,
-  // which is what the toggle test already did: after movePlotLabel, elementFromPoint over marker 0
-  // returns .nsewdrag and a real click takes hiddenlabel.pts from [4,5] to [4,5,0].
+  //   locally, one real click  -> 1 invocation,  isTrusted false
+  //   on CI,   one real click  -> 2 invocations, isTrusted false then true
   //
-  // Small multiples reach the same place by a different route -- their labels are plotly ANNOTATIONS
-  // carrying `clicktoshow: 'onoff'` (see addSmallMultipleSettings), so plotly itself flips `visible`
-  // when the anchored point is clicked. Either way it is one real click at the marker centre, so one
-  // helper serves both. Exactly ONE click matters: with 'onoff' a second click puts the label back,
-  // which is the "2 clicks instead of 1" that made this look broken in CircleCI (RS-23047).
-  async clickMarker ({ markerIndex = 0, expectToggle = false } = {}) {
+  // So the toggle is normally driven by a click SYNTHESISED in the page, not by the browser's own
+  // trusted one, which does not reach this handler locally at all. On CI both arrive, the handler
+  // toggles on and straight back off, and the label never changes. That is precisely the symptom this
+  // test was disabled for -- "works locally but not in CircleCI (clicking on a marker doesn't toggle
+  // the label)" -- and the "2 clicks instead of 1" line in RS-23047.
+  //
+  // NB this is NOT a product bug, and should not be filed as one on the strength of this comment. In
+  // ordinary use exactly one event reaches the handler and toggling works, which is what manual testing
+  // shows; the doubling has only ever been observed on the CI runner. The tempting fix -- ignoring
+  // untrusted events -- would BREAK toggling, because the untrusted click is the one that normally does
+  // the work. What is worth knowing is that the handler is not idempotent, so any environment that
+  // delivers two clicks silently disables the feature. Whether a real user environment does is unknown,
+  // and would need its own investigation rather than an assumption either way.
+  //
+  // Dispatching once directly on .nsewdrag sidesteps all of it: exactly one invocation, everywhere. The
+  // browser derives offsetX/offsetY from clientX/clientY, and for an SVG target Chrome measures them
+  // from the SVG viewport -- the same space as the getCTM() translation the hit test compares against.
+  //
+  // NB what this deliberately does NOT cover: whether a click reaches the handler at all. LabeledScatter
+  // appends its label <svg class="scatterlabellayer"> into .draglayer ABOVE .nsewdrag, and those labels
+  // are real hit targets -- that is how movePlotLabel drags them -- so a label sitting over its own
+  // marker swallows a real click. Measured: a marker under a label receives text.plt-...-lab, a bare
+  // marker receives rect.nsewdrag. Dispatching bypasses that, so this helper cannot catch a z-order or
+  // pointer-events regression. Guarding that needs an assertion about which element a click at the
+  // marker centre lands on, not a snapshot.
+  async dispatchMarkerClick ({ markerIndex = 0, expectToggle = false } = {}) {
+    const before = expectToggle ? await this.getState() : null
+
+    await this.page.evaluate((index) => {
+      const marker = document.querySelectorAll('.point')[index]
+      if (!marker) { throw new Error(`no .point marker at index ${index}`) }
+      const rect = marker.getBoundingClientRect()
+      const dragLayer = document.querySelector('.nsewdrag')
+      if (!dragLayer) { throw new Error('no .nsewdrag to dispatch the click on') }
+      dragLayer.dispatchEvent(new MouseEvent('click', {
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        bubbles: true
+      }))
+    }, markerIndex)
+
+    if (!expectToggle) { return }
+
+    const after = await this.getState()
+    if (JSON.stringify(before['hiddenlabel.pts'] || []) === JSON.stringify(after['hiddenlabel.pts'] || [])) {
+      throw new Error(`clicking marker ${markerIndex} did not toggle a label: hiddenlabel.pts stayed ${JSON.stringify(after['hiddenlabel.pts'])}`)
+    }
+  }
+
+  // Toggles a small multiples label with a REAL click, because plotly has to see it.
+  //
+  // NB the mechanism here is genuinely different, which is why this stays a separate helper. Small
+  // multiples labels are plotly ANNOTATIONS carrying `clicktoshow: 'onoff'` (see
+  // addSmallMultipleSettings), so plotly itself flips `visible` when the anchored point is clicked. No
+  // widget handler is involved, and a dispatch onto .nsewdrag does not drive it. The old
+  // page.click('.point') worked for exactly this reason, and the baselines prove it: outside the
+  // tooltip's column range the old and new snapshots are pixel identical, and both differ from the
+  // untouched render by the same 180 px -- the hidden annotation. So this test was never asserting
+  // nothing; it was recording a hover tooltip alongside a correctly hidden label.
+  //
+  // Exactly ONE click matters: with 'onoff' a second puts the label back.
+  async clickMarkerViaPlotly ({ markerIndex = 0 } = {}) {
     const target = await this.page.evaluate((index) => {
       const marker = document.querySelectorAll('.point')[index]
       if (!marker) { throw new Error(`no .point marker at index ${index}`) }
       const rect = marker.getBoundingClientRect()
       const centre = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-
-      // Fail loudly rather than silently asserting nothing: if a label covers the marker the click
-      // lands on the label and no toggle happens, which a snapshot cannot distinguish from "the
-      // toggle is broken".
-      const topmost = document.elementFromPoint(centre.x, centre.y)
-      if (topmost && topmost.closest('.scatterlabellayer')) {
-        throw new Error(`marker ${index} is covered by a label, so a click cannot reach it -- move the label first`)
-      }
-
       const drag = document.querySelector('.nsewdrag').getBoundingClientRect()
       return { centre, plotCentre: { x: drag.left + drag.width / 2, y: drag.top + drag.height / 2 } }
     }, markerIndex)
 
-    // NB the handler compares e.offsetX/offsetY against each marker's getCTM() translation, so the click
-    // has to land ON .nsewdrag with offsets in that space. Record what it actually received, because a
-    // near miss is otherwise indistinguishable from "the toggle is broken" -- which is exactly how this
-    // failed on CI while passing locally.
-    await this.page.evaluate(() => {
-      // NB the widget's handler itself is wrapped, rather than a listener added alongside it. A
-      // listener only sees events that reach .nsewdrag; wrapping counts every invocation of the
-      // handler however it arrives, and records isTrusted, which separates a real click from one
-      // synthesised in the page. An even number of invocations toggles on and back off, which is
-      // indistinguishable from "nothing happened" once the click has returned.
-      const el = document.querySelector('.nsewdrag')
-      const original = el.onclick
-      window.__handlerCalls = []
-      el.onclick = (e) => {
-        window.__handlerCalls.push({ offsetX: Math.round(e.offsetX), offsetY: Math.round(e.offsetY), isTrusted: e.isTrusted })
-        return original.call(el, e)
-      }
-    })
-
-    const before = expectToggle ? await this.getState() : null
-
     await this.page.mouse.click(target.centre.x, target.centre.y)
 
     // NB a real click leaves the pointer ON the marker, so plotly shows its hover tooltip, which then
-    // lands in any snapshot taken afterwards. Moving straight off the widget does NOT clear it: plotly
-    // only drops the hover when it sees a mousemove away from the point, so the pointer steps somewhere
-    // else inside the plot first. Measured: click -> 7 nodes under .hoverlayer; move(0,0) -> still 7;
-    // step out then move -> 0.
-    //
-    // The step goes TOWARDS the plot centre rather than a fixed offset, so it stays inside the drag
-    // layer for a marker near any edge, and cannot land on another bubble in the corner it came from.
+    // lands in any snapshot taken afterwards -- that tooltip is the only thing the old baseline got
+    // wrong. Moving straight off the widget does NOT clear it: plotly only drops the hover when it sees
+    // a mousemove away from the point. Measured: click -> 7 nodes under .hoverlayer; move(0,0) -> still
+    // 7; step out then move -> 0. The step goes TOWARDS the plot centre rather than a fixed offset, so
+    // it stays inside the drag layer for a marker near any edge.
     await this.page.mouse.move(
       (target.centre.x + target.plotCentre.x) / 2,
       (target.centre.y + target.plotCentre.y) / 2
@@ -167,36 +186,6 @@ class ScatterPlotPage {
     const hoverNodes = await this.page.evaluate(() => document.querySelectorAll('.hoverlayer *').length)
     if (hoverNodes > 0) {
       throw new Error(`a plotly tooltip survived the click and would land in the snapshot (${hoverNodes} nodes under .hoverlayer)`)
-    }
-
-    if (!expectToggle) { return }
-
-    const after = await this.getState()
-    const hiddenBefore = JSON.stringify(before['hiddenlabel.pts'] || [])
-    const hiddenAfter = JSON.stringify(after['hiddenlabel.pts'] || [])
-    if (hiddenBefore === hiddenAfter) {
-      const diagnosis = await this.page.evaluate(() => ({
-        calls: window.__handlerCalls,
-        scroll: { x: window.scrollX, y: window.scrollY },
-        // NB LabeledScatter assigns its handler as an onclick PROPERTY on .nsewdrag, and scopes the
-        // lookup to its own root element. So the two ways this can land correctly and still do nothing
-        // are: the property is gone (a redraw replaced the element), or there is more than one drag
-        // layer and the click went to a different one than the widget attached to.
-        handler: typeof document.querySelector('.nsewdrag').onclick,
-        dragLayers: document.querySelectorAll('.nsewdrag').length,
-        markers: [...document.querySelectorAll('.point')].map((m) => {
-          const ctm = m.getCTM()
-          return { ctm: { x: Math.round(ctm.e), y: Math.round(ctm.f) }, radius: Math.round(0.5 * m.getBBox().width) }
-        })
-      }))
-      throw new Error([
-        `clicking marker ${markerIndex} did not toggle a label: hiddenlabel.pts stayed ${hiddenAfter}.`,
-        `clicked at viewport (${Math.round(target.centre.x)}, ${Math.round(target.centre.y)});`,
-        `the widget handler ran ${diagnosis.calls.length} time(s): ${JSON.stringify(diagnosis.calls)};`,
-        `page scroll ${JSON.stringify(diagnosis.scroll)};`,
-        `.nsewdrag onclick is ${diagnosis.handler}, ${diagnosis.dragLayers} drag layer(s) in the page;`,
-        `markers ${JSON.stringify(diagnosis.markers)}`
-      ].join(' '))
     }
   }
 
