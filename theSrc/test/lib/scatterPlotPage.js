@@ -170,6 +170,12 @@ class ScatterPlotPage {
       const diagnosis = await this.page.evaluate(() => ({
         received: window.__lastClickOnDragLayer,
         scroll: { x: window.scrollX, y: window.scrollY },
+        // NB LabeledScatter assigns its handler as an onclick PROPERTY on .nsewdrag, and scopes the
+        // lookup to its own root element. So the two ways this can land correctly and still do nothing
+        // are: the property is gone (a redraw replaced the element), or there is more than one drag
+        // layer and the click went to a different one than the widget attached to.
+        handler: typeof document.querySelector('.nsewdrag').onclick,
+        dragLayers: document.querySelectorAll('.nsewdrag').length,
         markers: [...document.querySelectorAll('.point')].map((m) => {
           const ctm = m.getCTM()
           return { ctm: { x: Math.round(ctm.e), y: Math.round(ctm.f) }, radius: Math.round(0.5 * m.getBBox().width) }
@@ -180,6 +186,7 @@ class ScatterPlotPage {
         `clicked at viewport (${Math.round(target.centre.x)}, ${Math.round(target.centre.y)});`,
         `.nsewdrag received ${JSON.stringify(diagnosis.received)};`,
         `page scroll ${JSON.stringify(diagnosis.scroll)};`,
+        `.nsewdrag onclick is ${diagnosis.handler}, ${diagnosis.dragLayers} drag layer(s) in the page;`,
         `markers ${JSON.stringify(diagnosis.markers)}`
       ].join(' '))
     }
