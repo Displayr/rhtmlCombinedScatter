@@ -11,6 +11,11 @@ const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
 const FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE = 0.8
 const FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE = 0.2
 
+// Matches the four decimal places jsonlite used to round the payload to, so hover text
+// reads as it did before the payload moved to full precision.
+const DEFAULT_DECIMAL_PLACES = 4
+const DEFAULT_SIGNIFICANT_DIGITS = 4
+
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
@@ -40,7 +45,7 @@ function createPlotlyData (config) {
     if (config.normZ) {
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle ? config.zTitle + ': ' : ''
-        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
+        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${formatUnformattedNumber(config.Z[i])}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
 
@@ -478,8 +483,30 @@ function getFormatter (format, values, value_is_date) {
         const formatter = d3.time.format(format)
         return function (x) { return Utils.isMissingValue(x) ? '' : formatter(new Date(x)) }
     }
-    const formatter = d3.format(checkD3Format(format, present, value_is_date))
+    const d3_format = checkD3Format(format, present, value_is_date)
+    // An empty format string means no format was asked for, and d3 3.5.16 predates the "~"
+    // trim flag so it does not understand the formats checkD3Format maps onto it. In both
+    // cases d3.format falls through to String(x), which now spells out every digit the
+    // payload carries, so those go to the default shortening instead.
+    if (d3_format === '' || d3_format.includes('~')) {
+        return function (x) { return Utils.isMissingValue(x) ? '' : formatUnformattedNumber(x) }
+    }
+    const formatter = d3.format(d3_format)
     return function (x) { return Utils.isMissingValue(x) ? '' : formatter(x) }
+}
+
+// jsonlite used to round the payload to four decimal places, so a number rendered as text
+// with no format requested arrived already short. The payload now keeps full precision
+// (see toJsonOrNull in theSrc/R/htmlwidget.R), which is what the colors and the plotted
+// positions need, but it leaves the text to be shortened here -- otherwise a proportion
+// hovers as 0.333333333333333.
+function formatUnformattedNumber (x) {
+    if (!_.isFinite(x)) return '' + x
+    const rounded = Number(x.toFixed(DEFAULT_DECIMAL_PLACES))
+    // Four decimal places reports a small measurement as 0, which is the precision loss
+    // this is meant to avoid, so below that cutoff the value keeps significant digits.
+    if (rounded === 0 && x !== 0) return '' + Number(x.toPrecision(DEFAULT_SIGNIFICANT_DIGITS))
+    return '' + rounded
 }
 
 function checkD3Format (format, values, value_is_date) {
