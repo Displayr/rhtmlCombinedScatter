@@ -160,25 +160,41 @@ describe('the legend grouping key', () => {
 })
 
 // Shortening keeps the legend narrow, but two groups differing only past the cutoff would
-// then read identically. A reader cannot act on two entries they cannot tell apart, so the
-// shortening is all-or-nothing across the group set.
+// read identically, and a reader cannot act on two entries they cannot tell apart. So the
+// labels grow to the fewest digits that still tell every group apart, rather than either
+// staying ambiguous or jumping straight to full precision.
 describe('shortening a numeric group legend', () => {
     const names = (o) => createPlotlyData(cfg(o)).filter(t => t.name !== undefined).map(t => t.name)
 
-    test('applies when every shortened label stays distinct', () => {
+    test('uses four digits when that is enough to tell the groups apart', () => {
         expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 2 / 3] })).toEqual(['0.3333', '0.6667'])
     })
 
-    test('is skipped entirely when two labels would collide', () => {
+    test('grows to five digits when four would collide', () => {
         expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [3.14159, 3.14162] }))
             .toEqual(['3.14159', '3.14162'])
     })
 
-    test('is skipped for every group, not just the colliding pair', () => {
-        // 0.5 would shorten harmlessly, but a legend where some entries are rounded and
-        // others are not is harder to read than one that is consistently exact.
+    test('grows only as far as the closest pair forces', () => {
+        // Four digits would show 0.3333 twice. Nine tells them apart, and stopping there is
+        // eleven characters rather than the eighteen the raw values would take.
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 1 / 3 + 1e-9] }))
+            .toEqual(['0.333333333', '0.333333334'])
+    })
+
+    test('applies the same number of digits to every group', () => {
+        // 0.5 needs no digits at all, but a legend where some entries are rounded further
+        // than others is harder to read than one at a single precision.
         expect(names({ X: [1, 2, 3], Y: [1, 2, 3], label: ['a', 'b', 'c'], group: [3.14159, 3.14162, 0.5] }))
             .toEqual(['3.14159', '3.14162', '0.5'])
+    })
+
+    // Adjacent doubles need every digit, so escalating lands on the raw values - which is
+    // also the shortest form that tells them apart, since String gives the shortest
+    // round-tripping text. Nothing is lost by growing rather than giving up.
+    test('reaches full precision when the values are adjacent doubles', () => {
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 1 / 3 + 1e-16] }))
+            .toEqual(['0.3333333333333333', '0.3333333333333334'])
     })
 
     test('applies to a single numeric group', () => {

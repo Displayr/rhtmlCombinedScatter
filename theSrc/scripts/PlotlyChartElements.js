@@ -15,6 +15,9 @@ const FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE = 0.2
 // reads as it did before, and as significant digits for the values too small for that.
 const DEFAULT_DIGITS = 4
 
+// What a double needs to round-trip. Past this, two values are the same number.
+const MAX_ROUND_TRIP_DIGITS = 17
+
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
@@ -515,13 +518,17 @@ function constrainsPrecision (formatter) {
 // (see toJsonOrNull in theSrc/R/htmlwidget.R), which is what the colors and the plotted
 // positions need, but it leaves the text to be shortened here -- otherwise a proportion
 // hovers as 0.333333333333333.
-function shortenToDefaultDigits (x) {
+function shortenToDigits (x, digits) {
     if (!_.isFinite(x)) return x
-    const rounded = Number(x.toFixed(DEFAULT_DIGITS))
-    // Four decimal places reports a small measurement as 0, which is the precision loss
-    // this is meant to avoid, so below that cutoff the value keeps significant digits.
-    if (rounded === 0 && x !== 0) return Number(x.toPrecision(DEFAULT_DIGITS))
+    const rounded = Number(x.toFixed(digits))
+    // Rounding to decimal places reports a small measurement as 0, which is the precision
+    // loss this is meant to avoid, so below that cutoff the value keeps significant digits.
+    if (rounded === 0 && x !== 0) return Number(x.toPrecision(digits))
     return rounded
+}
+
+function shortenToDefaultDigits (x) {
+    return shortenToDigits(x, DEFAULT_DIGITS)
 }
 
 // For the places that render a number as text with no formatter in front of them at all.
@@ -533,19 +540,22 @@ function formatUnformattedNumber (x) {
 // whatever it is given for the legend entry, so a grouping variable of proportions would
 // otherwise spell out every digit and take the plot area with it.
 //
-// Shortening is all or nothing across the group set. Two groups that differ only past the
-// cutoff would shorten to the same text, and a reader cannot act on two legend entries they
-// cannot tell apart - they would still toggle separately, which reads as a bug. A legend that
-// is exact everywhere beats one where some entries are rounded and others are not, so a single
-// collision drops the whole set back to the raw values.
+// Two groups that differ only past the cutoff would shorten to the same text, and a reader
+// cannot act on two legend entries they cannot tell apart - they would still toggle
+// separately, which reads as a bug. So the labels take the fewest digits that still tell
+// every group apart: four where that is enough, and growing only as far as the closest pair
+// forces. One precision for the whole set, since a legend where some entries are rounded
+// further than others is harder to read than one at a single precision.
 function shortenGroupLabels (group_names) {
     if (!group_names.some(_.isNumber)) return group_names
-    const shortened = group_names.map(g => (_.isNumber(g) ? formatUnformattedNumber(g) : g))
-    // group_names is already unique, so any lost entry here is a collision introduced by
-    // shortening - including one against a text group that reads like a number.
-    if (_.uniq(shortened).length === group_names.length) return shortened
-    // Falling back to what plotly would have rendered anyway, but as strings, so the legend
-    // entry is one type whichever branch produced it.
+    for (let digits = DEFAULT_DIGITS; digits <= MAX_ROUND_TRIP_DIGITS; digits++) {
+        const labels = group_names.map(g => (_.isNumber(g) ? '' + shortenToDigits(g, digits) : g))
+        // group_names is already unique, so any lost entry here is a collision introduced by
+        // shortening - including one against a text group that reads like a number.
+        if (_.uniq(labels).length === group_names.length) return labels
+    }
+    // Values that are still not distinguishable at full precision. Falling back to what plotly
+    // would have rendered anyway, as strings, so the entry is one type whichever branch ran.
     return group_names.map(g => '' + g)
 }
 
