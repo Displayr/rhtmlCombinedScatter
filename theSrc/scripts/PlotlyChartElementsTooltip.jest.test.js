@@ -113,3 +113,48 @@ describe('a numeric group used as the series name', () => {
         expect(data.filter(t => t.name !== undefined).map(t => t.name)).toEqual(['G1', 'G2'])
     })
 })
+
+// legendgroup is the key plotly uses to tie a group's traces together and to toggle them, so
+// it has to stay the raw value. Shortening it for display collapsed two distinct groups into
+// one entry, and clicking either hid both series along with their borders and annotations.
+describe('the legend grouping key', () => {
+    const differPastFourDp = { X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [3.14159, 3.14162] }
+
+    test('stays distinct for groups that differ past four decimal places', () => {
+        const data = createPlotlyData(cfg(differPastFourDp)).filter(t => t.name !== undefined)
+        expect(new Set(data.map(t => t.legendgroup)).size).toBe(2)
+    })
+
+    test('still draws the two groups in different colours', () => {
+        const data = createPlotlyData(cfg(differPastFourDp)).filter(t => t.name !== undefined)
+        expect(new Set(data.map(t => t.marker && t.marker.color)).size).toBe(2)
+    })
+
+    test('ties the border and annotation traces to their own group', () => {
+        const data = createPlotlyData(cfg(Object.assign({}, differPastFourDp, {
+            pointBorderWidth: 2, pointBorderColor: '#000000',
+        })))
+        const keys = data.filter(t => t.legendgroup !== undefined).map(t => t.legendgroup)
+        // Every trace's key is one of the two group keys, and both groups are represented.
+        expect(new Set(keys).size).toBe(2)
+    })
+
+    test('is the raw value where the displayed name is shortened', () => {
+        const data = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 2 / 3] }))
+            .filter(t => t.name !== undefined)
+        expect(data.map(t => t.name)).toEqual(['0.3333', '0.6667'])
+        expect(data.map(t => t.legendgroup)).toEqual(['0.3333333333333333', '0.6666666666666666'])
+    })
+
+    test('is unchanged for a text group', () => {
+        const data = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: ['G1', 'G2'] }))
+            .filter(t => t.name !== undefined)
+        expect(data.map(t => t.legendgroup)).toEqual(['G1', 'G2'])
+    })
+
+    test('is unchanged for an ungrouped chart', () => {
+        const data = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'] }))
+            .filter(t => t.name !== undefined)
+        expect(data.map(t => t.legendgroup)).toEqual(['Series 1'])
+    })
+})

@@ -119,20 +119,23 @@ function createPlotlyData (config) {
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
                 // A numeric group with no colour scale reaches the widget as numbers, and
-                // plotly stringifies whatever it is given for the legend entry.
+                // plotly stringifies whatever it is given for the legend entry. Only the label
+                // is shortened - g_key stays the raw value, because two groups differing past
+                // four decimal places must not end up sharing a legendgroup.
+                const g_key = '' + g_name
                 const g_label = _.isNumber(g_name) ? formatUnformattedNumber(g_name) : g_name
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_label, config.legendWrapNChar) : g_label
                 if (gp_index.length === 0) continue
-                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, g_key))
                 // One proxy per group, not per group and panel - see the ungrouped branch
                 if (config.lineShow && g_add) {
-                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size))
+                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size, g_key))
                 }
                 if (hasMarkerBorder(config, gp_index)) {
-                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index, g_key))
                 }
                 if (hasMarkerAnnotations(config, gp_index)) {
-                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index, g_key))
                 }
                 if (g_add) group_added.push(g_name)
             }
@@ -157,7 +160,7 @@ function symbolForTrace (config, data_index) {
         : config.pointSymbol
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, legend_group = group_name) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -188,7 +191,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: showlegend,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
@@ -225,9 +228,9 @@ function lineForGroup (config, group_index) {
 // the extreme points then overlapped the axis. The legend entry is carried by a separate,
 // data-free proxy trace instead (see createLegendProxyTrace), so this trace never shows in
 // the legend while lineShow is on.
-function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, legend_group = group_name) {
     const trace = createScatterTraceForMarker(config, tooltips, group_name, marker_size,
-        marker_opacity, group_index, panel_index, data_index, showlegend, has_groups)
+        marker_opacity, group_index, panel_index, data_index, showlegend, has_groups, legend_group)
     trace.line = lineForGroup(config, group_index)
     trace.connectgaps = false
     trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
@@ -263,7 +266,7 @@ function representativeMarkerSize (group_sizes) {
 // Having no data means plotly's translatePoint fails for it, so it renders no .point element
 // of its own in the plot area - see the comment on createPlotlyData's return.
 // Only created for a series that takes the legend entry, so it always shows.
-function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size) {
+function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size, legend_group = group_name) {
     const group_sizes = markerSizesForGroup(marker_size, data_index)
     const markers_drawn = Array.isArray(group_sizes)
         ? group_sizes.some(size => size !== 0)
@@ -275,7 +278,7 @@ function createLegendProxyTrace (config, group_name, group_index, data_index, ma
         hoverinfo: 'skip',
         type: 'scatter',
         line: lineForGroup(config, group_index),
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: true
     }
     if (markers_drawn) {
@@ -293,7 +296,7 @@ function createLegendProxyTrace (config, group_name, group_index, data_index, ma
     return trace
 }
 
-function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index) {
+function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index, legend_group = group_name) {
     // We draw the marker border separately from the marker otherwise the legend symbols will also have borders
     // with a colors taken from the border colors
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
@@ -321,7 +324,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
                 width: border_width
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: false,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
@@ -329,7 +332,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     }
 }
 
-function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
+function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index, legend_group = group_name) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -350,7 +353,7 @@ function createScatterTraceForMarkerAnnotation (config, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: false,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
