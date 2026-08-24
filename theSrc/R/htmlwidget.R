@@ -849,19 +849,25 @@ CombinedScatter <- function(
 
 # Encodes a value for the widget. jsonlite's default rounds to four decimal *places*, not
 # four significant digits, which this data cannot afford: values that differ beyond that
-# arrive merged, and anything below 5e-05 arrives as exactly 0.
+# arrive merged, and anything below 5e-05 arrives as exactly 0. That breaks the chart rather
+# than blurring it, because the widget works out one colour per distinct value and pairs them
+# to points by value, so merging leaves the colours at one end of the scale unreachable.
 #
-# `I(17)` reads as significant digits, and 17 is what a double needs to round-trip, so
-# distinct values stay distinct. That is the whole point here: the widget works out one colour
-# per distinct value and pairs them to points by value, so any merging leaves colours at one
-# end of the scale unreachable. `digits = NA` would be as.character() at 15 significant
-# digits, which narrows that failure without closing it.
+# `digits = NA` is R's as.character(): the shortest string that reads back as the same double,
+# so nothing that was already compact grows. Integers and two decimal place data are byte for
+# byte what they were; only values that genuinely carry more digits - proportions, means,
+# scaled coordinates - get longer.
 #
-# I() still trims - values that do not carry the digits are written as they are, so 1.5 stays
-# 1.5. Computed ones, such as proportions and scaled coordinates, grow to their full
-# representation; that is the payload cost. Nobody reads those digits: the hover text is
-# formatted independently (formatUnformattedNumber in theSrc/scripts/PlotlyChartElements.js).
-toJsonOrNull <- function(x, digits = I(17), ...) {
+# Known limit, pinned by a test in test-serialization.R: as.character() gives 15 significant
+# digits and a double needs 17 to round-trip, so two values agreeing to 15 still merge into
+# one colour bucket. `digits = I(17)` closes that, and was measured and rejected: I() means
+# significant digits with no shortest-representation step, so every inexact decimal is written
+# in full - 0.1 becomes 0.10000000000000001, 33.33 becomes 33.329999999999998 - which inflates
+# ordinary two decimal place data by about 147% for a case that does not arise in survey data.
+#
+# None of these digits are ever read by a user: the hover text is formatted independently
+# (see formatUnformattedNumber in theSrc/scripts/PlotlyChartElements.js).
+toJsonOrNull <- function(x, digits = NA, ...) {
     if (is.null(x)) {
         NULL
     } else {
