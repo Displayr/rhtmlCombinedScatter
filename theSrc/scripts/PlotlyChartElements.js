@@ -636,15 +636,17 @@ function createPlotlyLayout (config, margin_right, height) {
                              _.max(config.normZ),
                              config.width,
                              config.fixedAspectRatio)
-    const x_axis = {
-        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle) ? null : {
-            text: config.xTitle,
-            font: {
-                family: config.xTitleFontFamily,
-                color: config.xTitleFontColor,
-                size: config.xTitleFontSize
-            },
+    const x_title = {
+        text: config.xTitle,
+        font: {
+            family: config.xTitleFontFamily,
+            color: config.xTitleFontColor,
+            size: config.xTitleFontSize
         },
+    }
+    const hide_x_title = (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle)
+    const x_axis = {
+        title: hide_x_title ? null : x_title,
         showgrid: config.grid && config.xAxisGridWidth > 0,
         gridcolor: config.xAxisGridColor,
         griddash: config.xAxisGridDash,
@@ -692,15 +694,17 @@ function createPlotlyLayout (config, margin_right, height) {
                              _.max(config.normZ),
                              config.width,
                              config.fixedAspectRatio)
-    const y_axis = {
-        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle) ? null : {
-            text: config.yTitle,
-            font: {
-                family: config.yTitleFontFamily,
-                color: config.yTitleFontColor,
-                size: config.yTitleFontSize
-            },
+    const y_title = {
+        text: config.yTitle,
+        font: {
+            family: config.yTitleFontFamily,
+            color: config.yTitleFontColor,
+            size: config.yTitleFontSize
         },
+    }
+    const hide_y_title = (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle)
+    const y_axis = {
+        title: hide_y_title ? null : y_title,
         showgrid: config.grid && config.yAxisGridWidth > 0,
         gridcolor: config.yAxisGridColor,
         griddash: config.yAxisGridDash,
@@ -740,17 +744,18 @@ function createPlotlyLayout (config, margin_right, height) {
         y_axis.linewidth = config.yAxisLineWidth
     }
 
+    const plot_title = {
+        text: config.title,
+        font: {
+            family: config.titleFontFamily,
+            color: config.titleFontColor,
+            size: config.titleFontSize
+        },
+        automargin: true
+    }
     const plot_layout = {
         grid: grid,
-        title: placeTextInMargins(config) ? { text: '' } : {
-            text: config.title,
-            font: {
-                family: config.titleFontFamily,
-                color: config.titleFontColor,
-                size: config.titleFontSize
-            },
-            automargin: true
-        },
+        title: placeTextInMargins(config) ? { text: '' } : plot_title,
         showlegend: getShowLegend(config),
         legend: createLegendSettings(config),
         margin: {
@@ -862,8 +867,9 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
             if (!has_max_bounds) bounds[1] = dates[dates.length - 1] + min_diff
             // Estimate the extra space we need to add for bubbles
             // This is approximate because we don't know plotWidth yet
-            const bubble_offset = !maxBubbleSize ? 0
-                : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+            const bubble_offset = maxBubbleSize
+                ? (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+                : 0
             if (!has_min_bounds) {
                 bounds[0] -= bubble_offset
             }
