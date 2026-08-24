@@ -118,7 +118,10 @@ function createPlotlyData (config) {
                 const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
-                const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
+                // A numeric group with no colour scale reaches the widget as numbers, and
+                // plotly stringifies whatever it is given for the legend entry.
+                const g_label = _.isNumber(g_name) ? formatUnformattedNumber(g_name) : g_name
+                const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_label, config.legendWrapNChar) : g_label
                 if (gp_index.length === 0) continue
                 plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
                 // One proxy per group, not per group and panel - see the ungrouped branch
@@ -482,16 +485,27 @@ function getFormatter (format, values, value_is_date) {
         const formatter = d3.time.format(format)
         return function (x) { return Utils.isMissingValue(x) ? '' : formatter(new Date(x)) }
     }
-    const d3_format = checkD3Format(format, present, value_is_date)
-    // An empty format string means no format was asked for, and d3 3.5.16 predates the "~"
-    // trim flag so it does not understand the formats checkD3Format maps onto it. In both
-    // cases d3.format falls through to String(x), which now spells out every digit the
-    // payload carries, so those go to the default shortening instead.
-    if (d3_format === '' || d3_format.includes('~')) {
-        return function (x) { return Utils.isMissingValue(x) ? '' : formatUnformattedNumber(x) }
+    const formatter = d3.format(checkD3Format(format, present, value_is_date))
+    // Shortening the value rather than replacing the formatter keeps whatever the format did
+    // specify - the thousands separator in ",f", the SI suffix in "s", the exponent in "e".
+    if (!constrainsPrecision(formatter)) {
+        return function (x) { return Utils.isMissingValue(x) ? '' : formatter(shortenToDefaultDigits(x)) }
     }
-    const formatter = d3.format(d3_format)
     return function (x) { return Utils.isMissingValue(x) ? '' : formatter(x) }
+}
+
+// Two values that agree to fourteen decimal places and differ at the fifteenth. Any format
+// that limits the digits it shows renders them identically; one that does not spells out
+// whatever it is handed, and so would put the payload's full precision in the hover text.
+const PRECISION_PROBES = [0.123456789012345, 0.123456789012349]
+
+// checkD3Format maps the shorthand formats onto spellings for plotly's tickformat, which
+// bundles a newer d3-format. d3 3.5.16 predates the "~" trim flag and does not read ".f" as
+// a precision, and it gives the bare "e", "g", "r", "s" and "p" types no default precision
+// either, so all of them reach the hover text with every digit the payload carries. Probing
+// catches those, and anything similar added to checkD3Format later, without enumerating them.
+function constrainsPrecision (formatter) {
+    return formatter(PRECISION_PROBES[0]) === formatter(PRECISION_PROBES[1])
 }
 
 // jsonlite used to round the payload to four decimal places, so a number rendered as text
@@ -499,13 +513,18 @@ function getFormatter (format, values, value_is_date) {
 // (see toJsonOrNull in theSrc/R/htmlwidget.R), which is what the colors and the plotted
 // positions need, but it leaves the text to be shortened here -- otherwise a proportion
 // hovers as 0.333333333333333.
-function formatUnformattedNumber (x) {
-    if (!_.isFinite(x)) return '' + x
+function shortenToDefaultDigits (x) {
+    if (!_.isFinite(x)) return x
     const rounded = Number(x.toFixed(DEFAULT_DIGITS))
     // Four decimal places reports a small measurement as 0, which is the precision loss
     // this is meant to avoid, so below that cutoff the value keeps significant digits.
-    if (rounded === 0 && x !== 0) return '' + Number(x.toPrecision(DEFAULT_DIGITS))
-    return '' + rounded
+    if (rounded === 0 && x !== 0) return Number(x.toPrecision(DEFAULT_DIGITS))
+    return rounded
+}
+
+// For the places that render a number as text with no formatter in front of them at all.
+function formatUnformattedNumber (x) {
+    return '' + shortenToDefaultDigits(x)
 }
 
 function checkD3Format (format, values, value_is_date) {

@@ -851,14 +851,17 @@ CombinedScatter <- function(
 # four significant digits, which this data cannot afford: values that differ beyond that
 # arrive merged, and anything below 5e-05 arrives as exactly 0.
 #
-# `digits = NA` is R's as.character(), i.e. 15 significant digits - short of the 17 a double
-# needs to round-trip, so two values that agree to 15 significant digits still merge. That is
-# a far smaller target than four decimal places, so this reduces the failure rather than
-# eliminating it.
+# `I(17)` reads as significant digits, and 17 is what a double needs to round-trip, so
+# distinct values stay distinct. That is the whole point here: the widget works out one colour
+# per distinct value and pairs them to points by value, so any merging leaves colours at one
+# end of the scale unreachable. `digits = NA` would be as.character() at 15 significant
+# digits, which narrows that failure without closing it.
 #
-# Values that do not carry the digits are written unchanged, but computed ones - proportions,
-# means, scaled coordinates - roughly double in length. That is the payload cost of the fix.
-toJsonOrNull <- function(x, digits = NA, ...) {
+# I() still trims - values that do not carry the digits are written as they are, so 1.5 stays
+# 1.5. Computed ones, such as proportions and scaled coordinates, grow to their full
+# representation; that is the payload cost. Nobody reads those digits: the hover text is
+# formatted independently (formatUnformattedNumber in theSrc/scripts/PlotlyChartElements.js).
+toJsonOrNull <- function(x, digits = I(17), ...) {
     if (is.null(x)) {
         NULL
     } else {

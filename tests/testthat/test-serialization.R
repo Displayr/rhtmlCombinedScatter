@@ -57,6 +57,14 @@ test_that("coordinates and bubble sizes keep their precision", {
     expect_equal(jsonlite::fromJSON(as.character(x$Z)), v)
 })
 
+test_that("a numeric group keeps values that differ only in the last representable digit", {
+    # digits = NA is as.character(), 15 significant digits, which merges these; I(17) is what
+    # a double actually needs to round-trip, so the colour buckets stay one per distinct value.
+    g <- c(1.0000000000000002, 1.0000000000000004, 1.0000000000000007)
+    x <- CombinedScatter(X = 1:3, Y = 1:3, label = letters[1:3], group = g)$x
+    expect_length(unique(jsonlite::fromJSON(as.character(x$group))), 3)
+})
+
 test_that("values that do not need the digits are unchanged", {
     # Full precision costs nothing when the data does not carry it, so this is not a
     # trade of payload for correctness

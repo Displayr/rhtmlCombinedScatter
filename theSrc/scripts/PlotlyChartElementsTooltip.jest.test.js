@@ -74,3 +74,42 @@ describe('a requested format', () => {
         expect(tooltips(data)[0]).toBe('a (0.33, 0.6667)')
     })
 })
+
+// checkD3Format maps the shorthand formats onto spellings for plotly's tickformat, which
+// bundles a newer d3-format. d3 3.5.16 either predates those spellings or gives the type no
+// default precision, so it applies the parts it understood and spells out the rest.
+describe('a format that names no precision', () => {
+    test('keeps the thousands separator ",f" asked for while still shortening', () => {
+        const data = createPlotlyData(cfg({ X: [1234567.891], Y: [1 / 3], label: ['a'], xFormat: ',f', yFormat: ',f' }))
+        expect(tooltips(data)[0]).toBe('a (1,234,567.891, 0.3333)')
+    })
+
+    test('keeps SI notation for "s"', () => {
+        const data = createPlotlyData(cfg({ X: [1 / 3], Y: [1 / 3], label: ['a'], xFormat: 's', yFormat: 's' }))
+        expect(tooltips(data)[0]).toBe('a (333.3m, 333.3m)')
+    })
+
+    // "e" is the one shorthand that loses its notation: checkD3Format maps it to "~e", which
+    // d3 3.5.16 cannot parse at all, so there is nothing left to apply once the value is
+    // shortened. That is what it did before the payload moved to full precision too -- the
+    // rounded 0.3333 came out of d3.format('~e') as "0.3333" -- so it is unchanged here, not
+    // a regression. Making "e" actually render as exponential is a separate fix.
+    test('falls back to plain notation for "e", as it did before', () => {
+        const data = createPlotlyData(cfg({ X: [1 / 3], Y: [1 / 3], label: ['a'], xFormat: 'e', yFormat: 'e' }))
+        expect(tooltips(data)[0]).toBe('a (0.3333, 0.3333)')
+    })
+})
+
+// A numeric group with no colour scale is left as numbers by the R side, and plotly puts the
+// value straight into the legend entry and, via hoverinfo 'name+text', the hover box too.
+describe('a numeric group used as the series name', () => {
+    test('is shortened for the legend entry', () => {
+        const data = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 2 / 3] }))
+        expect(data.filter(t => t.name !== undefined).map(t => t.name)).toEqual(['0.3333', '0.6667'])
+    })
+
+    test('leaves a text group alone', () => {
+        const data = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: ['G1', 'G2'] }))
+        expect(data.filter(t => t.name !== undefined).map(t => t.name)).toEqual(['G1', 'G2'])
+    })
+})
