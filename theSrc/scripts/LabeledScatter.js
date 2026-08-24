@@ -264,7 +264,9 @@ class LabeledScatter {
     const legend_points_rect = this.getLegendPointsRect(plotly_chart_layout, is_legend_elements_to_right_of_plotly_legend, config)
     const bubble_legend_rect = this.getBubbleLegendRect(is_legend_elements_to_right_of_plotly_legend, config)
 
-    config.hiddenSeries = plotly_chart_data.filter(d => d.visible === 'legendonly').map(d => d.name)
+    // legendgroup, not name: the legend entry is shortened for display, while PlotData
+    // matches these against the raw group value.
+    config.hiddenSeries = plotly_chart_data.filter(d => d.visible === 'legendonly' && d.legendgroup !== undefined).map(d => d.legendgroup)
 
     this.plot = new RectPlot({
       config: config,
