@@ -3,6 +3,28 @@ import _ from 'lodash'
 // This class interacts with Displayr's state mechanism
 // Careful with alterations here as very old state types need to be defended against
 
+// Until toJsonOrNull (theSrc/R/htmlwidget.R) began encoding at full precision, the payload
+// arrived rounded to four decimal places, and that is the form saved in every document from
+// before then. The same chart now arrives with all its digits, so comparing for exact
+// equality would read the upgrade as a data change and throw away the user's dragged labels,
+// hidden labels, legend points and viewbox on the first re-render.
+const OLD_PAYLOAD_DECIMAL_PLACES = 4
+
+// Rounds the way jsonlite's default did. R rounds halves to even where toFixed rounds away
+// from zero, so a value sitting exactly on a rounding boundary may not be recognised; that
+// falls back to resetting the state, which is what would have happened anyway.
+function roundLikeOldPayload (v) {
+  return _.isFinite(v) ? Number(v.toFixed(OLD_PAYLOAD_DECIMAL_PLACES)) : v
+}
+
+// Categorical axes and gaps pass through roundLikeOldPayload untouched, so they compare as
+// they always did.
+function matchesStoredData (stored, current) {
+  if (_.isEqual(stored, current)) return true
+  if (!_.isArray(stored) || !_.isArray(current) || stored.length !== current.length) return false
+  return _.isEqual(stored, current.map(roundLikeOldPayload))
+}
+
 class State {
   constructor (stateObj, stateChangedCallback, X, Y, label, labelsMaxShown) {
     this.stateObj = stateObj
@@ -14,12 +36,17 @@ class State {
     const storedX = this.isStoredInState('X') ? this.getStored('X') : []
     const storedY = this.isStoredInState('Y') ? this.getStored('Y') : []
     const storedLabel = this.isStoredInState('label') ? this.getStored('label') : []
-    if (!_.isEqual(storedX, X) ||
-        !_.isEqual(storedY, Y) ||
+    if (!matchesStoredData(storedX, X) ||
+        !matchesStoredData(storedY, Y) ||
         !_.isEqual(storedLabel, label)) {
       this.stateObj = {}
       this.saveToState({ 'X': X, 'Y': Y, 'label': label, 'labelsMaxShown': labelsMaxShown })
     } else {
+        // The same data at a new precision, recognised above. Rewriting it means the next
+        // render is a plain match and the comparison below only ever sees one old form.
+        if (!_.isEqual(storedX, X) || !_.isEqual(storedY, Y)) {
+            this.saveToState({ X: X, Y: Y })
+        }
         // If X, Y or labels have changed whole saved state is discarded
         // but changing labelsMaxShown will only change the labels shown
         if (this.isStoredInState('labelsMaxShown') && this.getStored('labelsMaxShown') !== labelsMaxShown) {

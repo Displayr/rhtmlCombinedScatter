@@ -2,7 +2,6 @@ import _ from 'lodash'
 import autoBind from 'es6-autobind'
 import PlotColors from './PlotColors'
 import PlotLabel from './PlotLabel'
-import { wrapByNumberOfCharacters } from './PlotlyChartElements'
 import LegendUtils from './utils/LegendUtils'
 import Utils from './utils/Utils'
 import DataTypeEnum from './utils/DataTypeEnum'
@@ -291,8 +290,11 @@ class PlotData {
           const labelColor = Utils.labelColorAt(this.vb.labelFontColor, i)
           if (labelColor !== null) { fontColor = labelColor }
           const group = (this.group != null) ? this.group[i] : ''
-          const group_in_legend = this.legendSettings.wrap && this.legendSettings.wrapNChar ? wrapByNumberOfCharacters(group, this.legendSettings.wrapNChar) : group
-          const hidePointAndLabel = this.hiddenSeries.indexOf(group_in_legend) > -1
+          // hiddenSeries carries the hidden traces' legendgroup, which is the raw group value
+          // as a string. Matching on that rather than on the legend entry text keeps this
+          // working whatever the legend shows: the entry is shortened for display, and for a
+          // numeric group it is not even the same type as the value here.
+          const hidePointAndLabel = this.hiddenSeries.indexOf('' + group) > -1
           // A gap in the data has no coordinate to show, and calling toString on it
           // would throw. The exception is swallowed further up, which loses every
           // label on the chart rather than just this one.

@@ -11,6 +11,13 @@ const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
 const FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE = 0.8
 const FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE = 0.2
 
+// Read as decimal places, matching what jsonlite used to round the payload to so hover text
+// reads as it did before, and as significant digits for the values too small for that.
+const DEFAULT_DIGITS = 4
+
+// What a double needs to round-trip. Past this, two values are the same number.
+const MAX_ROUND_TRIP_DIGITS = 17
+
 function createPlotlyData (config) {
     // Create tooltip text
     const indices = _.range(config.X.length)
@@ -40,7 +47,7 @@ function createPlotlyData (config) {
     if (config.normZ) {
         if (marker_opacity === null) marker_opacity = 0.4
         const z_title = config.zTitle ? config.zTitle + ': ' : ''
-        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${config.Z[i]}`)
+        tooltips = indices.map(i => `${tooltips[i]}<br>${z_title}${formatUnformattedNumber(config.Z[i])}`)
     }
     if (marker_opacity === null) marker_opacity = 1.0
 
@@ -106,6 +113,7 @@ function createPlotlyData (config) {
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = _.uniq(config.group)
+        const group_labels = shortenGroupLabels(group_names)
         const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
@@ -114,18 +122,22 @@ function createPlotlyData (config) {
                 const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
-                const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_name, config.legendWrapNChar) : g_name
+                // Only the label is shortened - g_key stays the raw value, because two groups
+                // differing past four decimal places must not end up sharing a legendgroup.
+                const g_key = '' + g_name
+                const g_label = group_labels[g]
+                const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_label, config.legendWrapNChar) : g_label
                 if (gp_index.length === 0) continue
-                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true))
+                plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, g_key))
                 // One proxy per group, not per group and panel - see the ungrouped branch
                 if (config.lineShow && g_add) {
-                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size))
+                    plot_legend_data.push(createLegendProxyTrace(config, g_name_to_show, g, gp_index, marker_size, g_key))
                 }
                 if (hasMarkerBorder(config, gp_index)) {
-                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerBorder(config, g_name_to_show, marker_size, p, gp_index, g_key))
                 }
                 if (hasMarkerAnnotations(config, gp_index)) {
-                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index))
+                    plot_annotation_data.push(createScatterTraceForMarkerAnnotation(config, g_name_to_show, marker_size, p, gp_index, g_key))
                 }
                 if (g_add) group_added.push(g_name)
             }
@@ -150,7 +162,7 @@ function symbolForTrace (config, data_index) {
         : config.pointSymbol
 }
 
-function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createScatterTraceForMarker (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, legend_group = group_name) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -181,7 +193,7 @@ function createScatterTraceForMarker (config, tooltips, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: showlegend,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
@@ -218,9 +230,9 @@ function lineForGroup (config, group_index) {
 // the extreme points then overlapped the axis. The legend entry is carried by a separate,
 // data-free proxy trace instead (see createLegendProxyTrace), so this trace never shows in
 // the legend while lineShow is on.
-function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false) {
+function createSeriesTrace (config, tooltips, group_name, marker_size, marker_opacity, group_index, panel_index, data_index, showlegend = true, has_groups = false, legend_group = group_name) {
     const trace = createScatterTraceForMarker(config, tooltips, group_name, marker_size,
-        marker_opacity, group_index, panel_index, data_index, showlegend, has_groups)
+        marker_opacity, group_index, panel_index, data_index, showlegend, has_groups, legend_group)
     trace.line = lineForGroup(config, group_index)
     trace.connectgaps = false
     trace.hoverlabel = { font: { color: TooltipUtils.blackOrWhite(trace.line.color) } }
@@ -256,7 +268,7 @@ function representativeMarkerSize (group_sizes) {
 // Having no data means plotly's translatePoint fails for it, so it renders no .point element
 // of its own in the plot area - see the comment on createPlotlyData's return.
 // Only created for a series that takes the legend entry, so it always shows.
-function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size) {
+function createLegendProxyTrace (config, group_name, group_index, data_index, marker_size, legend_group = group_name) {
     const group_sizes = markerSizesForGroup(marker_size, data_index)
     const markers_drawn = Array.isArray(group_sizes)
         ? group_sizes.some(size => size !== 0)
@@ -268,7 +280,7 @@ function createLegendProxyTrace (config, group_name, group_index, data_index, ma
         hoverinfo: 'skip',
         type: 'scatter',
         line: lineForGroup(config, group_index),
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: true
     }
     if (markers_drawn) {
@@ -286,7 +298,7 @@ function createLegendProxyTrace (config, group_name, group_index, data_index, ma
     return trace
 }
 
-function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index) {
+function createScatterTraceForMarkerBorder (config, group_name, marker_size, panel_index, data_index, legend_group = group_name) {
     // We draw the marker border separately from the marker otherwise the legend symbols will also have borders
     // with a colors taken from the border colors
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
@@ -314,7 +326,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
                 width: border_width
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: false,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
@@ -322,7 +334,7 @@ function createScatterTraceForMarkerBorder (config, group_name, marker_size, pan
     }
 }
 
-function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index) {
+function createScatterTraceForMarkerAnnotation (config, group_name, marker_size, panel_index, data_index, legend_group = group_name) {
     const X = data_index ? _.at(config.wrappedX, data_index) : config.wrappedX
     const Y = data_index ? _.at(config.Y, data_index) : config.Y
     const trace_marker_size = data_index && Array.isArray(marker_size) ? _.at(marker_size, data_index) : marker_size
@@ -343,7 +355,7 @@ function createScatterTraceForMarkerAnnotation (config, group_name, marker_size,
                 width: 0 // this is needed otherwise plotly draws a thin white border
             }
         },
-        legendgroup: group_name,
+        legendgroup: legend_group,
         showlegend: false,
         cliponaxis: false,
         xaxis: 'x' + x_axis,
@@ -479,7 +491,72 @@ function getFormatter (format, values, value_is_date) {
         return function (x) { return Utils.isMissingValue(x) ? '' : formatter(new Date(x)) }
     }
     const formatter = d3.format(checkD3Format(format, present, value_is_date))
+    // Shortening the value rather than replacing the formatter keeps whatever the format did
+    // specify - the thousands separator in ",f", the SI suffix in "s", the exponent in "e".
+    if (!constrainsPrecision(formatter)) {
+        return function (x) { return Utils.isMissingValue(x) ? '' : formatter(shortenToDefaultDigits(x)) }
+    }
     return function (x) { return Utils.isMissingValue(x) ? '' : formatter(x) }
+}
+
+// Two values that agree to fourteen decimal places and differ at the fifteenth. Any format
+// that limits the digits it shows renders them identically; one that does not spells out
+// whatever it is handed, and so would put the payload's full precision in the hover text.
+const PRECISION_PROBES = [0.123456789012345, 0.123456789012349]
+
+// checkD3Format maps the shorthand formats onto spellings for plotly's tickformat, which
+// bundles a newer d3-format. d3 3.5.16 predates the "~" trim flag and does not read ".f" as
+// a precision, and it gives the bare "e", "g", "r", "s" and "p" types no default precision
+// either, so all of them reach the hover text with every digit the payload carries. Probing
+// catches those, and anything similar added to checkD3Format later, without enumerating them.
+function constrainsPrecision (formatter) {
+    return formatter(PRECISION_PROBES[0]) === formatter(PRECISION_PROBES[1])
+}
+
+// jsonlite used to round the payload to four decimal places, so a number rendered as text
+// with no format requested arrived already short. The payload now keeps full precision
+// (see toJsonOrNull in theSrc/R/htmlwidget.R), which is what the colors and the plotted
+// positions need, but it leaves the text to be shortened here -- otherwise a proportion
+// hovers as 0.333333333333333.
+function shortenToDigits (x, digits) {
+    if (!_.isFinite(x)) return x
+    const rounded = Number(x.toFixed(digits))
+    // Rounding to decimal places reports a small measurement as 0, which is the precision
+    // loss this is meant to avoid, so below that cutoff the value keeps significant digits.
+    if (rounded === 0 && x !== 0) return Number(x.toPrecision(digits))
+    return rounded
+}
+
+function shortenToDefaultDigits (x) {
+    return shortenToDigits(x, DEFAULT_DIGITS)
+}
+
+// For the places that render a number as text with no formatter in front of them at all.
+function formatUnformattedNumber (x) {
+    return '' + shortenToDefaultDigits(x)
+}
+
+// A numeric group with no colour scale reaches the widget as numbers, and plotly stringifies
+// whatever it is given for the legend entry, so a grouping variable of proportions would
+// otherwise spell out every digit and take the plot area with it.
+//
+// Two groups that differ only past the cutoff would shorten to the same text, and a reader
+// cannot act on two legend entries they cannot tell apart - they would still toggle
+// separately, which reads as a bug. So the labels take the fewest digits that still tell
+// every group apart: four where that is enough, and growing only as far as the closest pair
+// forces. One precision for the whole set, since a legend where some entries are rounded
+// further than others is harder to read than one at a single precision.
+function shortenGroupLabels (group_names) {
+    if (!group_names.some(_.isNumber)) return group_names
+    for (let digits = DEFAULT_DIGITS; digits <= MAX_ROUND_TRIP_DIGITS; digits++) {
+        const labels = group_names.map(g => (_.isNumber(g) ? '' + shortenToDigits(g, digits) : g))
+        // group_names is already unique, so any lost entry here is a collision introduced by
+        // shortening - including one against a text group that reads like a number.
+        if (_.uniq(labels).length === group_names.length) return labels
+    }
+    // Values that are still not distinguishable at full precision. Falling back to what plotly
+    // would have rendered anyway, as strings, so the entry is one type whichever branch ran.
+    return group_names.map(g => '' + g)
 }
 
 function checkD3Format (format, values, value_is_date) {
@@ -610,15 +687,17 @@ function createPlotlyLayout (config, margin_right, height) {
                              _.max(config.normZ),
                              config.width,
                              config.fixedAspectRatio)
-    const x_axis = {
-        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle) ? null : {
-            text: config.xTitle,
-            font: {
-                family: config.xTitleFontFamily,
-                color: config.xTitleFontColor,
-                size: config.xTitleFontSize
-            },
+    const x_title = {
+        text: config.xTitle,
+        font: {
+            family: config.xTitleFontFamily,
+            color: config.xTitleFontColor,
+            size: config.xTitleFontSize
         },
+    }
+    const hide_x_title = (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.xTitle)
+    const x_axis = {
+        title: hide_x_title ? null : x_title,
         showgrid: config.grid && config.xAxisGridWidth > 0,
         gridcolor: config.xAxisGridColor,
         griddash: config.xAxisGridDash,
@@ -666,15 +745,17 @@ function createPlotlyLayout (config, margin_right, height) {
                              _.max(config.normZ),
                              config.width,
                              config.fixedAspectRatio)
-    const y_axis = {
-        title: (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle) ? null : {
-            text: config.yTitle,
-            font: {
-                family: config.yTitleFontFamily,
-                color: config.yTitleFontColor,
-                size: config.yTitleFontSize
-            },
+    const y_title = {
+        text: config.yTitle,
+        font: {
+            family: config.yTitleFontFamily,
+            color: config.yTitleFontColor,
+            size: config.yTitleFontSize
         },
+    }
+    const hide_y_title = (npanel > 1 && config.panelShareAxes) || omitEmptyAxisTitle(config, config.yTitle)
+    const y_axis = {
+        title: hide_y_title ? null : y_title,
         showgrid: config.grid && config.yAxisGridWidth > 0,
         gridcolor: config.yAxisGridColor,
         griddash: config.yAxisGridDash,
@@ -714,17 +795,18 @@ function createPlotlyLayout (config, margin_right, height) {
         y_axis.linewidth = config.yAxisLineWidth
     }
 
+    const plot_title = {
+        text: config.title,
+        font: {
+            family: config.titleFontFamily,
+            color: config.titleFontColor,
+            size: config.titleFontSize
+        },
+        automargin: true
+    }
     const plot_layout = {
         grid: grid,
-        title: placeTextInMargins(config) ? { text: '' } : {
-            text: config.title,
-            font: {
-                family: config.titleFontFamily,
-                color: config.titleFontColor,
-                size: config.titleFontSize
-            },
-            automargin: true
-        },
+        title: placeTextInMargins(config) ? { text: '' } : plot_title,
         showlegend: getShowLegend(config),
         legend: createLegendSettings(config),
         margin: {
@@ -836,8 +918,9 @@ function getRange (minBounds, maxBounds, type, values, maxBubbleSize, plotWidth,
             if (!has_max_bounds) bounds[1] = dates[dates.length - 1] + min_diff
             // Estimate the extra space we need to add for bubbles
             // This is approximate because we don't know plotWidth yet
-            const bubble_offset = !maxBubbleSize ? 0
-                : (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+            const bubble_offset = maxBubbleSize
+                ? (bounds[1] - bounds[0]) * maxBubbleSize / plotWidth
+                : 0
             if (!has_min_bounds) {
                 bounds[0] -= bubble_offset
             }
