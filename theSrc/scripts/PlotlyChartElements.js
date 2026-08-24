@@ -11,10 +11,9 @@ const PLOTLY_LINE_HEIGHT_AS_PROPORTION_OF_FONT_SIZE = 1.3
 const FOOTER_PADDING_TOP_AS_PROPORTION_OF_FONT_SIZE = 0.8
 const FOOTER_PADDING_BOTTOM_AS_PROPORTION_OF_FONT_SIZE = 0.2
 
-// Matches the four decimal places jsonlite used to round the payload to, so hover text
-// reads as it did before the payload moved to full precision.
-const DEFAULT_DECIMAL_PLACES = 4
-const DEFAULT_SIGNIFICANT_DIGITS = 4
+// Read as decimal places, matching what jsonlite used to round the payload to so hover text
+// reads as it did before, and as significant digits for the values too small for that.
+const DEFAULT_DIGITS = 4
 
 function createPlotlyData (config) {
     // Create tooltip text
@@ -502,10 +501,10 @@ function getFormatter (format, values, value_is_date) {
 // hovers as 0.333333333333333.
 function formatUnformattedNumber (x) {
     if (!_.isFinite(x)) return '' + x
-    const rounded = Number(x.toFixed(DEFAULT_DECIMAL_PLACES))
+    const rounded = Number(x.toFixed(DEFAULT_DIGITS))
     // Four decimal places reports a small measurement as 0, which is the precision loss
     // this is meant to avoid, so below that cutoff the value keeps significant digits.
-    if (rounded === 0 && x !== 0) return '' + Number(x.toPrecision(DEFAULT_SIGNIFICANT_DIGITS))
+    if (rounded === 0 && x !== 0) return '' + Number(x.toPrecision(DEFAULT_DIGITS))
     return '' + rounded
 }
 
