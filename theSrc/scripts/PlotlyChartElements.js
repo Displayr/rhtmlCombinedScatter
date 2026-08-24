@@ -110,6 +110,7 @@ function createPlotlyData (config) {
     } else {
         const indices_by_group = _.groupBy(indices, i => config.group[i])
         const group_names = _.uniq(config.group)
+        const group_labels = shortenGroupLabels(group_names)
         const group_added = []
         for (let g = 0; g < group_names.length; g++) {
             for (let p = 0; p < n_panels; p++) {
@@ -118,12 +119,10 @@ function createPlotlyData (config) {
                 const g_add = group_added.indexOf(g_name) === -1
                 const g_index = indices_by_group[g_name]
                 const gp_index = _.intersection(g_index, p_index)
-                // A numeric group with no colour scale reaches the widget as numbers, and
-                // plotly stringifies whatever it is given for the legend entry. Only the label
-                // is shortened - g_key stays the raw value, because two groups differing past
-                // four decimal places must not end up sharing a legendgroup.
+                // Only the label is shortened - g_key stays the raw value, because two groups
+                // differing past four decimal places must not end up sharing a legendgroup.
                 const g_key = '' + g_name
-                const g_label = _.isNumber(g_name) ? formatUnformattedNumber(g_name) : g_name
+                const g_label = group_labels[g]
                 const g_name_to_show = isLegendWrapping(config) ? wrapByNumberOfCharacters(g_label, config.legendWrapNChar) : g_label
                 if (gp_index.length === 0) continue
                 plot_data.push(makeSeriesTrace(config, tooltips, g_name_to_show, marker_size, marker_opacity, g, p, gp_index, g_add, true, g_key))
@@ -528,6 +527,26 @@ function shortenToDefaultDigits (x) {
 // For the places that render a number as text with no formatter in front of them at all.
 function formatUnformattedNumber (x) {
     return '' + shortenToDefaultDigits(x)
+}
+
+// A numeric group with no colour scale reaches the widget as numbers, and plotly stringifies
+// whatever it is given for the legend entry, so a grouping variable of proportions would
+// otherwise spell out every digit and take the plot area with it.
+//
+// Shortening is all or nothing across the group set. Two groups that differ only past the
+// cutoff would shorten to the same text, and a reader cannot act on two legend entries they
+// cannot tell apart - they would still toggle separately, which reads as a bug. A legend that
+// is exact everywhere beats one where some entries are rounded and others are not, so a single
+// collision drops the whole set back to the raw values.
+function shortenGroupLabels (group_names) {
+    if (!group_names.some(_.isNumber)) return group_names
+    const shortened = group_names.map(g => (_.isNumber(g) ? formatUnformattedNumber(g) : g))
+    // group_names is already unique, so any lost entry here is a collision introduced by
+    // shortening - including one against a text group that reads like a number.
+    if (_.uniq(shortened).length === group_names.length) return shortened
+    // Falling back to what plotly would have rendered anyway, but as strings, so the legend
+    // entry is one type whichever branch produced it.
+    return group_names.map(g => '' + g)
 }
 
 function checkD3Format (format, values, value_is_date) {

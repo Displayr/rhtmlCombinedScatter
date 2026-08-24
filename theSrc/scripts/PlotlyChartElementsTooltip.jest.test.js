@@ -158,3 +158,41 @@ describe('the legend grouping key', () => {
         expect(data.map(t => t.legendgroup)).toEqual(['Series 1'])
     })
 })
+
+// Shortening keeps the legend narrow, but two groups differing only past the cutoff would
+// then read identically. A reader cannot act on two entries they cannot tell apart, so the
+// shortening is all-or-nothing across the group set.
+describe('shortening a numeric group legend', () => {
+    const names = (o) => createPlotlyData(cfg(o)).filter(t => t.name !== undefined).map(t => t.name)
+
+    test('applies when every shortened label stays distinct', () => {
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 2 / 3] })).toEqual(['0.3333', '0.6667'])
+    })
+
+    test('is skipped entirely when two labels would collide', () => {
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [3.14159, 3.14162] }))
+            .toEqual(['3.14159', '3.14162'])
+    })
+
+    test('is skipped for every group, not just the colliding pair', () => {
+        // 0.5 would shorten harmlessly, but a legend where some entries are rounded and
+        // others are not is harder to read than one that is consistently exact.
+        expect(names({ X: [1, 2, 3], Y: [1, 2, 3], label: ['a', 'b', 'c'], group: [3.14159, 3.14162, 0.5] }))
+            .toEqual(['3.14159', '3.14162', '0.5'])
+    })
+
+    test('applies to a single numeric group', () => {
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [1 / 3, 1 / 3] })).toEqual(['0.3333'])
+    })
+
+    test('leaves the grouping key raw either way', () => {
+        const collide = createPlotlyData(cfg({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: [3.14159, 3.14162] }))
+            .filter(t => t.name !== undefined)
+        expect(collide.map(t => t.legendgroup)).toEqual(['3.14159', '3.14162'])
+    })
+
+    test('does not disturb a text group that happens to look numeric', () => {
+        expect(names({ X: [1, 2], Y: [1, 2], label: ['a', 'b'], group: ['3.14159', '3.14162'] }))
+            .toEqual(['3.14159', '3.14162'])
+    })
+})
