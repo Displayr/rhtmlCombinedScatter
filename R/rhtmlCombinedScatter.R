@@ -847,11 +847,17 @@ CombinedScatter <- function(
                               package = 'rhtmlCombinedScatter')
 }
 
-# Encodes a value for the widget. Full precision rather than jsonlite's default of four
-# significant digits: this carries data, and rounding it merges values that differ beyond
-# that. It costs nothing for values that do not need the digits - a number is written with
-# as many as it takes and no more - so it only grows the payload where rounding would have
-# been discarding something real.
+# Encodes a value for the widget. jsonlite's default rounds to four decimal *places*, not
+# four significant digits, which this data cannot afford: values that differ beyond that
+# arrive merged, and anything below 5e-05 arrives as exactly 0.
+#
+# `digits = NA` is R's as.character(), i.e. 15 significant digits - short of the 17 a double
+# needs to round-trip, so two values that agree to 15 significant digits still merge. That is
+# a far smaller target than four decimal places, so this reduces the failure rather than
+# eliminating it.
+#
+# Values that do not carry the digits are written unchanged, but computed ones - proportions,
+# means, scaled coordinates - roughly double in length. That is the payload cost of the fix.
 toJsonOrNull <- function(x, digits = NA, ...) {
     if (is.null(x)) {
         NULL

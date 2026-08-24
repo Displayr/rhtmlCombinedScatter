@@ -35,13 +35,14 @@ test_that("a single label is an array too", {
     expect_equal(as.character(x$label), '["a"]')
 })
 
-# The values themselves have to survive too. jsonlite rounds to four significant digits by
-# default, which silently merges values that differ beyond that. `group` is the one where it
-# breaks the chart rather than just blurring it: a numeric colour scale gives one colour per
-# distinct value and the widget matches them up by value, so merged values leave the colours
-# at the end of the scale unreachable.
+# The values themselves have to survive too. jsonlite rounds to four decimal places by
+# default - places, not significant digits - which silently merges values that differ beyond
+# that, and writes anything below 5e-05 as exactly 0. `group` is the one where it breaks the
+# chart rather than just blurring it: a numeric colour scale gives one colour per distinct
+# value and the widget matches them up by value, so merged values leave the colours at the
+# end of the scale unreachable.
 
-test_that("a numeric group keeps values that differ beyond four digits", {
+test_that("a numeric group keeps values that differ beyond four decimal places", {
     g <- c(1.521035, 1.521036, 1.521037)
     x <- CombinedScatter(X = 1:3, Y = 1:3, label = letters[1:3], group = g)$x
     expect_equal(jsonlite::fromJSON(as.character(x$group)), g)
